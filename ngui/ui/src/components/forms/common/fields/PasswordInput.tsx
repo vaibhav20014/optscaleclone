@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useRef } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { useFormContext } from "react-hook-form";
@@ -44,6 +44,7 @@ const PasswordInput = ({
   } = useFormContext();
 
   const intl = useIntl();
+  const inputRef = useRef();
 
   const [shouldShowPassword, setShouldShowPassword] = useState(false);
 
@@ -71,7 +72,10 @@ const PasswordInput = ({
               key="eyeButton"
               icon={shouldShowPassword ? <VisibilityOffOutlinedIcon /> : <RemoveRedEyeOutlinedIcon />}
               color="primary"
-              onClick={() => setShouldShowPassword((currentState) => !currentState)}
+              onClick={() => {
+                inputRef.current.focus();
+                setShouldShowPassword((currentState) => !currentState);
+              }}
             />
             {endAdornment}
           </>
@@ -96,6 +100,7 @@ const PasswordInput = ({
             : undefined,
         validate
       })}
+      ref={inputRef}
     />
   );
 };
