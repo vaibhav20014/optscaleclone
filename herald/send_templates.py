@@ -1476,7 +1476,7 @@ PARAMETER_DUMPS = {
                 }}}},
     'restore_password': {
         'email': ['serviceuser@hystax.com'],
-        'subject': 'Optscale password recovery',
+        'subject': 'OptScale password recovery',
         'template_type': 'restore_password',
         'template_params': {
             'texts': {
