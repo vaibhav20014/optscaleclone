@@ -149,7 +149,17 @@ class AzureReportImporter(BaseReportImporter):
         elif import_scheme == ExpenseImportScheme.raw_usage.value:
             # TODO: it's better to cache prices somewhere in DB
             LOG.info('Downloading PayAsYouGo prices')
-            prices = self.cloud_adapter.get_public_prices()
+            try:
+                prices = self.cloud_adapter.get_public_prices()
+            except AzureErrorResponseException as exc:
+                code = getattr(exc.error, 'additional_properties', {}).get(
+                    'error', {}).get('code')
+                if code == 'SubscriptionNotFound':
+                    msg = exc.error.additional_properties['error'].get(
+                        'message')
+                    raise AzureResourceNotFoundError(msg)
+                else:
+                    raise exc
             LOG.info('Fetched %s price entries', len(prices))
             self._load_raw_usage_data(prices)
         elif import_scheme == ExpenseImportScheme.partner_raw_usage.value:

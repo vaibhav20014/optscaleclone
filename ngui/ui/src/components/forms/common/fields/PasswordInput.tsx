@@ -46,6 +46,25 @@ const PasswordInput = ({
   const intl = useIntl();
   const inputRef = useRef();
 
+  const { ref, ...rest } = register(name, {
+    required: {
+      value: required,
+      message: intl.formatMessage({ id: "thisFieldIsRequired" })
+    },
+    maxLength:
+      maxLength !== null
+        ? {
+            value: maxLength,
+            message: intl.formatMessage({ id: "maxFieldLength" }, { max: maxLength })
+          }
+        : undefined,
+    minLength:
+      minLength !== null
+        ? { value: minLength, message: intl.formatMessage({ id: "minFieldLength" }, { min: minLength }) }
+        : undefined,
+    validate
+  });
+
   const [shouldShowPassword, setShouldShowPassword] = useState(false);
 
   const { endAdornment, ...restInputProps } = InputProps;
@@ -57,6 +76,10 @@ const PasswordInput = ({
   ) : (
     <Input
       label={label}
+      ref={(e) => {
+        ref(e);
+        inputRef.current = e;
+      }}
       type={shouldShowPassword ? "text" : "password"}
       error={!!fieldError}
       helperText={fieldError?.message}
@@ -82,25 +105,7 @@ const PasswordInput = ({
         ),
         ...restInputProps
       }}
-      {...register(name, {
-        required: {
-          value: required,
-          message: intl.formatMessage({ id: "thisFieldIsRequired" })
-        },
-        maxLength:
-          maxLength !== null
-            ? {
-                value: maxLength,
-                message: intl.formatMessage({ id: "maxFieldLength" }, { max: maxLength })
-              }
-            : undefined,
-        minLength:
-          minLength !== null
-            ? { value: minLength, message: intl.formatMessage({ id: "minFieldLength" }, { min: minLength }) }
-            : undefined,
-        validate
-      })}
-      ref={inputRef}
+      {...rest}
     />
   );
 };
