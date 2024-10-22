@@ -277,10 +277,10 @@ class GcpInstance(tools.cloud_adapter.model.InstanceResource, GcpResource):
         return self._last_path_element(self._cloud_object.machine_type)
 
     def _extract_network(self):
-        network = self._cloud_object.network_interfaces[0].network
-        network_name = self._last_path_element(network)
+        network_link = self._cloud_object.network_interfaces[0].network
+        network_name = self._last_path_element(network_link)
         network_id = self._cloud_adapter.network_name_to_id.get(network_name)
-        return network_id, network_name
+        return network_id, network_name, network_link
 
     def __init__(self, cloud_instance: compute.Instance, cloud_adapter: "Gcp"):
         GcpResource.__init__(self, cloud_instance, cloud_adapter)
@@ -292,14 +292,14 @@ class GcpInstance(tools.cloud_adapter.model.InstanceResource, GcpResource):
         )
         spotted = cloud_instance.scheduling.provisioning_model == "SPOT"
         stopped_allocated = cloud_instance.status == 'SUSPENDED'
-        network_id, network_name = self._extract_network()
+        network_id, network_name, network_link = self._extract_network()
+        security_groups = list(cloud_instance.tags.items)
         zone_id = self._last_path_element(self._cloud_object.zone)
 
         super().__init__(
             **self._common_fields,
             flavor=flavor,
-            # TODO: find security groups info
-            security_groups=None,
+            security_groups=security_groups,
             spotted=spotted,
             stopped_allocated=stopped_allocated,
             image_id=image_id,
@@ -312,20 +312,20 @@ class GcpInstance(tools.cloud_adapter.model.InstanceResource, GcpResource):
     def _new_labels_request(self, key, value):
         labels = self._cloud_object.labels
         labels[key] = value
-        labesl_request = compute.InstancesSetLabelsRequest(
+        labels_request = compute.InstancesSetLabelsRequest(
             label_fingerprint=self._cloud_object.label_fingerprint,
             labels=labels,
         )
-        return labesl_request
+        return labels_request
 
     def _set_tag(self, key, value):
-        labesl_request = self._new_labels_request(key, value)
+        labels_request = self._new_labels_request(key, value)
         zone = self._last_path_element(self._cloud_object.zone)
         self._cloud_adapter.compute_instances_client.set_labels(
             project=self._cloud_adapter.project_id,
             zone=zone,
             instance=self._cloud_object.name,
-            instances_set_labels_request_resource=labesl_request,
+            instances_set_labels_request_resource=labels_request,
             **DEFAULT_KWARGS,
         )
 
@@ -646,7 +646,13 @@ class Gcp(CloudBase):
 
     @cached_property
     def compute_instance_types_client(self):
-        return compute.MachineTypesClient.from_service_account_info(self.credentials)
+        return compute.MachineTypesClient.from_service_account_info(
+            self.credentials)
+
+    @cached_property
+    def compute_firewall_client(self):
+        return compute.FirewallsClient.from_service_account_info(
+            self.credentials)
 
     @cached_property
     def compute_networks_client(self):
@@ -977,6 +983,13 @@ class Gcp(CloudBase):
         for network in self.discover_networks():
             result[network.name] = str(network.id)
         return result
+
+    def discover_firewalls(self):
+        return self.discover_entities(
+            self.compute_firewall_client.list,
+            compute.ListFirewallsRequest,
+            project=self.project_id
+        )
 
     ######################################################################################
     # INSTANCE TYPES DISCOVERY
@@ -1518,3 +1531,4 @@ class Gcp(CloudBase):
             )
         except api_exceptions.NotFound as exc:
             raise ResourceNotFound(str(exc))
+
