@@ -1,7 +1,7 @@
 from collections import defaultdict
 import hashlib
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from diworker.diworker.importers.base import BaseReportImporter
 
 LOG = logging.getLogger(__name__)
@@ -15,11 +15,20 @@ OPTSCALE_RESOURCE_ID_TAG = 'optscale_tracking_id'
 class GcpReportImporter(BaseReportImporter):
 
     def detect_period_start(self):
-        last_import_at = self.get_last_import_date(self.cloud_acc_id)
-        if last_import_at:
-            self.period_start = last_import_at.replace(
-                hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
-        else:
+        ca_last_import_at = self.cloud_acc.get('last_import_at')
+        if (ca_last_import_at and datetime.utcfromtimestamp(
+                ca_last_import_at).month == datetime.now(
+                    tz=timezone.utc).month):
+            # When choosing period_start for GCP, prioritize last expense
+            # date over date of the last import run. That is because for GCP
+            # the latest expenses are not available immediately and we need to
+            # load these expenses again on the next run.
+            last_exp_date = self.get_last_import_date(self.cloud_acc_id)
+            if last_exp_date:
+                self.period_start = last_exp_date.replace(
+                    hour=0, minute=0, second=0, microsecond=0) - timedelta(
+                    days=1)
+        if not self.period_start:
             super().detect_period_start()
 
     def get_unique_field_list(self):

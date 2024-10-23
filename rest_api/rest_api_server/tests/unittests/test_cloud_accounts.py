@@ -11,7 +11,8 @@ from rest_api.rest_api_server.models.models import (
 from rest_api.rest_api_server.models.db_base import BaseDB
 from rest_api.rest_api_server.models.db_factory import DBType, DBFactory
 from rest_api.rest_api_server.utils import decode_config
-from rest_api.rest_api_server.controllers.cloud_account import CloudAccountController
+from rest_api.rest_api_server.controllers.cloud_account import (
+    CloudAccountController)
 from tools.cloud_adapter.exceptions import ReportConfigurationException
 from rest_api.rest_api_server.tests.unittests.test_api_base import TestApiBase
 from rest_api.rest_api_server.models.enums import CloudTypes
@@ -411,25 +412,25 @@ class TestCloudAccountApi(TestApiBase):
         code, cloud_acc = self.create_cloud_account(
             self.org_id, self.valid_aws_cloud_acc)
         self.assertEqual(code, 201)
-
+        now = int(datetime.datetime.now(tz=datetime.timezone.utc).timestamp())
         code, resp = self.client.cloud_account_update(
-            cloud_acc['id'], {'last_import_at': 123,
-                              'last_import_modified_at': 321})
+            cloud_acc['id'], {'last_import_at': now,
+                              'last_import_modified_at': now})
         self.assertEqual(code, 200)
-        self.assertEqual(resp['last_import_at'], 123)
-        self.assertEqual(resp['last_import_modified_at'], 321)
+        self.assertEqual(resp['last_import_at'], now)
+        self.assertEqual(resp['last_import_modified_at'], now)
 
         patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
               'check_cluster_secret', return_value=False).start()
         code, resp = self.client.cloud_account_update(
             cloud_acc['id'], {'last_import_at': 456})
         self.assertEqual(code, 400)
-        self.assertEqual(resp['error']['error_code'], 'OE0449')
+        self.assertEqual(resp['error']['error_code'], 'OE0559')
 
         code, resp = self.client.cloud_account_update(
             cloud_acc['id'], {'last_import_modified_at': 789})
         self.assertEqual(code, 400)
-        self.assertEqual(resp['error']['error_code'], 'OE0449')
+        self.assertEqual(resp['error']['error_code'], 'OE0559')
 
         code, resp = self.client.cloud_account_update(
             cloud_acc['id'], {'last_import_attempt_at': 987})
@@ -895,13 +896,83 @@ class TestCloudAccountApi(TestApiBase):
         self.assertEqual(code, 200)
         self.assertEqual(self.p_configure_aws.call_count, 2)
 
+    def test_patch_k8s_with_last_import(self):
+        code, cloud_acc = self.create_cloud_account(
+            self.org_id, self.valid_kubernetes_cloud_acc)
+        self.assertEqual(code, 201)
+        params = {'last_import_at': 1}
+        patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
+              'check_cluster_secret', return_value=True).start()
+        code, resp = self.client.cloud_account_update(
+            cloud_acc['id'], params)
+        self.assertEqual(code, 200)
+
+        patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
+              'check_cluster_secret', return_value=False).start()
+        code, resp = self.client.cloud_account_update(
+            cloud_acc['id'], params)
+        self.assertEqual(code, 400)
+        self.assertEqual(resp['error']['error_code'], 'OE0560')
+
+    def test_patch_last_import(self):
+        code, cloud_acc = self.create_cloud_account(
+            self.org_id, self.valid_aws_cloud_acc)
+        self.assertEqual(code, 201)
+        now = int(datetime.datetime.now(
+            tz=datetime.timezone.utc).timestamp()) - 31 * 24 * 60 * 60
+        for param in ['last_import_at', 'last_import_modified_at']:
+            params = {param: 1}
+            patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
+                  'check_cluster_secret', return_value=True).start()
+            code, resp = self.client.cloud_account_update(
+                cloud_acc['id'], params)
+            self.assertEqual(code, 200)
+
+            patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
+                  'check_cluster_secret', return_value=False).start()
+            code, resp = self.client.cloud_account_update(
+                cloud_acc['id'], params)
+            self.assertEqual(code, 400)
+            self.assertEqual(resp['error']['error_code'], 'OE0559')
+
+            params = {param: now}
+            code, resp = self.client.cloud_account_update(
+                cloud_acc['id'], params)
+            self.assertEqual(code, 200)
+
+        patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
+              'check_cluster_secret', return_value=True).start()
+        code, resp = self.client.cloud_account_update(
+            cloud_acc['id'], {'last_import_attempt_at': now})
+        self.assertEqual(code, 200)
+
+        patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
+              'check_cluster_secret', return_value=False).start()
+        code, resp = self.client.cloud_account_update(
+            cloud_acc['id'], {'last_import_attempt_at': now})
+        self.assertEqual(code, 400)
+        self.assertEqual(resp['error']['error_code'], 'OE0449')
+
+        patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
+              'check_cluster_secret', return_value=True).start()
+        code, resp = self.client.cloud_account_update(
+            cloud_acc['id'], {'last_import_attempt_error': 'test'})
+        self.assertEqual(code, 200)
+
+        patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
+              'check_cluster_secret', return_value=False).start()
+        code, resp = self.client.cloud_account_update(
+            cloud_acc['id'], {'last_import_attempt_at': 'test'})
+        self.assertEqual(code, 400)
+        self.assertEqual(resp['error']['error_code'], 'OE0449')
+
     def test_update_cloud_acc_events(self):
         code, cloud_acc = self.create_cloud_account(
             self.org_id, self.valid_aws_cloud_acc)
         self.assertEqual(code, 201)
-
         patch('tools.cloud_adapter.clouds.aws.Aws.validate_credentials',
-              return_value={'account_id': 'another_acc_id', 'warnings': []}).start()
+              return_value={'account_id': 'another_acc_id', 'warnings': []}
+              ).start()
         params = {'config': {
             'access_key_id': 'new_key',
             'secret_access_key': 'new_secret',
@@ -912,7 +983,8 @@ class TestCloudAccountApi(TestApiBase):
             'rest_api.rest_api_server.controllers.base.BaseController.'
             'publish_activities_task'
         ).start()
-        code, cloud_acc = self.client.cloud_account_update(cloud_acc['id'], params)
+        code, cloud_acc = self.client.cloud_account_update(
+            cloud_acc['id'], params)
         self.assertEqual(code, 200)
         activity_param_tuples = self.get_publish_activity_tuple(
             self.org_id, cloud_acc['id'], 'cloud_account',
@@ -924,6 +996,7 @@ class TestCloudAccountApi(TestApiBase):
             *activity_param_tuples, add_token=True
         )
 
+        now = int(datetime.datetime.now(tz=datetime.timezone.utc).timestamp())
         p_publish_activities1 = patch(
             'rest_api.rest_api_server.controllers.base.BaseController.'
             'publish_activities_task'
@@ -932,9 +1005,9 @@ class TestCloudAccountApi(TestApiBase):
             'access_key_id': 'new_key',
             'secret_access_key': 'new_secret',
             'config_scheme': 'create_report'},
-            'last_import_at': 1,
-            'last_import_modified_at': 1,
-            'last_import_attempt_at': 1,
+            'last_import_at': now,
+            'last_import_modified_at': now,
+            'last_import_attempt_at': now,
             'last_import_attempt_error': 'error'
         }
         code, cloud_acc = self.client.cloud_account_update(cloud_acc['id'],
@@ -955,7 +1028,7 @@ class TestCloudAccountApi(TestApiBase):
             'publish_activities_task'
         ).start()
         code, cloud_acc = self.client.cloud_account_update(
-            cloud_acc['id'], {'last_import_at': 1})
+            cloud_acc['id'], {'last_import_at': now})
         self.assertEqual(code, 200)
         p_publish_activities2.assert_not_called()
 
@@ -1355,12 +1428,14 @@ class TestCloudAccountApi(TestApiBase):
         kubernetes_cost_model = self.default_kubernetes_cost_model.copy()
         kubernetes_cost_model['cpu_hourly_cost'] = 0.123
         valid_kubernetes_cloud_acc = self.valid_kubernetes_cloud_acc.copy()
-        valid_kubernetes_cloud_acc['config']['cost_model'] = kubernetes_cost_model
+        valid_kubernetes_cloud_acc['config'][
+            'cost_model'] = kubernetes_cost_model
         code, cloud_acc = self.create_cloud_account(
             self.org_id, valid_kubernetes_cloud_acc)
         self.assertEqual(code, 201)
 
-        patch('tools.cloud_adapter.clouds.kubernetes.Kubernetes.validate_credentials',
+        patch('tools.cloud_adapter.clouds.kubernetes.Kubernetes.'
+              'validate_credentials',
               return_value={'account_id': cloud_acc['account_id'],
                             'warnings': []}).start()
         ts = int(datetime.datetime.utcnow().timestamp())
