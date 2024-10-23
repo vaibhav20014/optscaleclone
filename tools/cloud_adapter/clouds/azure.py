@@ -472,7 +472,7 @@ class Azure(CloudBase):
                 consumption_api_supported = False
             elif is_empty:
                 warnings.append(
-                    'Subscription %s (%s) doesn\'t have usage data yet or is'
+                    'Subscription %s (%s) doesn\'t have usage data yet or is '
                     'not supported' % (
                         self._subscription_id, subscription_type))
             elif is_timeout_error:
