@@ -1018,3 +1018,13 @@ class Err(enum.Enum):
         ['name', 'resource_type'],
         ['dev-1', 'instance']
     ]
+    OE0559 = [
+        "\"%s\" date should be between a month and a year ago",
+        ['last_import_at'],
+        []
+    ]
+    OE0560 = [
+        "Changing import dates is not supported for \"%s\" cloud account type",
+        ['environment'],
+        []
+    ]

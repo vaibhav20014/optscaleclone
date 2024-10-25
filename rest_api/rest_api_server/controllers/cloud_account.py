@@ -5,7 +5,7 @@ from calendar import monthrange
 
 from optscale_client.herald_client.client_v2 import Client as HeraldClient
 
-from sqlalchemy import Enum, true, or_
+from sqlalchemy import Enum, true
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import and_, exists
 from tools.cloud_adapter.exceptions import (
@@ -48,7 +48,8 @@ from rest_api.rest_api_server.models.models import (
     CloudAccount, DiscoveryInfo, Organization, Pool)
 from rest_api.rest_api_server.models.enums import CloudTypes, ConditionTypes
 from rest_api.rest_api_server.controllers.base import BaseController
-from rest_api.rest_api_server.controllers.base_async import BaseAsyncControllerWrapper
+from rest_api.rest_api_server.controllers.base_async import (
+    BaseAsyncControllerWrapper)
 from rest_api.rest_api_server.utils import (
     check_bool_attribute, check_dict_attribute, check_float_attribute,
     check_int_attribute, check_string, check_string_attribute,
@@ -90,7 +91,8 @@ class CloudAccountController(BaseController, ClickHouseMixin):
         organization = OrganizationController(
             self.session, self._config, self.token).get(organization_id)
         if organization is None:
-            raise NotFoundException(Err.OE0005, [Organization.__name__, organization_id])
+            raise NotFoundException(
+                Err.OE0005, [Organization.__name__, organization_id])
 
     def _validate(self, cloud_acc, is_new=True, **kwargs):
         org_id = kwargs.get('organization_id')
@@ -518,7 +520,8 @@ class CloudAccountController(BaseController, ClickHouseMixin):
             self._publish_validation_warnings_activities(updated_cloud_account,
                                                          warnings)
             for import_f in ['last_import_at', 'last_import_modified_at',
-                             'last_import_attempt_at', 'last_import_attempt_error']:
+                             'last_import_attempt_at',
+                             'last_import_attempt_error']:
                 kwargs.pop(import_f, None)
         else:
             updated_cloud_account = cloud_acc_obj
