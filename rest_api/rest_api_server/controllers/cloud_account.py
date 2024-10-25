@@ -751,7 +751,8 @@ class CloudAccountController(BaseController, ClickHouseMixin):
         configs = adapter.get_children_configs()
         if not configs:
             return
-        root_skipped_subscriptions = root_config.pop('skipped_subscriptions', {})
+        root_skipped_subscriptions = root_config.pop(
+            'skipped_subscriptions', {})
         skipped_subscriptions = root_skipped_subscriptions.copy()
         for c_config in configs:
             c_name = c_config.get('name')

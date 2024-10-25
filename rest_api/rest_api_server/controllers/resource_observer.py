@@ -86,9 +86,13 @@ class ResourceObserverController(BaseController, MongoMixin):
         cloud_accounts_map = {}
         for cloud_account in self._get_cloud_accounts(organization_id):
             if cloud_account.type == CloudTypes.AZURE_TENANT:
-                CloudAccountController(
-                    self.session, self._config, self.token
-                ).create_children_accounts(cloud_account)
+                try:
+                    CloudAccountController(
+                        self.session, self._config, self.token
+                    ).create_children_accounts(cloud_account)
+                except Exception as exc:
+                    LOG.error(f'Error creating children accounts for cloud '
+                              f'account {cloud_account.id}: {str(exc)}')
                 continue
             cloud_accounts_map[cloud_account.id] = cloud_account
         cloud_account_ids = list(cloud_accounts_map.keys())
