@@ -1,6 +1,6 @@
 import hashlib
 import logging
-from datetime import datetime
+import tools.optscale_time as opttime
 
 from sqlalchemy import and_
 
@@ -204,7 +204,7 @@ class EnvironmentResourceController(CloudResourceController,
                 '_id': item_id,
                 'is_environment': True
             },
-            update={'$set': {'deleted_at': int(datetime.utcnow().timestamp())}}
+            update={'$set': {'deleted_at': opttime.utcnow_timestamp()}}
         )
 
 

@@ -1,8 +1,9 @@
 from collections import defaultdict
 import hashlib
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from diworker.diworker.importers.base import BaseReportImporter
+import tools.optscale_time as opttime
 
 LOG = logging.getLogger(__name__)
 WRITE_CHUNK_SIZE = 200
@@ -16,9 +17,8 @@ class GcpReportImporter(BaseReportImporter):
 
     def detect_period_start(self):
         ca_last_import_at = self.cloud_acc.get('last_import_at')
-        if (ca_last_import_at and datetime.utcfromtimestamp(
-                ca_last_import_at).month == datetime.now(
-                    tz=timezone.utc).month):
+        if (ca_last_import_at and opttime.utcfromtimestamp(
+                ca_last_import_at).month == opttime.utcnow().month):
             # When choosing period_start for GCP, prioritize last expense
             # date over date of the last import run. That is because for GCP
             # the latest expenses are not available immediately and we need to
@@ -137,7 +137,7 @@ class GcpReportImporter(BaseReportImporter):
     def load_raw_data(self):
         current_day = self.period_start.replace(
             hour=0, minute=0, second=0, microsecond=0)
-        now = datetime.utcnow()
+        now = opttime.utcnow()
         while current_day <= now:
             chunk = []
             end_date = current_day + timedelta(days=1)
@@ -200,8 +200,8 @@ class GcpReportImporter(BaseReportImporter):
             expenses[-1])
         service = expenses[-1].get('service')
         region = self.cloud_adapter.fix_region(expenses[-1].get('region'))
-        first_seen = datetime.utcnow()
-        last_seen = datetime.utcfromtimestamp(0).replace()
+        first_seen = opttime.utcnow()
+        last_seen = opttime.utcfromtimestamp(0).replace()
         tags = {}
         system_tags = {}
         for e in expenses:

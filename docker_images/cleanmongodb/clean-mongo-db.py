@@ -3,7 +3,7 @@ import os
 import logging
 from bson.objectid import ObjectId
 from optscale_client.config_client.client import Client as ConfigClient
-from datetime import datetime
+from datetime import datetime, timezone
 from pymongo import MongoClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -248,7 +248,7 @@ class CleanMongoDB(object):
 
     def update_cleaned_at(self, cloud_account_id=None, organization_id=None):
         session = self.get_session()
-        now = int(datetime.utcnow().timestamp())
+        now = int(datetime.now(tz=timezone.utc).timestamp())
         if cloud_account_id:
             LOG.info(
                 f'Updating cleaned_at for cloud account {cloud_account_id}')

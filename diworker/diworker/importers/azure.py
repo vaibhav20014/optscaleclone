@@ -2,6 +2,8 @@
 import json
 import logging
 from datetime import datetime, timezone, timedelta
+
+import tools.optscale_time as opttime
 from diworker.diworker.utils import retry_backoff
 from tools.cloud_adapter.clouds.azure import (
     AzureConsumptionException, ExpenseImportScheme,
@@ -214,7 +216,7 @@ class AzureReportImporter(BaseReportImporter):
         skus_without_prices = set()
         current_day = self.period_start.replace(
             hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
-        last_day = datetime.utcnow().replace(
+        last_day = opttime.utcnow().replace(
             hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
         while current_day < last_day:
             LOG.info('Processing raw expenses for %s', current_day)
@@ -433,8 +435,8 @@ class AzureReportImporter(BaseReportImporter):
             tags = self.extract_tags(expenses[-1].get('tags', {}))
             service = expenses[-1].get('consumed_service')
 
-        first_seen = datetime.utcnow()
-        last_seen = datetime.utcfromtimestamp(0).replace()
+        first_seen = opttime.utcnow()
+        last_seen = opttime.utcfromtimestamp(0).replace()
         for e in expenses:
             start_date = e['start_date']
             if start_date and start_date < first_seen:

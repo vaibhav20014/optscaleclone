@@ -1,7 +1,7 @@
 # pylint: disable=no-member
 import logging
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from mongoengine.errors import ValidationError, DoesNotExist
 from mongoengine.queryset.visitor import Q
 
@@ -215,7 +215,7 @@ class EventController(EventBaseController):
 
     def submit(self, **kwargs):
         # TODO: possible filter kwargs/filter unexpected
-        kwargs["time"] = int(datetime.utcnow().timestamp())
+        kwargs["time"] = int(datetime.now(tz=timezone.utc).timestamp())
         event = Event(**kwargs)
         try:
             event.save()

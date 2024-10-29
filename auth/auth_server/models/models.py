@@ -3,7 +3,6 @@ import enum
 import uuid
 import string
 import random
-from datetime import datetime
 from sqlalchemy import Enum, UniqueConstraint
 from sqlalchemy.ext.declarative.base import _declarative_constructor
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -14,6 +13,7 @@ from sqlalchemy.orm import relationship, backref, Session
 
 from auth.auth_server.utils import as_dict, ModelEncoder
 from auth.auth_server.models.exceptions import InvalidTreeException
+from tools.optscale_time import utcnow, utcnow_timestamp
 
 
 def gen_id():
@@ -26,7 +26,7 @@ def gen_salt():
 
 
 def get_current_timestamp():
-    return int(datetime.utcnow().timestamp())
+    return utcnow_timestamp()
 
 
 class PermissionKeys(Enum):
@@ -230,7 +230,7 @@ class Token(Base):
 
     digest = Column(String(32), primary_key=True, nullable=False)
     user_id = Column(String(36), ForeignKey('user.id'))
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=utcnow)
     valid_until = Column(TIMESTAMP, nullable=False, index=True)
     ip = Column(String(39), nullable=False)
     user = relationship("User", backref="tokens")

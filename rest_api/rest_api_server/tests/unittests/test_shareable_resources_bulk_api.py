@@ -1,8 +1,8 @@
-from datetime import datetime
 from unittest.mock import patch, ANY
 from tools.cloud_adapter.model import ResourceTypes
 from rest_api.rest_api_server.tests.unittests.test_api_base import TestApiBase
 from rest_api.rest_api_server.exceptions import Err
+from tools.optscale_time import utcnow_timestamp
 
 
 class TestShareableResourcesApi(TestApiBase):
@@ -59,7 +59,7 @@ class TestShareableResourcesApi(TestApiBase):
                               name='test_resource', tags=None, last_seen=None,
                               region=None, first_seen=None,
                               shareable=False, use_resource_hash=False):
-        now = int(datetime.utcnow().timestamp())
+        now = utcnow_timestamp()
         resource_key = 'cloud_resource_id'
         if use_resource_hash:
             resource_key = 'cloud_resource_hash'

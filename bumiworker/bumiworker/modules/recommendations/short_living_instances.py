@@ -3,6 +3,7 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 from bumiworker.bumiworker.modules.base import ModuleBase
+from tools.optscale_time import utcfromtimestamp, utcnow
 
 DAYS_RANGE = 3
 LIVE_HRS_THRESHOLD = 6
@@ -73,8 +74,8 @@ class ShortLivingInstances(ModuleBase):
         cloud_account_map = self.get_cloud_accounts(
             supported_cloud_types=SUPPORTED_CLOUD_TYPES,
             skip_cloud_accounts=skip_cloud_accounts)
-        now = datetime.utcnow()
-        start_datetime = datetime.utcfromtimestamp(0)
+        now = utcnow()
+        start_datetime = utcfromtimestamp(0)
         start_date = now - timedelta(days=days_threshold)
         first_seen = start_date.replace(hour=0, minute=0, second=0,
                                         microsecond=0).timestamp()

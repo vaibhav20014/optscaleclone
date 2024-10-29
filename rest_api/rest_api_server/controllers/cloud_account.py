@@ -1,6 +1,7 @@
 import logging
 import re
-from datetime import datetime, timedelta
+import tools.optscale_time as opttime
+from datetime import timedelta
 from calendar import monthrange
 
 from optscale_client.herald_client.client_v2 import Client as HeraldClient
@@ -356,7 +357,7 @@ class CloudAccountController(BaseController, ClickHouseMixin):
         cloud_pool = PoolController(self.session, self._config, self.token).create(
             organization_id=cloud_account_org_id, parent_id=parent_pool.id,
             name=pool_name, default_owner_id=default_employee.id)
-        rule_name = 'Rule for %s_%s' % (ca_obj.name, int(datetime.utcnow().timestamp()))
+        rule_name = 'Rule for %s_%s' % (ca_obj.name, opttime.utcnow_timestamp())
         RuleController(self.session, self._config, self.token).create_rule(
             auth_user_id, cloud_pool.organization_id, self.token,
             name=rule_name, owner_id=cloud_pool.default_owner_id,
@@ -588,7 +589,7 @@ class CloudAccountController(BaseController, ClickHouseMixin):
             self.send_cloud_account_email(cloud_account, action='deleted')
 
     def get_details(self, cloud_acc_id):
-        today = datetime.utcnow()
+        today = opttime.utcnow()
         expense_ctrl = ExpenseController(self._config)
         default = {'cost': 0, 'count': 0, 'types': []}
         month_expenses = self._get_this_month_expenses(
@@ -704,7 +705,7 @@ class CloudAccountController(BaseController, ClickHouseMixin):
 
         cloud_acc_ids = [x.id for x in cloud_accounts]
 
-        today = datetime.utcnow()
+        today = opttime.utcnow()
         expense_ctrl = ExpenseController(self._config)
         month_expenses = self._get_this_month_expenses(
             expense_ctrl, today, cloud_acc_ids

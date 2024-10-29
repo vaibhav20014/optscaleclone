@@ -1,4 +1,5 @@
 import logging
+import tools.optscale_time as opttime
 from datetime import datetime
 from sqlalchemy import false, and_
 
@@ -141,7 +142,7 @@ class CalendarObserverController(BaseController):
                 creates_list, calendar_sync.calendar_id)
         except CalendarException as ex:
             raise FailedDependency(Err.OE0489, [str(ex)])
-        calendar_sync.last_completed = int(datetime.utcnow().timestamp())
+        calendar_sync.last_completed = opttime.utcnow_timestamp()
         self.session.commit()
 
 

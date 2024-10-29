@@ -1,8 +1,8 @@
 import hashlib
 import logging
 import threading
+import tools.optscale_time as opttime
 from clickhouse_driver import Client as ClickHouseClient
-from datetime import datetime
 from kombu import Connection as QConnection, Exchange
 from kombu.pools import producers
 from pymongo import MongoClient
@@ -452,7 +452,7 @@ class BaseController:
     def delete(self, item_id):
         LOG.info("Deleting %s with id %s", self.model_type.__name__, item_id)
         return self.update(
-            item_id, deleted_at=int(datetime.utcnow().timestamp()))
+            item_id, deleted_at=opttime.utcnow_timestamp())
 
     def update(self, item_id, **kwargs):
         try:

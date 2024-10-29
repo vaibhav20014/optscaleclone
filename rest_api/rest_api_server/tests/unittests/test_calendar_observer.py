@@ -1,4 +1,5 @@
 import uuid
+import tools.optscale_time as opttime
 from datetime import datetime, timedelta
 from freezegun import freeze_time
 from unittest.mock import patch, ANY, PropertyMock
@@ -220,7 +221,7 @@ class TestObserver(TestApiBase):
                     summary=f"{resource.get('name')} is acquired by {self.employee['name']}")
                 p_list_event.assert_called_once_with(
                     c_sync['calendar_id'], ANY, ANY,
-                    datetime.utcnow() - timedelta(days=28)
+                    opttime.utcnow() - timedelta(days=28)
                 )
 
             with patch(
@@ -350,7 +351,7 @@ class TestObserver(TestApiBase):
                     c_sync['calendar_id'], event['id'], status='confirmed')
                 p_list_event.assert_called_once_with(
                     c_sync['calendar_id'], ANY, ANY,
-                    datetime.utcnow() - timedelta(days=28)
+                    opttime.utcnow() - timedelta(days=28)
                 )
         with freeze_time(dt + timedelta(days=1)):
             with patch('optscale_client.config_client.client.Client.google_calendar_service_key',

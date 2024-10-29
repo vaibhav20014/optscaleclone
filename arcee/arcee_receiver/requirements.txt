@@ -8,3 +8,4 @@ mongodb-migrations==1.2.1
 pydantic==2.4.2
 # OptScale packages
 -e optscale_client/aconfig_cl
+-e tools/optscale_time

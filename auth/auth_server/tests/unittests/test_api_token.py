@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 import uuid
 from auth.auth_server.tests.unittests.test_api_base import TestAuthBase
 from auth.auth_server.models.models import (Type, User, gen_salt,
                                             VerificationCode)
 from auth.auth_server.utils import hash_password, get_digest
 from auth.auth_server.tests.unittests.utils import extract_caveats
+from tools.optscale_time import utcnow
 
 
 class TestTokenApi(TestAuthBase):
@@ -125,7 +126,7 @@ class TestTokenApi(TestAuthBase):
         session.add(partner_user)
 
         code_1, code_3, code_4 = 123456, 234567, 345678
-        now = datetime.utcnow()
+        now = utcnow()
         vc_1 = VerificationCode(
             email='wrong@email.com', valid_until=now + timedelta(hours=1),
             code=get_digest(str(code_1)))
