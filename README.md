@@ -137,6 +137,8 @@ If your deployment server is the service-host server, add `"ansible_connection=l
 
 Edit file with overlay - [optscale-deploy/overlay/user_template.yml](optscale-deploy/overlay/user_template.yml); see comments in overlay file for guidance.
 
+Pay attention to "service_credentials" parameter, as OptScale uses it to retrieve cloud pricing data for recommendations calculation.
+
 #### Cluster installation
 
 run the following command:

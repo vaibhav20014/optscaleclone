@@ -494,7 +494,7 @@ class AWSReportImporter(CSVBaseReportImporter):
                           field_name == 'discount/EdpDiscount' and value):
                         chunk[expense_num]['cost'] += float(value)
                     elif field_name == 'lineItem/UsageType':
-                        if 'BoxUsage' in value:
+                        if value and 'BoxUsage' in value:
                             chunk[expense_num]['box_usage'] = True
                     if isinstance(value, float) and math.isnan(value):
                         value = 0
