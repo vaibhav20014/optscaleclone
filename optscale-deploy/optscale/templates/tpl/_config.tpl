@@ -219,7 +219,6 @@ etcd:
     aws_secret_access_key: {{ .Values.users_dataset_generator.aws_secret_access_key }}
   service_credentials:
 {{ toYaml .Values.service_credentials | indent 4 }}
-  optscale_meter_enabled: {{ .Values.optscale_meter_enabled }}
 {{ if .Values.fake_cad_config }}
   fake_cad:
     config:
