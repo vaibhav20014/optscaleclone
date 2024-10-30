@@ -31,6 +31,7 @@ from tools.optscale_exceptions.common_exc import (
 from tools.optscale_exceptions.http_exc import OptHTTPError
 from pymongo.errors import BulkWriteError
 from tools.cloud_adapter.exceptions import CloudAdapterBaseException
+from tools.optscale_time import utcfromtimestamp, utcnow
 from rest_api.rest_api_server.exceptions import Err
 from retrying import retry
 import unicodedata
@@ -322,7 +323,7 @@ def gen_id():
 
 
 def now_timestamp():
-    return int(datetime.utcnow().timestamp())
+    return int(utcnow().timestamp())
 
 
 def safe_string(str_, length=20):
@@ -602,5 +603,5 @@ def handle_http_exc(func):
 
 
 def timestamp_to_day_start(timestamp) -> datetime:
-    return datetime.utcfromtimestamp(timestamp).replace(
+    return utcfromtimestamp(timestamp).replace(
         hour=0, minute=0, second=0, microsecond=0)

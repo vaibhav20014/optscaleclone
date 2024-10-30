@@ -33,6 +33,7 @@ from arcee.arcee_receiver.modules.leader_board import (
     get_metrics as _get_task_metrics)
 
 from optscale_client.aconfig_cl.aconfig_cl import AConfigCl
+import tools.optscale_time as opttime
 
 app = Sanic("arcee")
 
@@ -648,7 +649,7 @@ async def update_run(request, body: RunPatchIn, run_id: str):
     d = body.model_dump(exclude_unset=True, exclude={'finish'})
     # TODO: remove "finish" from PATCH payload. Set ts based on "state"
     if body.finish:
-        d.update({"finish": int(datetime.utcnow().timestamp())})
+        d.update({"finish": opttime.utcnow_timestamp()})
     hyperparameters = d.get("hyperparameters", {})
     if hyperparameters:
         existing_hyperparams = r.get("hyperparameters", {})
@@ -683,7 +684,7 @@ async def create_run_milestone(request, run_id: str):
     d = {
         "_id": str(uuid.uuid4()),
         "run_id": run_id,
-        "timestamp": int(datetime.utcnow().timestamp()),
+        "timestamp": opttime.utcnow_timestamp(),
         "milestone": milestone,
     }
     await db.milestone.insert_one(
@@ -1170,7 +1171,7 @@ async def create_token(request):
     d = {
         "_id": str(uuid.uuid4()),
         "token": token,
-        "created": int(datetime.utcnow().timestamp()),
+        "created": opttime.utcnow_timestamp(),
         "deleted_at": 0,
     }
     await db.token.insert_one(
@@ -1201,8 +1202,7 @@ async def delete_token(request, token: str):
     await db.token.update_one(
         {"_id": token_id}, {
             '$set': {
-                "deleted_at": int(
-                    datetime.utcnow().timestamp()),
+                "deleted_at": int(opttime.utcnow_timestamp()),
             }
         })
     return json({"deleted": True, "id": token_id})
@@ -1256,7 +1256,7 @@ async def create_stage(request, run_id: str):
     d = {
         "_id": str(uuid.uuid4()),
         "run_id": run_id,
-        "timestamp": int(datetime.utcnow().timestamp()),
+        "timestamp": opttime.utcnow_timestamp(),
         "name": stage_name,
     }
     await db.stage.insert_one(
@@ -1313,7 +1313,7 @@ async def create_proc_data(request, run_id: str):
     d = {
         "_id": str(uuid.uuid4()),
         "run_id": run_id,
-        "timestamp": int(datetime.utcnow().timestamp()),
+        "timestamp": opttime.utcnow_timestamp(),
         'instance_id': instance,
         "proc_stats": proc_stats,
     }
@@ -1619,7 +1619,7 @@ async def delete_leaderboard(request, id_: str):
     if not o:
         raise SanicException("Leaderboard not found", status_code=404)
     await db.leaderboard.update_one({"_id": id_}, {'$set': {
-        "deleted_at": int(datetime.utcnow().timestamp())
+        "deleted_at": opttime.utcnow_timestamp()
     }})
     return json('', status=204)
 
@@ -1950,7 +1950,7 @@ async def delete_dataset(request, id_: str):
     if await _dataset_used_in_leaderboard(db, id_):
         raise SanicException("Dataset used in leaderboard", status_code=409)
     await db.dataset.update_one({"_id": id_}, {'$set': {
-        "deleted_at": int(datetime.utcnow().timestamp())
+        "deleted_at": opttime.utcnow_timestamp()
     }})
     return json('', status=204)
 

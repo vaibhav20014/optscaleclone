@@ -1,4 +1,3 @@
-import datetime
 import logging
 import re
 from sqlalchemy.sql import func
@@ -15,6 +14,7 @@ from auth.auth_server.utils import (
     check_action, hash_password, is_email_format, get_input,
     check_string_attribute, check_bool_attribute, is_hystax_email,
     is_demo_email)
+from tools.optscale_time import utcnow
 from tools.optscale_exceptions.common_exc import (
     WrongArgumentsException, ForbiddenException, NotFoundException,
     ConflictException)
@@ -185,7 +185,7 @@ class UserController(BaseController):
                                  'DELETE_USER', item.type.name, item.scope_id
                                  ) or self._is_self_edit(user, item_id)):
                 raise ForbiddenException(Err.OA0012, [])
-        item.deleted_at = datetime.datetime.utcnow().timestamp()
+        item.deleted_at = utcnow().timestamp()
         self.session.add(item)
         self.session.commit()
 

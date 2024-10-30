@@ -5,6 +5,7 @@ import logging
 import os
 import random
 import uuid
+import tools.optscale_time as opttime
 from collections import defaultdict
 from json.decoder import JSONDecodeError
 from kombu.pools import producers
@@ -689,7 +690,7 @@ class LiveDemoController(BaseController, MongoMixin, ClickHouseMixin):
             now, obj)
         if obj.get('active', False):
             obj['last_seen'] = int((
-                datetime.utcnow() + timedelta(days=7)).timestamp())
+                opttime.utcnow() + timedelta(days=7)).timestamp())
         obj['_last_seen_date'] = timestamp_to_day_start(obj.get('last_seen', 0))
         obj['_first_seen_date'] = timestamp_to_day_start(
             obj.get('first_seen', 0))
@@ -1279,8 +1280,7 @@ class LiveDemoController(BaseController, MongoMixin, ClickHouseMixin):
             self, organization: Organization, token: ProfilingToken,
             src_replace_employee, dest_replace_employee, preset
     ):
-        now = int(datetime.utcnow().replace(
-            hour=0, minute=0, second=0).timestamp())
+        now = int(opttime.startday(opttime.utcnow()).timestamp())
         insertions_map = {}
         self.setup(src_replace_employee, dest_replace_employee,
                    organization.pool_id, preset)
@@ -1469,13 +1469,13 @@ class LiveDemoController(BaseController, MongoMixin, ClickHouseMixin):
             Organization.is_demo.is_(true()),
             Organization.deleted.is_(False),
             Organization.created_at >= int(
-                (datetime.utcnow() - timedelta(days=7)).timestamp())
+                (opttime.utcnow() - timedelta(days=7)).timestamp())
         ))
         orgs = demo_organization_q.all()
         return len(orgs) == 1
 
     def _get_prepared_live_demo(self):
-        live_demo_threshhold = datetime.utcnow() - timedelta(
+        live_demo_threshhold = opttime.utcnow() - timedelta(
             days=PREPARED_DEMO_LIFETIME_DAYS)
         live_demo = self.mongo_client.restapi.live_demos.find_one_and_delete({
             'created_at': {'$gte': int(live_demo_threshhold.timestamp())}

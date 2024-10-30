@@ -7,3 +7,4 @@ pyyaml==6.0.1
 -e optscale_client/rest_api_client
 -e tools/cloud_adapter
 -e tools/optscale_exceptions
+-e tools/optscale_time

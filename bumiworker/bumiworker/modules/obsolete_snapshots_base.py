@@ -8,6 +8,7 @@ from tools.cloud_adapter.cloud import Cloud as CloudAdapter
 
 from bumiworker.bumiworker.consts import ArchiveReason
 from bumiworker.bumiworker.modules.base import ArchiveBase, ModuleBase
+from tools.optscale_time import utcnow, startday
 
 BULK_SIZE = 2000
 DAYS_IN_MONTH = 30
@@ -230,7 +231,7 @@ class ObsoleteSnapshotsArchiveBase(ArchiveBase):
 
     def _get(self, previous_options, optimizations, cloud_accounts_map,
              **kwargs):
-        now = datetime.utcnow()
+        now = utcnow()
         days_threshold = previous_options['days_threshold']
         obsolete_threshold = timedelta(days_threshold)
 

@@ -3,6 +3,7 @@ import logging
 
 from bulldozer.bulldozer_worker.infra import Infra, InfraException
 from bulldozer.bulldozer_worker.name_generator import NameGenerator
+from tools.optscale_time import utcnow_timestamp
 
 LOG = logging.getLogger(__name__)
 
@@ -258,7 +259,7 @@ class ContinueWithDestroyConditions(Continue):
             started_at = runner["started_at"]
             if started_at:
                 threshold = started_at + max_duration
-                now = datetime.datetime.utcnow().timestamp()
+                now = utcnow_timestamp()
                 LOG.info("runner id %s, current time: %d, threshold: %d",
                          runner_id, now, threshold)
                 if now > threshold:
@@ -374,7 +375,7 @@ class SetFailed(SetFinished):
             self.bulldozer_cl.update_runner(
                 runner_id,
                 state=TaskState.ERROR,
-                destroyed_at=int(datetime.datetime.utcnow().timestamp()))
+                destroyed_at=utcnow_timestamp())
             self.update_reason()
         self.message.ack()
 
@@ -458,12 +459,12 @@ class StartInfra(Continue):
         self.bulldozer_cl.update_runner(
             runner_id,
             state=TaskState.WAITING_ARCEE,
-            started_at=int(datetime.datetime.utcnow().timestamp()),
+            started_at=utcnow_timestamp(),
             instance_id=id_,
             ip_addr=ip_addr,
             return_code=0
         )
-        self.body["updated"] = int(datetime.datetime.utcnow().timestamp())
+        self.body["updated"] = utcnow_timestamp()
         self.update_task_state()
         super()._exec()
 
@@ -490,7 +491,7 @@ class WaitArcee(ContinueWithDestroyConditions):
         if not run_id:
             # check timeout
             last_updated = int(self.body.get("updated"))
-            current_time = int(datetime.datetime.utcnow().timestamp())
+            current_time = utcnow_timestamp()
             wait_time = last_updated + ARCEE_WAIT_TIMEOUT_SEC
             LOG.info("runs not found. current time: %d, wait time: %s",
                      current_time, wait_time)
@@ -504,7 +505,7 @@ class WaitArcee(ContinueWithDestroyConditions):
                 run_id=run_id,
                 state=TaskState.STARTED,
             )
-            self.body["updated"] = int(datetime.datetime.utcnow().timestamp())
+            self.body["updated"] = utcnow_timestamp()
             self.update_task_state()
         super()._exec()
 
@@ -551,9 +552,9 @@ class Stop(Continue):
             self.bulldozer_cl.update_runner(
                 runner_id,
                 state=TaskState.DESTROYED,
-                destroyed_at=int(datetime.datetime.utcnow().timestamp())
+                destroyed_at=utcnow_timestamp()
             )
-        self.body["updated"] = int(datetime.datetime.utcnow().timestamp())
+        self.body["updated"] = utcnow_timestamp()
         self.update_task_state()
         super()._exec()
 

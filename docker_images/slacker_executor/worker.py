@@ -15,6 +15,7 @@ from optscale_client.auth_client.client_v2 import Client as AuthClient
 from optscale_client.config_client.client import Client as ConfigClient
 from optscale_client.rest_api_client.client_v2 import Client as RestClient
 from optscale_client.slacker_client.client import Client as SlackerClient
+from tools.optscale_time import utcfromtimestamp, utcnow_timestamp
 
 LOG = get_logger(__name__)
 QUEUE_NAME = 'slacker-task'
@@ -104,7 +105,7 @@ class SlackerExecutorWorker(ConsumerMixin):
     @staticmethod
     def ts_to_slacker_time_format(timestamp):
         if timestamp:
-            date = datetime.utcfromtimestamp(timestamp)
+            date = utcfromtimestamp(timestamp)
             return datetime.strftime(date, "%m/%d/%Y %H:%M UTC")
         else:
             return 'Not set'
@@ -151,7 +152,7 @@ class SlackerExecutorWorker(ConsumerMixin):
 
     @staticmethod
     def get_current_booking(bookings):
-        now_ts = int(datetime.utcnow().timestamp())
+        now_ts = utcnow_timestamp()
         for booking in bookings:
             if booking['acquired_since'] <= now_ts and (
                     booking['released_at'] == 0 or
@@ -160,7 +161,7 @@ class SlackerExecutorWorker(ConsumerMixin):
 
     @staticmethod
     def get_upcoming_booking(bookings, current_booking=None):
-        acquired_since = int(datetime.utcnow().timestamp())
+        acquired_since = utcnow_timestamp()
         if current_booking and current_booking.get('released_at'):
             acquired_since = current_booking['released_at']
         future_bookings = [x for x in bookings

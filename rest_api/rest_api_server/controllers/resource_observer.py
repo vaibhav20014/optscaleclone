@@ -1,7 +1,6 @@
 import logging
-
+import tools.optscale_time as opttime
 from sqlalchemy import and_, false
-from datetime import datetime
 from pymongo import UpdateMany
 
 from tools.cloud_adapter.model import ResourceTypes
@@ -77,7 +76,7 @@ class ResourceObserverController(BaseController, MongoMixin):
         return list(resources_.values())
 
     def observe(self, organization_id):
-        now = int(datetime.utcnow().timestamp())
+        now = opttime.utcnow_timestamp()
         last_run = now - NEWLY_DISCOVERED_TIME
         organization = self._get_organization(organization_id)
         if not organization:
@@ -192,8 +191,7 @@ class ResourceObserverController(BaseController, MongoMixin):
                 {'organization_id': organization_id}
             ],
             'active': True,
-            'last_seen': {'$gte': int(
-                datetime.utcnow().timestamp()) - HOUR_IN_SEC},
+            'last_seen': {'$gte': opttime.utcnow_timestamp() - HOUR_IN_SEC},
             'cluster_type_id': {'$exists': False}
         }, ['cloud_account_id', 'cluster_id', 'first_seen', 'pool_id',
             'total_cost', 'last_expense'])
@@ -215,7 +213,7 @@ class ResourceObserverController(BaseController, MongoMixin):
         resource_ids = [x.resource_id for x in resources]
         ctrl = ShareableBookingController(self.session, self._config,
                                           self.token)
-        now_ts = int(datetime.utcnow().timestamp())
+        now_ts = opttime.utcnow_timestamp()
         bookings = self.session.query(ShareableBooking).filter(and_(
             ShareableBooking.deleted.is_(False),
             ShareableBooking.resource_id.in_(resource_ids))).all()

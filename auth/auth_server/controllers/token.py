@@ -15,6 +15,7 @@ from auth.auth_server.utils import (hash_password, popkey,
 from tools.optscale_exceptions.common_exc import (WrongArgumentsException,
                                                   ForbiddenException,
                                                   NotFoundException)
+from tools.optscale_time import utcnow
 from optscale_client.config_client.client import etcd
 
 LOG = logging.getLogger(__name__)
@@ -98,7 +99,7 @@ class TokenController(BaseController):
     def create_user_token(self, user, **kwargs):
         model_type = self._get_model_type()
         LOG.info("Creating %s with parameters %s", model_type.__name__, kwargs)
-        now = datetime.datetime.utcnow()
+        now = utcnow()
         macaroon_token = MacaroonToken(user.salt, user.id).create(
             xstr(kwargs.get('register', False)),
             xstr(kwargs.get('provider', 'optscale'))

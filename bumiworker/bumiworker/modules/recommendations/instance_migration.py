@@ -5,7 +5,7 @@ from pymongo import UpdateOne
 
 from tools.cloud_adapter.clouds.aws import Aws
 from tools.cloud_adapter.clouds.alibaba import Alibaba
-
+from tools.optscale_time import utcnow
 from bumiworker.bumiworker.modules.base import ModuleBase
 
 
@@ -113,7 +113,7 @@ class InstanceMigration(ModuleBase):
             similar_skus = self.aws.get_similar_sku_prices(sku)
             updates = []
             for sku in similar_skus:
-                sku['updated_at'] = datetime.utcnow()
+                sku['updated_at'] = utcnow()
                 updates.append(UpdateOne(
                     filter={'sku': sku['sku']},
                     update={'$set': sku},
@@ -124,7 +124,7 @@ class InstanceMigration(ModuleBase):
 
         sku_dict = list(self.aws_prices.find({
             'sku': sku,
-            'updated_at': {'$gte': datetime.utcnow() - timedelta(days=60)}
+            'updated_at': {'$gte': utcnow() - timedelta(days=60)}
         }))
         if sku_dict:
             LOG.info('Found SKU %s for instance %s in DB', sku, resource_id)
@@ -154,7 +154,7 @@ class InstanceMigration(ModuleBase):
                     {'cloud_account_id': {
                         '$in': list(cloud_account_map.keys())}},
                     {'start_date': {
-                        '$gte': datetime.utcnow() - timedelta(days=10)}},
+                        '$gte': utcnow() - timedelta(days=10)}},
                     {'cost': {'$ne': 0}},
                 ]
             }},

@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone, timedelta
 import enum
 import logging
 import time
@@ -447,8 +447,8 @@ class Azure(CloudBase):
         warnings = []
         usage_detail = None
         try:
-            range_end = datetime.datetime.utcnow()
-            range_start = range_end - datetime.timedelta(days=DAYS_IN_MONTH)
+            range_end = datetime.now(tz=timezone.utc).replace(tzinfo=None)
+            range_start = range_end - timedelta(days=DAYS_IN_MONTH)
             usage = self.get_usage(range_start, range_end, 1)
             if usage is None:
                 raise StopIteration
@@ -825,7 +825,7 @@ class Azure(CloudBase):
         date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
         filter_fmt = "properties/usageStart ge '{}' and properties/usageEnd lt '{}'"
         if range_end is None:
-            range_end = datetime.datetime.utcnow()
+            range_end = datetime.now(tz=timezone.utc).replace(tzinfo=None)
         start_str = start_date.strftime(date_format)
         end_str = range_end.strftime(date_format)
         # test request to check subscription type

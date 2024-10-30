@@ -1,3 +1,4 @@
+import tools.optscale_time as opttime
 from datetime import datetime
 from collections import defaultdict
 
@@ -111,7 +112,7 @@ class PoolPolicyController(ConstraintBaseController):
 
     def handle_ttl_hit(self, resource_data, constraint, now):
         created_at = int(resource_data.get(
-            'mindate', datetime.utcnow()).timestamp())
+            'mindate', opttime.utcnow()).timestamp())
         ts_limit = created_at + constraint.limit * 3600
         if now > ts_limit:
             return ts_limit, now

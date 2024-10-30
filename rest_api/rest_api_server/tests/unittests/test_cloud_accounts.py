@@ -1,6 +1,7 @@
 import datetime
 import copy
 import uuid
+import tools.optscale_time as opttime
 from copy import deepcopy
 
 from freezegun import freeze_time
@@ -160,7 +161,7 @@ class TestCloudAccountApi(TestApiBase):
         _, employee = self.client.employee_create(
             self.org['id'], {'name': 'employee',
                              'auth_user_id': auth_user_id})
-        created_at = datetime.datetime.utcnow().timestamp()
+        created_at = opttime.utcnow_timestamp()
         with freeze_time(datetime.datetime.fromtimestamp(created_at)):
             _, cloud_acc = self.create_cloud_account(
                 self.org_id, self.valid_aws_cloud_acc,
@@ -200,7 +201,7 @@ class TestCloudAccountApi(TestApiBase):
                              'auth_user_id': auth_user_id})
         cloud_name = 'aws cloud name'
         self.valid_aws_cloud_acc['name'] = cloud_name
-        created_at = datetime.datetime.utcnow().timestamp()
+        created_at = opttime.utcnow_timestamp()
         with freeze_time(datetime.datetime.fromtimestamp(created_at - 6)):
             _, cloud_acc = self.create_cloud_account(
                 self.org_id, self.valid_aws_cloud_acc,
@@ -795,7 +796,7 @@ class TestCloudAccountApi(TestApiBase):
         self.assertEqual(code, 409)
 
     def test_create_duplicate_name_after_deletion(self):
-        created_at = datetime.datetime.utcnow().timestamp()
+        created_at = opttime.utcnow_timestamp()
         with freeze_time(datetime.datetime.fromtimestamp(created_at - 1)):
             _, resp = self.create_cloud_account(
                 self.org_id, self.valid_aws_cloud_acc)
@@ -1438,7 +1439,7 @@ class TestCloudAccountApi(TestApiBase):
               'validate_credentials',
               return_value={'account_id': cloud_acc['account_id'],
                             'warnings': []}).start()
-        ts = int(datetime.datetime.utcnow().timestamp())
+        ts = opttime.utcnow_timestamp()
         code, res = self.client.cloud_account_update(
             cloud_acc['id'], {'last_import_at': ts})
         self.assertEqual(code, 200)
@@ -1719,7 +1720,7 @@ class TestCloudAccountApi(TestApiBase):
             self.org_id, self.valid_aws_cloud_acc, account_id=account_id)
         self.assertEqual(code, 201)
 
-        params = {'last_import_at': int(datetime.datetime.utcnow().timestamp())}
+        params = {'last_import_at': opttime.utcnow_timestamp()}
         patch('tools.cloud_adapter.clouds.aws.Aws.validate_credentials',
               return_value={'account_id': account_id, 'warnings': []}).start()
         publish_patch.reset_mock()

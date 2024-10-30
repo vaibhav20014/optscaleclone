@@ -1,7 +1,7 @@
 import logging
 import uuid
 import datetime
-
+import tools.optscale_time as opttime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import and_
 from tools.optscale_exceptions.common_exc import (NotFoundException,
@@ -88,7 +88,7 @@ class PoolAlertController(BaseController):
                 alert_pool_ids.update(pool_ids)
             for alert_id, pool_ids in alert_pools.items():
                 alert = alert_map.get(alert_id)
-                now = int(datetime.datetime.utcnow().timestamp())
+                now = opttime.utcnow_timestamp()
                 last_shoot = alert.last_shoot_at
                 if last_shoot and last_shoot + NOTIFICATION_INTERVAL > now:
                     continue

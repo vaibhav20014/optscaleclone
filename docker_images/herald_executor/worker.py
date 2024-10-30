@@ -19,6 +19,7 @@ from optscale_client.rest_api_client.client_v2 import Client as RestClient
 from optscale_client.herald_client.client_v2 import Client as HeraldClient
 from optscale_client.auth_client.client_v2 import Client as AuthClient
 from currency_symbols.currency_symbols import CURRENCY_SYMBOLS_MAP
+from tools.optscale_time import utcnow_timestamp, utcfromtimestamp
 
 LOG = get_logger(__name__)
 
@@ -178,7 +179,7 @@ class HeraldExecutorWorker(ConsumerMixin):
             return
         env_properties = OrderedDict(resource.get('env_properties', {}))
         resource_id = resource.get('_id') or resource.get('id')
-        now_ts = int(datetime.utcnow().timestamp())
+        now_ts = utcnow_timestamp()
         _, shareable_bookings = self.rest_cl.shareable_book_list(
             organization_id, 0,
             int(datetime.max.replace(tzinfo=timezone.utc).timestamp()))
@@ -229,9 +230,9 @@ class HeraldExecutorWorker(ConsumerMixin):
             released_at = booking['released_at']
             acquired_by_id = booking.get('acquired_by_id')
             utc_acquired_since = int(
-                datetime.utcfromtimestamp(acquired_since).timestamp())
+                utcfromtimestamp(acquired_since).timestamp())
             utc_released_at = int(
-                datetime.utcfromtimestamp(released_at).timestamp())
+                utcfromtimestamp(released_at).timestamp())
             user_name = employee_id_map.get(acquired_by_id, {}).get('name')
             if not user_name:
                 LOG.error('Could not detect employee name for booking %s',
@@ -477,14 +478,14 @@ class HeraldExecutorWorker(ConsumerMixin):
                 if val is None:
                     v[i] = get_nil_uuid()
             link_filters[f] = v
-        created = datetime.utcfromtimestamp(created_at)
+        created = utcfromtimestamp(created_at)
         if constraint['type'] in ['expense_anomaly', 'resource_count_anomaly']:
             start_date = datetime.combine(created, created.time().min) - timedelta(
                 days=constraint['definition']['threshold_days'])
             end_date = datetime.combine(created, created.time().max) + timedelta(
                 days=1)
         elif constraint['type'] == 'expiring_budget':
-            start_date = datetime.utcfromtimestamp(
+            start_date = utcfromtimestamp(
                 constraint['definition']['start_date'])
             end_date = None
         elif constraint['type'] == 'recurring_budget':
@@ -599,7 +600,7 @@ class HeraldExecutorWorker(ConsumerMixin):
                 'error code: %s' % (constraint_id, code))
         latest_hit = max(hits['organization_limit_hits'],
                          key=lambda x: x['created_at'])
-        hit_date = datetime.utcfromtimestamp(
+        hit_date = utcfromtimestamp(
             latest_hit['created_at']).strftime('%m/%d/%Y %I:%M %p UTC')
         if constraint['type'] not in CONSTRAINT_TYPES:
             raise Exception('Unknown organization constraint '
@@ -609,7 +610,7 @@ class HeraldExecutorWorker(ConsumerMixin):
         link = self._get_org_constraint_link(
             constraint, latest_hit['created_at'], c_filters)
         if constraint['type'] in ['expiring_budget', 'tagging_policy']:
-            constraint_data['definition']['start_date'] = datetime.utcfromtimestamp(
+            constraint_data['definition']['start_date'] = utcfromtimestamp(
                 int(constraint_data['definition']['start_date'])).strftime(
                 '%m/%d/%Y %I:%M %p UTC')
         managers = self.get_owner_manager_infos(organization_id)

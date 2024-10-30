@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime
+import tools.optscale_time as opttime
 
 from retrying import retry
 from sqlalchemy.exc import IntegrityError
@@ -388,7 +388,7 @@ class RuleController(BaseController, PriorityMixin):
         return original
 
     def _process_conditions_update(self, original, conditions):
-        now_ts = int(datetime.utcnow().timestamp())
+        now_ts = opttime.utcnow_timestamp()
         new_conditions = []
         updated_conditions_map = {}
         for condition in conditions:
@@ -464,7 +464,7 @@ class RuleController(BaseController, PriorityMixin):
     @retry(**RULE_PRIORITY_RETRIES)
     def delete(self, item_id, **kwargs):
         # TODO implement permissions check OSB-412
-        now_ts = int(datetime.utcnow().timestamp())
+        now_ts = opttime.utcnow_timestamp()
         rule = self.get(item_id, **kwargs)
         all_rules = self._get_rules(rule.organization_id)
         try:

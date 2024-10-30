@@ -1,5 +1,5 @@
-from datetime import datetime
 from currency_symbols.currency_symbols import CURRENCY_SYMBOLS_MAP as CURRENCY_MAP
+from tools.optscale_time import utcnow
 
 __all__ = ['get_alert_message', 'get_alert_added_message',
            'get_alert_removed_message', 'get_join_channel_message',
@@ -19,7 +19,7 @@ def get_alert_message(pool_name, organization_name, organization_id,
         exceed_str = f'*{c_sign}{threshold}* threshold'
     else:
         exceed_str = f'*{threshold}%*'
-    now = datetime.utcnow()
+    now = utcnow()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     today_end = now.replace(hour=23, minute=59, second=59)
     start_ts = int(month_start.timestamp())

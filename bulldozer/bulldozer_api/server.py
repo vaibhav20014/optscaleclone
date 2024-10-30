@@ -18,7 +18,7 @@ from bulldozer.bulldozer_api.name_generator import NameGenerator
 from bulldozer.bulldozer_api.utils import permutation
 
 from optscale_client.aconfig_cl.aconfig_cl import AConfigCl
-
+from tools.optscale_time import utcnow_timestamp
 
 app = Sanic("bulldozer")
 
@@ -152,7 +152,7 @@ async def create_token(request):
     d = {
         "_id": str(uuid.uuid4()),
         "token": token,
-        "created": int(datetime.datetime.utcnow().timestamp()),
+        "created": utcnow_timestamp(),
         "deleted_at": 0,
     }
     await db.token.insert_one(
@@ -183,8 +183,7 @@ async def delete_token(request, token: str):
     await db.token.update_one(
         {"_id": token_id}, {
             '$set': {
-                "deleted_at": int(
-                    datetime.datetime.utcnow().timestamp()),
+                "deleted_at": utcnow_timestamp(),
             }
         })
     return json(
@@ -246,7 +245,7 @@ async def create_template(request):
         "token": token,
         "tags": tags,
         "hyperparameters": hyperparameters,
-        "created_at": int(datetime.datetime.utcnow().timestamp()),
+        "created_at": utcnow_timestamp(),
         "deleted_at": 0
     }
     await db.template.insert_one(d)
@@ -401,7 +400,7 @@ async def delete_template(request, id_: str):
                              status_code=409)
 
     await db.template.update_one({"_id": id_}, {'$set': {
-        "deleted_at": int(datetime.datetime.utcnow().timestamp())
+        "deleted_at": utcnow_timestamp()
     }})
     return json(
         '',
@@ -458,7 +457,7 @@ async def submit_tasks(runners, state):
             "state": state,
             "runner_id": runner,
             "try": 0,
-            "updated": int(datetime.datetime.utcnow().timestamp()),
+            "updated": utcnow_timestamp(),
             "reason": "",
             "infra_try": 0
         }
@@ -502,7 +501,7 @@ async def create_runset(request, template_id: str):
     open_ingress = doc.get("open_ingress", False)
     runset_id = str(uuid.uuid4())
     runset_cnt = await db.runset.count_documents({"template_id": template_id})
-    created_at = int(datetime.datetime.utcnow().timestamp())
+    created_at = utcnow_timestamp()
     d = {
         "_id": runset_id,
         "name": NameGenerator.get_random_name(),

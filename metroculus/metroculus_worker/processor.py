@@ -7,6 +7,7 @@ from pymongo import MongoClient, UpdateOne
 from clickhouse_driver import Client as ClickHouseClient
 from optscale_client.rest_api_client.client_v2 import Client as RestClient
 from tools.cloud_adapter.cloud import Cloud as CloudAdapter
+from tools.optscale_time import utcfromtimestamp, utcnow
 
 LOG = get_logger(__name__)
 K8S_RESOURCE_TYPE = 'K8s Pod'
@@ -177,7 +178,7 @@ class MetricsProcessor(object):
     def start(self):
         LOG.info('Starting getting metrics '
                  'for cloud account %s' % self.cloud_account_id)
-        now = datetime.utcnow()
+        now = utcnow()
         _, cloud_account = self.rest_client.cloud_account_get(
             self.cloud_account_id)
         start_period = now - timedelta(days=30)
@@ -250,7 +251,7 @@ class MetricsProcessor(object):
             )] = cloud_resource_ids
         else:
             for r_id, resource in resource_map.items():
-                last_seen = datetime.utcfromtimestamp(resource['last_seen'])
+                last_seen = utcfromtimestamp(resource['last_seen'])
                 last_metric_date = resource_metric_dates_map.get(
                     r_id, datetime.fromtimestamp(0))
                 start_date = max(last_metric_date, start_period) + timedelta(
