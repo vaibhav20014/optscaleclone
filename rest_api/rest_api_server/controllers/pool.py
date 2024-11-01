@@ -152,7 +152,7 @@ class PoolController(BaseController, MongoMixin):
             }
             self.publish_activities_task(
                 pool.organization_id, pool.id, 'pool',
-                'pool_created', meta, 'pool.pool_created', add_token=True)
+                'pool_created', meta, 'pool.pool_created')
         return pool
 
     def edit(self, item_id, auto_extension=False, **kwargs):

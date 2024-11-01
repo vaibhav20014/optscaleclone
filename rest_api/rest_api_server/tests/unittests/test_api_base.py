@@ -173,8 +173,8 @@ class TestApiBase(tornado.testing.AsyncHTTPTestCase):
         return result
 
     @staticmethod
-    def get_publish_activity_tuple(org_id, object_id, object_type, action, meta,
-                                   routing_key=None):
+    def get_publish_activity_tuple(org_id, object_id, object_type, action,
+                                   meta, routing_key=None):
         if routing_key is None:
             routing_key = '{object_type}.{action}'.format(
                 object_type=object_type, action=action)

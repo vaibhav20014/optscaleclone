@@ -136,12 +136,14 @@ class InviteController(BaseController):
         if show_link:
             invite_dict['url'] = invite_url
         self.send_notification(
-            email, invite_url, organization.name, organization.id, organization.currency)
+            email, invite_url, organization.name, organization.id,
+            organization.currency)
         meta = {
             'object_name': organization.name,
             'email': email,
-            'scope_purposes': ', '.join('%s: %s' % (k, v)
-                                        for k, v in scope_name_role_map.items())
+            'scope_purposes': ', '.join(
+                '%s: %s' % (k, v.split('_')[-1])
+                for k, v in scope_name_role_map.items())
         }
 
         self.publish_activities_task(

@@ -1113,9 +1113,8 @@ class TestPoolApi(TestApiBase):
             'pool_created', {
                 'object_name': pool['name']
             })
-        p_publish_activities.assert_called_once_with(
-            *activity_param_tuples, add_token=True
-        )
+        p_publish_activities.assert_called_once_with(*activity_param_tuples)
+
         p_publish_activities = patch(
             'rest_api.rest_api_server.controllers.base.BaseController.'
             'publish_activities_task'

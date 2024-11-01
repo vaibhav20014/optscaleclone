@@ -145,12 +145,14 @@ class ResourceObserverController(BaseController, MongoMixin):
             cloud_account = cloud_accounts_map[acc_id]
             meta = {
                 'object_name': cloud_account.name,
-                'stat': stat
+                **stat
             }
+            action = 'resources_discovered'
+            if meta.get('clusters'):
+                action = 'resources_clustered_discovered'
             self.publish_activities_task(
                 organization_id, cloud_account.id, 'cloud_account',
-                'resources_discovered', meta,
-                'cloud_account.resources_discovered', add_token=True)
+                action, meta, 'cloud_account.' + action, add_token=True)
         pools_for_org = PoolController(
             self.session, self._config, self.token
         ).get_organization_pools(organization_id)

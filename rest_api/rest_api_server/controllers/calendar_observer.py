@@ -92,8 +92,8 @@ class CalendarObserverController(BaseController):
             }
             self.publish_activities_task(
                 calendar_sync.organization_id, calendar_sync.id,
-                'calendar_synchronization', 'calendar_warning',
-                meta, 'calendar_synchronization.calendar_warning',
+                'calendar_synchronization', 'calendar_observer_warning',
+                meta, 'calendar_synchronization.calendar_observer_warning',
                 add_token=True)
 
     def is_deleted_event(self, event):

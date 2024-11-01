@@ -138,6 +138,10 @@ def get_handlers(handler_kwargs, version=None):
             (urls_v2.tags_collection,
              h_v2.profiling.tags.TagsAsyncCollectionHandler,
              handler_kwargs),
+            (urls_v2.profiling_token_info,
+             h_v2.profiling.profiling_tokens.ProfilingTokenInfoAsyncItemHandler,
+             handler_kwargs
+             )
         ]
         infrastructure_urls = [
             (urls_v2.infra_profiling_token,
