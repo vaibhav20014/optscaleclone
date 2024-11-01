@@ -107,6 +107,7 @@
   "OE0526": "Profiling token already exists in the organization {0}",
   "OE0527": "Profiling token not found for the organization {0}",
   "OE0537": "The template {0} cannot be deleted due to the existence of associated runsets",
+  "OE0558": "Environment with name {0} and resource type {1} already exists",
   "OK0002": "Forbidden",
   "OK0003": "Unauthorized",
   "OK0004": "{0} with id {1} is not found",
