@@ -170,7 +170,8 @@ export const EVENT_LEVEL = Object.freeze({
   ALL: "ALL",
   INFO: "INFO",
   WARNING: "WARNING",
-  ERROR: "ERROR"
+  ERROR: "ERROR",
+  DEBUG: "DEBUG"
 });
 
 export const EVENTS_LIMIT = 80;
