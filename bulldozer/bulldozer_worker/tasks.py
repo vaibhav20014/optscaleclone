@@ -156,7 +156,7 @@ class Base:
         # check is it spot runner type
         runner_id = self.body.get("runner_id")
         _, runner = self.bulldozer_cl.get_runner(runner_id)
-        spot_settings = runner.get("spot_settings", {})
+        spot_settings = runner.get("spot_settings") or {}
         spot_retries = spot_settings.get("tries", 0)
         if spot_retries:
             current_try = self.body.get("infra_try", 0)
