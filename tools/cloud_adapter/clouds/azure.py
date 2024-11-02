@@ -46,7 +46,11 @@ from tools.cloud_adapter.exceptions import (
     MetricsNotFoundException,
     MetricsServerTimeoutException
 )
-from tools.cloud_adapter.utils import CloudParameter, gbs_to_bytes
+from tools.cloud_adapter.utils import (
+    CloudParameter,
+    gbs_to_bytes,
+    mibs_to_bytes
+)
 
 # Silence annoying logs from Azure SDK
 logging.getLogger('azure.core.pipeline.policies.http_logging_policy').setLevel(
@@ -631,15 +635,21 @@ class Azure(CloudBase):
         """
         vnet_id_to_name = self._discover_vnets()
         virtual_machines = self.compute.virtual_machines.list_all()
+        flavors = self.get_flavors_info()
         for vm in virtual_machines:
             os_type = vm.storage_profile.os_disk.os_type.value
             tags = vm.tags or {}
             spotted = vm.priority == 'Spot'
             status = self._get_vm_status(vm.id)
-            # if we got invalid value from azure (status = None), then set stopped_allocated to None,
-            # to detect this issue in future and get the latest value of stopped_allocated from db resource meta
+            # if we got invalid value from azure (status = None), then set
+            # stopped_allocated to None, to detect this issue in future and get
+            # the latest value of stopped_allocated from db resource meta
             stopped_allocated = status if status is None else status == 'stopped'
             cloud_console_link = self._generate_cloud_link(vm.id)
+            flavor = vm.hardware_profile.vm_size
+            flavor_info = flavors.get(flavor, {})
+            cpu_count = flavor_info.get('vcpus')
+            ram = mibs_to_bytes(flavor_info.get('ram'))
             vnet_id = self._get_vnet_id_by_instance(vm)
             sgs_ids = self._get_sgs_by_instance(vm)
             instance_resource = InstanceResource(
@@ -648,6 +658,8 @@ class Azure(CloudBase):
                 region=self.location_map.get(vm.location),
                 name=vm.name,
                 flavor=vm.hardware_profile.vm_size,
+                cpu_count=cpu_count,
+                ram=ram,
                 stopped_allocated=stopped_allocated,
                 organization_id=self.organization_id,
                 tags=tags,
