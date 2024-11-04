@@ -464,7 +464,7 @@ def generate_discovered_cluster_resources_stat(
             stat['clusters'].add(r.get('cluster_id'))
     for statistic in list(newly_discovered_stat.values()):
         if 'clusters' in statistic:
-            statistic['clusters'] = list(statistic['clusters'])
+            statistic['clusters'] = len(statistic['clusters'])
     return newly_discovered_stat
 
 

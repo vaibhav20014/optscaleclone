@@ -2,7 +2,6 @@ import datetime
 import logging
 
 from bulldozer.bulldozer_worker.infra import Infra, InfraException
-from bulldozer.bulldozer_worker.name_generator import NameGenerator
 from tools.optscale_time import utcnow_timestamp
 
 LOG = logging.getLogger(__name__)
@@ -394,7 +393,7 @@ class StartInfra(Continue):
         LOG.info("processing starting runner %s", runner_id)
         _, runner = self.bulldozer_cl.get_runner(runner_id)
         cloud_account_id = runner["cloud_account_id"]
-        prefix = runner.get("name_prefix", "")
+        name = runner["name"]
         user_data = ""
         hp = runner.get("hyperparameters")
         commands = runner.get("commands")
@@ -409,11 +408,9 @@ class StartInfra(Continue):
                 user_data += f"export {k}={v}\n"
         if commands is not None:
             user_data += commands
-        name = f"{prefix}_{NameGenerator.get_random_name()}"
         self.bulldozer_cl.update_runner(
             runner_id,
-            state=TaskState.STARTING,
-            name=name)
+            state=TaskState.STARTING)
         _, cloud_account = self.rest_cl.cloud_account_get(
             cloud_account_id, True)
         # TODO: get cloud type form cloud account to support multi-cloud

@@ -963,12 +963,15 @@ class CloudResourceController(BaseController, MongoMixin, ResourceFormatMixin):
                 cloud_account = cloud_account_map[acc_id]
                 meta = {
                     'object_name': cloud_account.name,
-                    'stat': stat
+                    **stat
                 }
+                action = 'resources_discovered'
+                if meta.get('clusters'):
+                    action = 'resources_clustered_discovered'
                 self.publish_activities_task(
                     cloud_account.organization_id, cloud_account.id,
-                    'cloud_account', 'resources_discovered', meta,
-                    'cloud_account.resources_discovered', add_token=True)
+                    'cloud_account', action, meta, 'cloud_account.' + action,
+                    add_token=True)
 
         if return_resources:
             resources = self.get_resources_by_hash_or_id(

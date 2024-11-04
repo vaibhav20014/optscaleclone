@@ -174,7 +174,7 @@ class TestObserver(TestApiBase):
         self.assertEqual(code, 204)
         activity_param_tuples = self.get_publish_activity_tuple(
             self.org_id, ANY, 'cloud_account', 'resources_discovered', {
-                'stat': {'total': 3, 'clusters': [], 'clustered': 0},
+                'total': 3, 'clusters': 0, 'clustered': 0,
                 'object_name': ANY
             })
         p_publish_activities.assert_has_calls([
@@ -214,11 +214,8 @@ class TestObserver(TestApiBase):
         code, _ = self.client.observe_resources(self.org_id)
         self.assertEqual(code, 204)
         activity_param_tuples = self.get_publish_activity_tuple(
-            self.org_id, ANY, 'cloud_account', 'resources_discovered', {
-                'stat': {'clustered': 4, 'clusters': [cluster['_id']],
-                         'total': 4},
-                'object_name': ANY
-            })
+            self.org_id, ANY, 'cloud_account', 'resources_clustered_discovered',
+            {'clustered': 4, 'clusters': 1, 'total': 4, 'object_name': ANY})
         p_publish_activities.assert_has_calls([
             call(*activity_param_tuples, add_token=True)
         ])
@@ -227,9 +224,9 @@ class TestObserver(TestApiBase):
             code, _ = self.client.observe_resources(self.org_id)
             self.assertEqual(code, 204)
             activity_param_tuples = self.get_publish_activity_tuple(
-                self.org_id, ANY, 'cloud_account', 'resources_discovered', {
-                    'stat': {'clustered': 4, 'clusters': [cluster['_id']],
-                             'total': 4},
+                self.org_id, ANY, 'cloud_account',
+                'resources_clustered_discovered', {
+                    'clustered': 4, 'clusters': 1, 'total': 4,
                     'object_name': ANY
                 })
             p_publish_activities.assert_has_calls([

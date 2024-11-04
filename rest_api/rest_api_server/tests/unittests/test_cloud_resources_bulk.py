@@ -326,7 +326,7 @@ class TestCloudResourceApi(TestApiBase):
             self.org1_id, self.cloud_acc1_id, 'cloud_account',
             'resources_discovered', {
                 'object_name': self.cloud_acc1['name'],
-                'stat': {'total': 1, 'clusters': [], 'clustered': 0}
+                'total': 1, 'clusters': 0, 'clustered': 0
             })
         publish_discovered_cluster_resource_activity.assert_called_once_with(
             *activity_param_tuples, add_token=True)

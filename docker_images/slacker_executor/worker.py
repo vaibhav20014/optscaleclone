@@ -403,8 +403,7 @@ class SlackerExecutorWorker(ConsumerMixin):
     def execute_alert_added_removed(self, organization_id, alert_id, action,
                                     object_type, meta):
         _, organization = self.rest_cl.organization_get(organization_id)
-        alert = meta.get('alert', {})
-        pool_id = meta.get('alert', {}).get('pool_id')
+        pool_id = meta.get('pool_id')
         _, pool = self.rest_cl.pool_get(pool_id)
         params = {
             'pool_name': pool['name'],
@@ -417,12 +416,12 @@ class SlackerExecutorWorker(ConsumerMixin):
             'currency': organization['currency']
         }
         for p in ['based', 'threshold', 'threshold_type', 'include_children']:
-            params[p] = alert.get(p)
+            params[p] = meta.get(p)
 
-        for contact in alert['contacts']:
+        for contact in meta['contacts']:
             if contact.get('slack_channel_id'):
                 warning_params = self.get_warning_params(
-                    alert, pool, organization, contact['slack_channel_id'])
+                    meta, pool, organization, contact['slack_channel_id'])
                 self.send(
                     ACTION_MSG_MAP.get(action), params,
                     contact['slack_channel_id'], contact['slack_team_id'],

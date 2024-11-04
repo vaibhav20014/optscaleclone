@@ -189,8 +189,11 @@ def get_alert_section(public_ip, pool_id, organization_id, pool_name,
                       include_children, currency='USD'):
     c_sign = CURRENCY_MAP.get(currency, '')
     threshold_type_str = 'Expenses' if based == 'cost' else 'Forecast'
+    threshold = str(threshold)
     if threshold_type == 'absolute':
         exceed_str = f'*{c_sign}{threshold}*'
+    elif threshold.endswith('%'):
+        exceed_str = f'*{threshold}*'
     else:
         exceed_str = f'*{threshold}%*'
     with_subs = ' (with subs)' if include_children else ''

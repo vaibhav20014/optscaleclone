@@ -9,12 +9,9 @@ from kombu.pools import producers
 
 from optscale_client.config_client.client import Client as ConfigClient
 
-BULLDOZER_ROUTING_KEY = 'bulldozer-task'
 
-
-class TaskProducer:
-    EXCHANGE_NAME = 'bulldozer-tasks'
-    EXCHANGE_TYPE = 'direct'
+class ActivitiesTaskProducer:
+    EXCHANGE_NAME = 'activities-tasks'
     RETRY_POLICY = {'max_retries': 15, 'interval_start': 0,
                     'interval_step': 1, 'interval_max': 3}
     RESCHEDULE_TIMEOUT = 60 * 60 * 12
@@ -43,13 +40,13 @@ class TaskProducer:
             self._config_cl = config_cl
         return self._config_cl
 
-    def create_task(self, task, routing_key=BULLDOZER_ROUTING_KEY):
+    def create_task(self, task, routing_key):
         params = self.config_cl.read_branch('/rabbit')
         conn_str = f'amqp://{params["user"]}:{params["pass"]}@' \
                    f'{params["host"]}:{params["port"]}'
         queue_conn = QConnection(conn_str, transport_options=self.RETRY_POLICY)
 
-        task_exchange = Exchange(self.EXCHANGE_NAME, type=self.EXCHANGE_TYPE)
+        task_exchange = Exchange(self.EXCHANGE_NAME, type='topic')
         with producers[queue_conn].acquire(block=True) as producer:
             producer.publish(
                 task,
@@ -60,8 +57,3 @@ class TaskProducer:
                 retry=True,
                 retry_policy=self.RETRY_POLICY
             )
-
-
-class ActivitiesTaskProducer(TaskProducer):
-    EXCHANGE_NAME = 'activities-tasks'
-    EXCHANGE_TYPE = 'topic'

@@ -2203,3 +2203,10 @@ class Client(Client_v1):
     def restore_password(self, email):
         url = self.restore_password_url()
         return self.post(url, {'email': email})
+
+    @staticmethod
+    def profiling_token_info_url(profiling_token):
+        return 'profiling_tokens/%s' % profiling_token
+
+    def profiling_token_info_get(self, profiling_token):
+        return self.get(self.profiling_token_info_url(profiling_token))

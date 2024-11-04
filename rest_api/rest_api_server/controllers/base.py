@@ -363,7 +363,12 @@ class BaseController:
         if add_token and self.token:
             if not meta:
                 meta = {}
-            meta.update({'token': self.token})
+            user_info = self.get_user_info()
+            meta.update({
+                'user_display_name': user_info.get('display_name'),
+                'user_email': user_info.get('email'),
+                'user_id': user_info.get('id')
+            })
         task = {
             'organization_id': organization_id,
             'object_id': object_id,

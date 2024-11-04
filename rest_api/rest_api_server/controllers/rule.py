@@ -288,13 +288,15 @@ class RuleController(BaseController, PriorityMixin):
         return formatted_rules
 
     @retry(**RULE_PRIORITY_RETRIES)
-    def create_rule(self, user_id, organization_id, token, is_deprioritized=False, **kwargs):
+    def create_rule(self, user_id, organization_id, token,
+                    is_deprioritized=False, **kwargs):
         # TODO implement permissions check OSB-412
         self._validate_parameters(**kwargs)
         employee = self.employee_ctrl.get_employee_by_user_and_organization(
             user_id, organization_id=organization_id)
         try:
-            result = self._prepare_rule_data(employee, organization_id, is_deprioritized, **kwargs)
+            result = self._prepare_rule_data(employee, organization_id,
+                                             is_deprioritized, **kwargs)
             rule, pool, owner = result
             if owner and pool:
                 if not self.assignment_ctrl.validate_owner(owner, pool, token):
@@ -314,7 +316,7 @@ class RuleController(BaseController, PriorityMixin):
             'pool_id': pool.id
         }
         self.publish_activities_task(
-            rule.organization_id, rule.organization_id, 'organization',
+            rule.organization_id, rule.organization_id, 'rule',
             'rule_created', meta, 'organization.rule_created', add_token=True)
         return self.get_rule_info(rule)
 
@@ -450,7 +452,7 @@ class RuleController(BaseController, PriorityMixin):
             'rule_id': rule.id,
         }
         self.publish_activities_task(
-            rule.organization_id, rule.organization_id, 'organization',
+            rule.organization_id, rule.organization_id, 'rule',
             'rule_updated', meta, 'organization.rule_updated', add_token=True)
         return self.get_rule_info(rule)
 
@@ -482,7 +484,7 @@ class RuleController(BaseController, PriorityMixin):
                 'rule_id': rule.id,
             }
             self.publish_activities_task(
-                rule.organization_id, rule.organization_id, 'organization',
+                rule.organization_id, rule.organization_id, 'rule',
                 'rule_deleted', meta, 'organization.rule_deleted',
                 add_token=True)
         except IntegrityError as exc:
