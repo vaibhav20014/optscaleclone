@@ -5,7 +5,7 @@ import ShortLivingInstancesModal from "components/SideModalManager/SideModals/re
 import TextWithDataTestId from "components/TextWithDataTestId";
 import { ALIBABA_ECS, AWS_EC2, AZURE_COMPUTE, NEBIUS_SERVICE } from "hooks/useRecommendationServices";
 import { detectedAt, possibleMonthlySavings, resource, resourceLocation } from "utils/columns";
-import { FORMATTED_MONEY_TYPES } from "utils/constants";
+import { ALIBABA_CNR, AWS_CNR, AZURE_CNR, FORMATTED_MONEY_TYPES, NEBIUS } from "utils/constants";
 import BaseRecommendation, { CATEGORY_COST } from "./BaseRecommendation";
 
 const columns = [
@@ -50,6 +50,8 @@ class ShortLivingInstances extends BaseRecommendation {
   }
 
   services = [AWS_EC2, AZURE_COMPUTE, ALIBABA_ECS, NEBIUS_SERVICE];
+
+  appliedDataSources = [ALIBABA_CNR, AWS_CNR, AZURE_CNR, NEBIUS];
 
   categories = [CATEGORY_COST];
 

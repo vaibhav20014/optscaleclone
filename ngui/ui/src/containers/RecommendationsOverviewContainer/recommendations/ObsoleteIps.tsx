@@ -5,7 +5,7 @@ import ObsoleteIpsModal from "components/SideModalManager/SideModals/recommendat
 import TextWithDataTestId from "components/TextWithDataTestId";
 import { ALIBABA_ECS_VPC, AWS_EC2_VPC, AZURE_NETWORK, NEBIUS_SERVICE } from "hooks/useRecommendationServices";
 import { detectedAt, possibleMonthlySavings, resource, resourceLocation } from "utils/columns";
-import { FORMATTED_MONEY_TYPES } from "utils/constants";
+import { ALIBABA_CNR, AWS_CNR, AZURE_CNR, FORMATTED_MONEY_TYPES, NEBIUS } from "utils/constants";
 import { EN_FULL_FORMAT, unixTimestampToDateTime } from "utils/datetime";
 import BaseRecommendation, { CATEGORY_COST } from "./BaseRecommendation";
 
@@ -64,6 +64,8 @@ class ObsoleteIps extends BaseRecommendation {
   }
 
   services = [AWS_EC2_VPC, AZURE_NETWORK, ALIBABA_ECS_VPC, NEBIUS_SERVICE];
+
+  appliedDataSources = [ALIBABA_CNR, AWS_CNR, AZURE_CNR, NEBIUS];
 
   categories = [CATEGORY_COST];
 

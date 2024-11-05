@@ -3,7 +3,7 @@ import RecommendationListItemResourceLabel from "components/RecommendationListIt
 import ObsoleteSnapshotsModal from "components/SideModalManager/SideModals/recommendations/ObsoleteSnapshotsModal";
 import { AWS_EC2, NEBIUS_SERVICE } from "hooks/useRecommendationServices";
 import { detectedAt, firstSeenOn, lastSeenUsed, possibleMonthlySavings, resource, resourceLocation } from "utils/columns";
-import { FORMATTED_MONEY_TYPES } from "utils/constants";
+import { AWS_CNR, FORMATTED_MONEY_TYPES, NEBIUS } from "utils/constants";
 import BaseRecommendation, { CATEGORY_COST } from "./BaseRecommendation";
 
 const columns = [
@@ -42,6 +42,8 @@ class ObsoleteSnapshots extends BaseRecommendation {
   }
 
   services = [AWS_EC2, NEBIUS_SERVICE];
+
+  appliedDataSources = [AWS_CNR, NEBIUS];
 
   categories = [CATEGORY_COST];
 
