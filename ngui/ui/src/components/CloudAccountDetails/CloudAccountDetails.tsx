@@ -1,3 +1,4 @@
+import CloudDownloadOutlinedIcon from "@mui/icons-material/CloudDownloadOutlined";
 import PowerOffOutlinedIcon from "@mui/icons-material/PowerOffOutlined";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Link } from "@mui/material";
@@ -13,7 +14,8 @@ import {
   DisconnectCloudAccountModal,
   UpdateDataSourceCredentialsModal,
   RenameDataSourceModal,
-  KubernetesIntegrationModal
+  KubernetesIntegrationModal,
+  DataSourceBillingReimportModal
 } from "components/SideModalManager/SideModals";
 import SummaryGrid from "components/SummaryGrid";
 import TabsWrapper from "components/TabsWrapper";
@@ -34,7 +36,11 @@ import {
   CLOUD_ACCOUNT_DETAILS_PAGE_TABS,
   ENVIRONMENT,
   AZURE_TENANT,
-  DATABRICKS
+  DATABRICKS,
+  AZURE_CNR,
+  GCP_CNR,
+  ALIBABA_CNR,
+  NEBIUS
 } from "utils/constants";
 import { summarizeChildrenDetails } from "utils/dataSources";
 import { SPACING_2 } from "utils/layouts";
@@ -47,6 +53,8 @@ const {
   ADVANCED: ADVANCED_TAB,
   PRICING: PRICING_TAB
 } = CLOUD_ACCOUNT_DETAILS_PAGE_TABS;
+
+const EXPENSES_REIMPORT_AVAILABLE_TYPES = [AWS_CNR, AZURE_CNR, AZURE_TENANT, DATABRICKS, GCP_CNR, ALIBABA_CNR, NEBIUS];
 
 const PageActionBar = ({ id, type, parentId, name, config, isLoading }) => {
   const { isDemo } = useOrganizationInfo();
@@ -108,6 +116,19 @@ const PageActionBar = ({ id, type, parentId, name, config, isLoading }) => {
             show: parentId,
             value: <FormattedMessage id="updateChildDataSourceCredentialsWarning" />
           }
+        })
+      },
+      {
+        show: EXPENSES_REIMPORT_AVAILABLE_TYPES.includes(type),
+        getItem: () => ({
+          key: "cloudAccountDetails-reimport-expenses",
+          icon: <CloudDownloadOutlinedIcon fontSize="small" />,
+          messageId: "billingReimportTitle",
+          dataTestId: "btn_expenses_reimport_data_source_modal",
+          type: "button",
+          isLoading,
+          action: () => openSideModal(DataSourceBillingReimportModal, { name, id, type, config }),
+          requiredActions: ["MANAGE_CLOUD_CREDENTIALS"]
         })
       },
       {

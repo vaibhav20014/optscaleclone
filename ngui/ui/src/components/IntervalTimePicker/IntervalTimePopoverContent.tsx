@@ -43,10 +43,13 @@ const IntervalTimePopoverContent = ({
 
   const minDateValid = parseOptionalDate(minDate, MIN_PICKER_DATE);
   const maxDateValid = parseOptionalDate(maxDate, today);
-  const initialFirstMonth = initialDateRounded;
 
   const [date, setDate] = useState(initialDateRounded);
-  const [monthToShow, setMonthToShow] = useState(getTime(initialFirstMonth || today));
+  const [monthToShow, setMonthToShow] = useState(() => {
+    const initialMonthDate = initialDateRounded || +today;
+
+    return getTime(Math.min(initialMonthDate, maxDateValid));
+  });
 
   // handlers
   // set month to show from header selectors
