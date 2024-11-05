@@ -206,7 +206,7 @@ class MetricsProcessor(object):
                 'resource_type': {'$in': SUPPORTED_RESOURCE_TYPES}
             }, ['_id', 'last_seen', 'cloud_resource_id',
                 'region', 'resource_type', 'name', 'k8s_namespace',
-                'meta.source_cluster_id']
+                'meta.source_cluster_id', 'meta.ram']
             ))
         if not cloud_account_resources:
             return []
@@ -219,6 +219,7 @@ class MetricsProcessor(object):
                 'pod_name': x.get('name'),
                 'pod_namespace': x.get('k8s_namespace'),
                 'name': x.get('name'),
+                'ram': x.get('meta', {}).get('ram'),
                 'source_cluster_id': x.get('meta', {}).get('source_cluster_id')
             } for x in cloud_account_resources
         }
@@ -289,7 +290,7 @@ class MetricsProcessor(object):
             for bulk_ids in all_bulk_ids:
                 metrics = cloud_func(
                     cloud_account['id'], bulk_ids, resource_ids_map,
-                    r_type, adapter, region, start_date, end_date)
+                    resource_map, r_type, adapter, region, start_date, end_date)
                 metric_chunk.extend(metrics)
             for i in range(0, len(metric_chunk), CH_BULK_SIZE):
                 chunk = metric_chunk[i:i + CH_BULK_SIZE]
@@ -303,7 +304,8 @@ class MetricsProcessor(object):
 
     @staticmethod
     def get_aws_metrics(cloud_account_id, cloud_resource_ids, resource_ids_map,
-                        r_type, adapter, region, start_date, end_date):
+                        resource_map, r_type, adapter, region, start_date,
+                        end_date):
         result = []
         for name, (cloud_metric_namespace, cloud_metric_name) in {
             'cpu': ('AWS/EC2', 'CPUUtilization'),
@@ -343,8 +345,8 @@ class MetricsProcessor(object):
 
     @staticmethod
     def get_azure_metrics(cloud_account_id, cloud_resource_ids,
-                          resource_ids_map, r_type, adapter, region,
-                          start_date, end_date):
+                          resource_ids_map, resource_map, r_type, adapter,
+                          region, start_date, end_date):
         def datetime_from_str(date_str):
             return datetime.strptime(
                 date_str, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
@@ -356,11 +358,14 @@ class MetricsProcessor(object):
             'Disk Write Operations/Sec': 'disk_write_io',
             'Network In Total': 'network_in_io',
             'Network Out Total': 'network_out_io',
+            'Available Memory Bytes': 'ram'
         }
         response = adapter.get_metric(
             'microsoft.compute/virtualmachines', list(metric_names_map.keys()),
             cloud_resource_ids, METRIC_INTERVAL, start_date, end_date)
         for cloud_resource_id, metrics in response.items():
+            resource_id = resource_ids_map[cloud_resource_id]
+            total_ram = resource_map[resource_id].get('ram')
             for cloud_metric_name, points in metrics.items():
                 for point in points:
                     metric_name = metric_names_map[cloud_metric_name]
@@ -370,6 +375,10 @@ class MetricsProcessor(object):
                     if metric_name in ['network_in_io', 'network_out_io']:
                         # change bytes per min to bytes per second
                         value = value / 60
+                    if metric_name == 'ram':
+                        if not total_ram:
+                            continue
+                        value = value / total_ram * 100
                     result.append({
                         'cloud_account_id': cloud_account_id,
                         'resource_id': resource_ids_map[cloud_resource_id],
@@ -381,8 +390,8 @@ class MetricsProcessor(object):
 
     @staticmethod
     def get_alibaba_metrics(cloud_account_id, cloud_resource_ids,
-                            resource_ids_map, r_type, adapter, region,
-                            start_date, end_date):
+                            resource_ids_map, resource_map, r_type, adapter,
+                            region, start_date, end_date):
         common_metrics_map = {
             'Instance': ('acs_ecs_dashboard', [
                 # Hypervisor metric, not recommended by Alibaba
@@ -446,7 +455,8 @@ class MetricsProcessor(object):
 
     @staticmethod
     def get_k8s_metrics(cloud_account_id, cloud_resource_ids, resource_ids_map,
-                        r_type, adapter, region, start_date, end_date):
+                        resource_map, r_type, adapter, region, start_date,
+                        end_date):
         result = []
         namespace_pod_map = defaultdict(dict)
         default_metric_value = 0.0
@@ -530,7 +540,8 @@ class MetricsProcessor(object):
 
     @staticmethod
     def get_gcp_metrics(cloud_account_id, cloud_resource_ids, resource_ids_map,
-                        r_type, adapter, region, start_date, end_date):
+                        resource_map, r_type, adapter, region, start_date,
+                        end_date):
         result = []
 
         # to get metric values INCLUDING start_date, we need to query metrics
@@ -635,8 +646,8 @@ class MetricsProcessor(object):
         return result
 
     def get_nebius_metrics(self, cloud_account_id, cloud_resource_ids,
-                           resource_ids_map, r_type, adapter, region,
-                           start_date, end_date):
+                           resource_ids_map, resource_map, r_type, adapter,
+                           region, start_date, end_date):
         result = []
         metrics = defaultdict(lambda: defaultdict(dict))
         resource_metrics_map = {
