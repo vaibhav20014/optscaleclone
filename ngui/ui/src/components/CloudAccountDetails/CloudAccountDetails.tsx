@@ -54,9 +54,7 @@ const {
   PRICING: PRICING_TAB
 } = CLOUD_ACCOUNT_DETAILS_PAGE_TABS;
 
-const EXPENSES_REIMPORT_AVAILABLE_TYPES = [AWS_CNR, AZURE_CNR, AZURE_TENANT, DATABRICKS, GCP_CNR, ALIBABA_CNR, NEBIUS];
-
-const PageActionBar = ({ id, type, parentId, name, config, isLoading }) => {
+const PageActionBar = ({ id, type, parentId, name, config, lastImportAt, isLoading }) => {
   const { isDemo } = useOrganizationInfo();
   const openSideModal = useOpenSideModal();
 
@@ -69,6 +67,32 @@ const PageActionBar = ({ id, type, parentId, name, config, isLoading }) => {
     if (isDemo) {
       return [];
     }
+
+    const getBillingReimportButton = () => {
+      const hasPreviousImport = lastImportAt !== 0;
+
+      const isEligibleForReimport =
+        (type === AWS_CNR && !config.linked) || [AZURE_CNR, GCP_CNR, ALIBABA_CNR, NEBIUS].includes(type);
+
+      return {
+        show: isEligibleForReimport,
+        getItem: () => ({
+          key: "cloudAccountDetails-reimport-expenses",
+          icon: <CloudDownloadOutlinedIcon fontSize="small" />,
+          messageId: "billingReimportTitle",
+          dataTestId: "btn_expenses_reimport_data_source_modal",
+          type: "button",
+          isLoading,
+          action: () => openSideModal(DataSourceBillingReimportModal, { name, id, type, config }),
+          requiredActions: ["MANAGE_CLOUD_CREDENTIALS"],
+          disabled: !hasPreviousImport,
+          tooltip: {
+            show: !hasPreviousImport,
+            value: <FormattedMessage id="dataSourceNoBillingReportsProcessedYet" />
+          }
+        })
+      };
+    };
 
     return [
       {
@@ -118,19 +142,7 @@ const PageActionBar = ({ id, type, parentId, name, config, isLoading }) => {
           }
         })
       },
-      {
-        show: EXPENSES_REIMPORT_AVAILABLE_TYPES.includes(type),
-        getItem: () => ({
-          key: "cloudAccountDetails-reimport-expenses",
-          icon: <CloudDownloadOutlinedIcon fontSize="small" />,
-          messageId: "billingReimportTitle",
-          dataTestId: "btn_expenses_reimport_data_source_modal",
-          type: "button",
-          isLoading,
-          action: () => openSideModal(DataSourceBillingReimportModal, { name, id, type, config }),
-          requiredActions: ["MANAGE_CLOUD_CREDENTIALS"]
-        })
-      },
+      getBillingReimportButton(),
       {
         show: type !== ENVIRONMENT,
         getItem: () => ({
@@ -361,7 +373,15 @@ const CloudAccountDetails = ({ data = {}, isLoading = false }) => {
 
   return (
     <>
-      <PageActionBar id={id} type={type} name={name} parentId={parentId} config={config} isLoading={isLoading} />
+      <PageActionBar
+        id={id}
+        type={type}
+        name={name}
+        parentId={parentId}
+        config={config}
+        lastImportAt={lastImportAt}
+        isLoading={isLoading}
+      />
       <PageContentWrapper>
         <Grid container spacing={SPACING_2}>
           <Grid item>

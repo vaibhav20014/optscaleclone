@@ -24,34 +24,31 @@ const ReimportFromDatePicker = () => {
           message: intl.formatMessage({ id: "thisFieldIsRequired" })
         }
       }}
-      render={({ field: { value, onChange } }) => {
-        console.log("value", value);
-        return (
-          <IntervalTimePicker
-            labelMessageId="importFrom"
-            value={value}
-            required
-            notSetMessageId="notSet"
-            onApply={onChange}
-            fullWidth
-            format={EN_FORMAT}
-            margin="dense"
-            minDate={+subYears(new Date(), 1)}
-            maxDate={+subDays(startOfMonth(new Date()), 1)}
-            validation={{
-              dataTestId: `input_${FIELD_NAME}`,
-              error: !!errors[FIELD_NAME],
-              helperText: errors[FIELD_NAME]?.message
-            }}
-            dataTestIds={{
-              field: {
-                input: `input_${FIELD_NAME}`,
-                iconButton: "btn_select_date"
-              }
-            }}
-          />
-        );
-      }}
+      render={({ field: { value, onChange } }) => (
+        <IntervalTimePicker
+          labelMessageId="importFrom"
+          value={value}
+          required
+          notSetMessageId="notSet"
+          onApply={onChange}
+          fullWidth
+          format={EN_FORMAT}
+          margin="dense"
+          minDate={+subYears(new Date(), 1)}
+          maxDate={+subDays(startOfMonth(new Date()), 1)}
+          validation={{
+            dataTestId: `input_${FIELD_NAME}`,
+            error: !!errors[FIELD_NAME],
+            helperText: errors[FIELD_NAME]?.message
+          }}
+          dataTestIds={{
+            field: {
+              input: `input_${FIELD_NAME}`,
+              iconButton: "btn_select_date"
+            }
+          }}
+        />
+      )}
     />
   );
 };

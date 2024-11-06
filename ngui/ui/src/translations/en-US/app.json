@@ -464,6 +464,7 @@
   "dataSizeAvg": "Data size (avg)",
   "dataSource": "Data source",
   "dataSourceId": "Data source ID",
+  "dataSourceNoBillingReportsProcessedYet": "No billing reports have been processed yet. Please check the \"Advanced\" tab for more details.",
   "dataSourceRenamingWarning": "Please note that you may see a previous data source name in historical data.",
   "dataSources": "Data sources",
   "dataSourcesBackdropMessage": "To get real data, please connect a data source.",
