@@ -27,7 +27,15 @@ import { VALUE_ACCESSORS } from "./redux/controlsState/reducer";
 
 const OPTION_PREFIX = "recommendation_";
 
-const RecommendationsOverviewContainer = ({ selectedDataSources }) => {
+type RecommendationsOverviewContainerProps = {
+  selectedDataSourceIds: string[];
+  selectedDataSourceTypes: string[];
+};
+
+const RecommendationsOverviewContainer = ({
+  selectedDataSourceIds,
+  selectedDataSourceTypes
+}: RecommendationsOverviewContainerProps) => {
   const { useGet, useGetRecommendationsDownloadOptions } = OrganizationOptionsService();
   const { options: downloadOptions } = useGetRecommendationsDownloadOptions();
   const { options } = useGet(true);
@@ -63,7 +71,7 @@ const RecommendationsOverviewContainer = ({ selectedDataSources }) => {
 
   const { useGetOptimizationsOverview } = RecommendationsOverviewService();
 
-  const { data, isDataReady } = useGetOptimizationsOverview(selectedDataSources);
+  const { data, isDataReady } = useGetOptimizationsOverview(selectedDataSourceIds);
 
   const optscaleRecommendations = useOptscaleRecommendations();
 
@@ -87,15 +95,16 @@ const RecommendationsOverviewContainer = ({ selectedDataSources }) => {
         type: recommendation.type,
         titleMessageId: recommendation.title,
         limit: downloadLimit,
-        dataSourceIds: selectedDataSources,
+        dataSourceIds: selectedDataSourceIds,
         dismissable: recommendation.dismissable,
         withExclusions: recommendation.withExclusions
       });
     },
-    [downloadLimit, openSideModal, selectedDataSources]
+    [downloadLimit, openSideModal, selectedDataSourceIds]
   );
 
-  const { isLoading: isRiSpExpensesSummaryLoading, summary: riSpExpensesSummary } = useRiSpExpensesSummary(selectedDataSources);
+  const { isLoading: isRiSpExpensesSummaryLoading, summary: riSpExpensesSummary } =
+    useRiSpExpensesSummary(selectedDataSourceIds);
 
   const { isLoading: isGetIsDownloadAvailableLoading, isDownloadAvailable } = useGetIsRecommendationsDownloadAvailable();
 
@@ -122,7 +131,8 @@ const RecommendationsOverviewContainer = ({ selectedDataSources }) => {
       isRiSpExpensesSummaryLoading={isRiSpExpensesSummaryLoading}
       isDownloadAvailable={isDownloadAvailable}
       isGetIsDownloadAvailableLoading={isGetIsDownloadAvailableLoading}
-      selectedDataSources={selectedDataSources}
+      selectedDataSourceIds={selectedDataSourceIds}
+      selectedDataSourceTypes={selectedDataSourceTypes}
     />
   );
 };

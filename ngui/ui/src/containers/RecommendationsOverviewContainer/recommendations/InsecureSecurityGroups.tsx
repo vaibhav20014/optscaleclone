@@ -4,6 +4,7 @@ import InsecurePortsModal from "components/SideModalManager/SideModals/recommend
 import TextWithDataTestId from "components/TextWithDataTestId";
 import { AWS_EC2_VPC, AZURE_NETWORK, GCP_COMPUTE_ENGINE, NEBIUS_SERVICE } from "hooks/useRecommendationServices";
 import { detectedAt, openPorts, resource, resourceLocation } from "utils/columns";
+import { AWS_CNR, AZURE_CNR, GCP_CNR, NEBIUS } from "utils/constants";
 import BaseRecommendation, { CATEGORY_SECURITY } from "./BaseRecommendation";
 
 const columns = [
@@ -40,6 +41,8 @@ class InsecureSecurityGroups extends BaseRecommendation {
   emptyMessageId = "noSGOpened";
 
   services = [AWS_EC2_VPC, AZURE_NETWORK, GCP_COMPUTE_ENGINE, NEBIUS_SERVICE];
+
+  appliedDataSources = [AWS_CNR, AZURE_CNR, GCP_CNR, NEBIUS];
 
   categories = [CATEGORY_SECURITY];
 
