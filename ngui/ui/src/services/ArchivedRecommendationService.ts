@@ -52,7 +52,10 @@ const useDownloadArchivedOptimizations = () => {
 
   const onDownload = (params: { startDate: number; endDate: number }) =>
     fetchAndDownload({
-      url: `${getApiUrl(RESTAPI)}/organizations/${organizationId}/archived_recommendations_details?${formQueryString(params)}`,
+      url: `${getApiUrl(RESTAPI)}/organizations/${organizationId}/archived_recommendations_details?${formQueryString({
+        start_date: params.startDate,
+        end_date: params.endDate
+      })}`,
       fallbackFilename: `recommendations_archive_${formatUTC(params.startDate)}__${formatUTC(params.endDate)}.${DOWNLOAD_FILE_FORMATS.JSON}`
     });
 
