@@ -102,7 +102,9 @@ const getDefaultConditionsFromQueryParams = (conditionsQueryParam) => {
         if (type === REGION_IS) {
           return {
             [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.TYPE]: type,
-            [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.REGION_IS_FIELD_NAME]: value
+            [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.REGION_IS_FIELD_NAME]: {
+              regionName: value
+            }
           };
         }
 

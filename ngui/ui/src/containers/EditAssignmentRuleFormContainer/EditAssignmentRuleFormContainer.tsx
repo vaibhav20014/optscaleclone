@@ -58,7 +58,9 @@ const getConditions = (conditions = []) =>
     if (condition[TYPE] === REGION_IS) {
       return {
         [TYPE]: condition[TYPE],
-        [REGION_IS_FIELD_NAME]: condition[META_INFO]
+        [REGION_IS_FIELD_NAME]: {
+          regionName: condition[META_INFO]
+        }
       };
     }
     return {

@@ -105,16 +105,14 @@ const CreateResourceAssignmentRuleFormContainer = ({ resourceId }) => {
               });
             }
 
-            // Environment resources have no region
-            if (region) {
-              conditions.push({
-                [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.TYPE]: REGION_IS,
-                [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.REGION_IS_FIELD_NAME]: region
-              });
-            }
-
             return [
               ...conditions,
+              {
+                [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.TYPE]: REGION_IS,
+                [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.REGION_IS_FIELD_NAME]: {
+                  regionName: region
+                }
+              },
               {
                 [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.TYPE]: RESOURCE_TYPE_IS,
                 [FIELD_NAMES.CONDITIONS_FIELD_ARRAY.RESOURCE_TYPE_IS_FIELD_NAME]: resourceType
