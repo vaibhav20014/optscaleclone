@@ -1063,8 +1063,10 @@ fake_cad_enabled: 0
 smtp:
   server:
   email:
+  login:
   port:
   password:
+  protocol: SSL
 
 #resource discovery settings - the page size for requesting resources from
 #the cloud adapter and the number of resources stored in memory before writing

@@ -227,8 +227,10 @@ etcd:
   smtp:
     server: {{ .Values.smtp.server }}
     email: {{ .Values.smtp.email }}
+    login: {{ .Values.smtp.login }}
     port: {{ .Values.smtp.port }}
     password: {{ .Values.smtp.password }}
+    protocol: {{ .Values.smtp.protocol }}
   resource_discovery_settings:
     discover_size: {{ .Values.resource_discovery_settings.discover_size }}
     timeout: {{ .Values.resource_discovery_settings.timeout }}
