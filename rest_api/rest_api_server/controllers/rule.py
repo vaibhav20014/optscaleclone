@@ -190,11 +190,13 @@ class RuleController(BaseController, PriorityMixin):
         conditions = []
         for cond in conditions_array:
             meta_info = cond.get('meta_info')
-            if not meta_info:
-                raise_not_provided_exception('meta_info')
             type_ = cond.get('type')
             if not type_:
                 raise_not_provided_exception('type')
+            if ('meta_info' not in cond or (
+                    meta_info is None and
+                    ConditionTypes(type_) != ConditionTypes.REGION_IS)):
+                raise_not_provided_exception('meta_info')
             condition = Condition(type=ConditionTypes(type_),
                                   meta_info=meta_info)
             conditions.append(condition)
@@ -411,8 +413,10 @@ class RuleController(BaseController, PriorityMixin):
                         raise WrongArgumentsException(Err.OE0430, [type_])
                     condition.type = ConditionTypes(type_)
                 if 'meta_info' in updated_conditions_map[condition.id]:
-                    meta = updated_conditions_map[condition.id]['meta_info']
-                    if not meta:
+                    meta_info = updated_conditions_map[
+                        condition.id]['meta_info']
+                    if (meta_info is None and
+                            condition.type != ConditionTypes.REGION_IS):
                         raise_not_provided_exception('meta_info')
                     condition.meta_info = updated_conditions_map[
                         condition.id]['meta_info']
