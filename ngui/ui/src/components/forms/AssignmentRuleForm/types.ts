@@ -21,7 +21,9 @@ type ResourceTypeCondition = {
 
 type RegionIsCondition = {
   type: "region_is";
-  region_is: string;
+  region_is: {
+    regionName: string | null;
+  };
 };
 
 type Condition = NameCondition | TagCondition | CloudCondition | ResourceTypeCondition | RegionIsCondition;

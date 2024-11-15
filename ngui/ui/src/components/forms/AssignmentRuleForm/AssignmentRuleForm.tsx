@@ -25,8 +25,7 @@ const AssignmentRuleForm = ({
     // We need to pass defaultValues to useForm in order to reset the Controller components' value.
     // (defaultValues.poolId, defaultValues.ownerId are marked as required in the propTypes definition)
     // see https://react-hook-form.com/api#reset
-    defaultValues,
-    shouldUnregister: true
+    defaultValues
   });
 
   const { handleSubmit, reset } = methods;
@@ -71,8 +70,10 @@ const AssignmentRuleForm = ({
           };
         }
         if (REGION_IS_FIELD_NAME in item) {
+          const { regionName } = item[REGION_IS_FIELD_NAME];
+
           return {
-            [META_INFO]: item[REGION_IS_FIELD_NAME].trim(),
+            [META_INFO]: regionName === null ? null : regionName.trim(),
             [TYPE]: item[TYPE]
           };
         }
