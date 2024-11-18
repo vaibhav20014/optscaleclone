@@ -85,6 +85,8 @@ const EVENT_LEVEL_ITEMS = [
 
 const DEFAULT_EVENT_LEVEL = EVENT_LEVEL_ITEMS.find(({ value: itemValue }) => itemValue === EVENT_LEVEL.ALL);
 
+const formatEventTime = (eventTime) => `${formatUTC(eventTime, EN_FULL_FORMAT)} UTC`;
+
 const EventLevelSelector = ({ eventLevel, onApply }) => {
   const getValue = () => {
     const { name, value } = EVENT_LEVEL_ITEMS.find(({ value: itemValue }) => eventLevel === itemValue) ?? DEFAULT_EVENT_LEVEL;
@@ -176,7 +178,7 @@ const Events = ({ eventLevel, includeDebugEvents, descriptionLike, onScroll, app
       {
         name: <FormattedMessage id="date" />,
         dataTestId: "lbl_date",
-        value: `${formatUTC(event.time, EN_FULL_FORMAT)} UTC`
+        value: formatEventTime(event.time)
       },
       {
         name: <FormattedMessage id="objectName" />,
@@ -237,7 +239,7 @@ const Events = ({ eventLevel, includeDebugEvents, descriptionLike, onScroll, app
             <EventIcon eventLevel={event.level} />
           </Box>
           <Typography variant="body2" noWrap>
-            {`${formatUTC(event.time, EN_FULL_FORMAT)} | ${event.description}`}
+            {`${formatEventTime(event.time)} | ${event.description}`}
           </Typography>
         </Box>
         {getAccordionContent(event)}
@@ -272,7 +274,7 @@ const Events = ({ eventLevel, includeDebugEvents, descriptionLike, onScroll, app
       <PageContentWrapper>
         <Stack spacing={SPACING_1} height="100%">
           <Box display="flex" flexWrap="wrap" gap={SPACING_2}>
-            <Box display="flex" gap={2} alignItems={"center"} justifyContent={"center"}>
+            <Box display="flex" gap={2}>
               <EventLevelSelector eventLevel={eventLevel} onApply={applyFilter} showDebugEvent={includeDebugEvents} />
               <FormControlLabel
                 control={
