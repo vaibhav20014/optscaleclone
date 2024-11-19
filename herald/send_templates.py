@@ -1022,7 +1022,7 @@ PARAMETER_DUMPS = {
             }}},
     'first_shareable_resources': {
         "email": ["azaza@ma.il"],
-        "subject": "OptScale shareable environments notification",
+        "subject": "OptScale shared environments notification",
         "template_type": "first_shareable_resources",
         "template_params": {
             "texts": {
