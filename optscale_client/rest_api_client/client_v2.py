@@ -204,11 +204,14 @@ class Client(Client_v1):
     def cloud_resource_delete(self, cloud_resource_id):
         return self.delete(self.cloud_resource_url(cloud_resource_id))
 
-    def cloud_resource_list(self, cloud_account_id, cloud_resource_id=None):
+    def cloud_resource_list(self, cloud_account_id, cloud_resource_id=None,
+                            cloud_resource_hash=None):
         url = self.cloud_resource_url(cloud_account_id=cloud_account_id)
         query_params = {}
         if cloud_resource_id:
             query_params['cloud_resource_id'] = cloud_resource_id
+        if cloud_resource_hash:
+            query_params['cloud_resource_hash'] = cloud_resource_hash
         if query_params:
             url += self.query_url(**query_params)
         return self.get(url)
