@@ -188,7 +188,6 @@ class ShortLivingInstances(ModuleBase):
         result = []
         for sli_id in short_living_instances_map:
             resource_hash = None
-            resource_id = None
             resource_exp = short_living_instances_map.get(sli_id, {})
             flavor_cost = resource_exp.get('flavor_cost', 0)
             other_cost = resource_exp.get('other_cost', 0)
@@ -199,7 +198,6 @@ class ShortLivingInstances(ModuleBase):
                 _, resources = self.rest_client.cloud_resource_list(
                     cloud_account_id, cloud_resource_hash=sli_id)
             else:
-                resource_id = sli_id
                 _, resources = self.rest_client.cloud_resource_list(
                     cloud_account_id, cloud_resource_id=sli_id)
             resources = resources.get('resources', [])
@@ -212,7 +210,7 @@ class ShortLivingInstances(ModuleBase):
             saving = flavor_cost * SPOT_SAVING_COEFFICIENT
             if saving > 0:
                 result.append({
-                    'cloud_resource_id': resource_id,
+                    'cloud_resource_id': resource.get('cloud_resource_id'),
                     'cloud_resource_hash': resource_hash,
                     'resource_name': resource.get('name'),
                     'resource_id': resource.get('id'),
