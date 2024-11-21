@@ -926,6 +926,29 @@ class TestCloudResourceApi(TestProfilingBase):
         self.assertEqual(len(details['policies']), 1)
         self.assertIsNotNone(details['policies']['ttl'])
 
+    def test_get_by_hash(self):
+        user_id = self.gen_id()
+        _, employee = self.client.employee_create(
+            self.org_id, {'name': 'empl1', 'auth_user_id': user_id})
+        self._mock_auth_user(user_id)
+        cloud_resource_hash = str(uuid.uuid4())
+        resource_dict = {
+            'cloud_resource_hash': cloud_resource_hash,
+            'name': 'res1',
+            'resource_type': 'res_test',
+            'pool_id': self.org['pool_id'],
+            'employee_id': employee['id']
+        }
+        _, resource = self.cloud_resource_create(
+                self.cloud_acc_id, resource_dict)
+        code, resp = self.client.cloud_resource_list(
+            self.cloud_acc_id,
+            cloud_resource_hash=cloud_resource_hash)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(resp['resources']), 1)
+        self.assertEqual(resp['resources'][0]['cloud_resource_hash'],
+                         cloud_resource_hash)
+
     def test_resource_details_cluster(self):
         user_id = self.gen_id()
         _, employee = self.client.employee_create(

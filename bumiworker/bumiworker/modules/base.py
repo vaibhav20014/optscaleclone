@@ -347,7 +347,7 @@ class ModuleBase(ServiceBase):
             pipeline, allowDiskUse=True))
 
     def get_record_key(self, record):
-        return tuple(record[k] for k in self.unique_record_keys)
+        return tuple(record.get(k) for k in self.unique_record_keys)
 
     def set_detection_field(self, module_res, previous_module_res):
         optimization_detection_map = {
