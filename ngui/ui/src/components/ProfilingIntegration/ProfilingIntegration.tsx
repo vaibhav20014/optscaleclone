@@ -131,6 +131,10 @@ const Import = () => (
   </>
 );
 
+const ENDPOINT_URL = `https://${window.location.hostname}:443/arcee/v2` as const;
+
+const ENDPOINT_URL_PARAMETER = `endpoint_url="${ENDPOINT_URL}"` as const;
+
 const Initialization = ({
   profilingToken,
   taskKey,
@@ -143,8 +147,6 @@ const Initialization = ({
   const intl = useIntl();
 
   const { onClose } = useContext(ProfilingIntegrationModalContext);
-
-  const endpointUrlParameter = isProduction() ? "" : `, endpoint_url="https://${window.location.hostname}:433/arcee/v2"`;
 
   const arceeInitUsingContextManager = (
     <CodeBlock
@@ -159,7 +161,7 @@ const Initialization = ({
   );
   const arceeInitUsingFunctionCall = (
     <CodeBlock
-      text={`arcee.init(token="${profilingToken}", task_key="${taskKey ?? "YOUR-TASK-KEY"}"${endpointUrlParameter})
+      text={`arcee.init(token="${profilingToken}", task_key="${taskKey ?? "YOUR-TASK-KEY"}"${isProduction() ? "" : `, ${ENDPOINT_URL_PARAMETER}`})
 # ${intl.formatMessage({ id: "mlProfilingIntegration.common.someCode" })}
 arcee.finish()
 # ${intl.formatMessage({ id: "mlProfilingIntegration.common.orInCaseOfError" })}
@@ -283,25 +285,23 @@ arcee.error()
           <HtmlSymbol symbol="colon" />
         </Typography>
         <Box>
-          <CodeBlock
-            text={`with arcee.init("00000000-0000-0000-0000-000000000000", "linear_regression",
-                run_name="My run name", ssl=True, period=1):
+          {isProduction() ? (
+            <CodeBlock
+              text={`with arcee.init("00000000-0000-0000-0000-000000000000", "linear_regression",
+                run_name="My run name",
+                ssl=True,
+                period=1):
     # some code`}
-          />
-        </Box>
-      </Box>
-      <Box mb={1}>
-        <Typography gutterBottom>
-          <FormattedMessage id="mlProfilingIntegration.initialization.forCustomOptScaleDeployment" />
-          <HtmlSymbol symbol="colon" />
-        </Typography>
-        <Box>
-          <CodeBlock
-            text={`with arcee.init("00000000-0000-0000-0000-000000000000", "linear_regression",
-                run_name="My run name", endpoint_url="https://172.18.12.3:443/arcee/v2",
-                ssl=False, period=5):
+            />
+          ) : (
+            <CodeBlock
+              text={`with arcee.init("00000000-0000-0000-0000-000000000000", "linear_regression",
+                run_name="My run name",${isProduction() ? "" : `\n                ${ENDPOINT_URL_PARAMETER},`}
+                ssl=False,
+                period=5):
     # some code`}
-          />
+            />
+          )}
         </Box>
       </Box>
       <Typography gutterBottom>
@@ -312,7 +312,7 @@ arcee.error()
           }}
         />
       </Typography>
-      <Box mb={1}>
+      <Box>
         <Typography gutterBottom>
           <FormattedMessage
             id="mlProfilingIntegration.initialization.alternativeInit"
@@ -322,30 +322,6 @@ arcee.error()
           />
         </Typography>
         {isLoading ? <Skeleton width="100%">{arceeInitUsingFunctionCall}</Skeleton> : arceeInitUsingFunctionCall}
-      </Box>
-      <Box mb={1}>
-        <Typography gutterBottom>
-          <FormattedMessage id="mlProfilingIntegration.initialization.customEndpointAdnSslChecks" />
-          <HtmlSymbol symbol="colon" />
-        </Typography>
-        <CodeBlock
-          text={`with arcee.init(token="${profilingToken}", task_key="${
-            taskKey ?? "YOUR-TASK-KEY"
-          }", endpoint_url="https://my.custom.endpoint:443/arcee/v2", ssl=False):
-    # ${intl.formatMessage({ id: "mlProfilingIntegration.common.someCode" })}
-`}
-        />
-      </Box>
-      <Box>
-        <Typography gutterBottom>
-          <FormattedMessage id="mlProfilingIntegration.initialization.arceeDaemonProcess" />
-          <HtmlSymbol symbol="colon" />
-        </Typography>
-        <CodeBlock
-          text={`with arcee.init(token="${profilingToken}", task_key="${taskKey ?? "YOUR-TASK-KEY"}", period=5):
-    # ${intl.formatMessage({ id: "mlProfilingIntegration.common.someCode" })}
-`}
-        />
       </Box>
     </>
   );
@@ -366,7 +342,7 @@ const SendingMetrics = () => (
         }
       }}
       parameterMessageIds={["mlProfilingIntegration.sendingMetrics.parameters.1.data"]}
-      method={`arcee.send({"YOUR-METRIC-1-KEY": YOUR_METRIC_1_VALUE, "YOUR-METRIC-2-KEY": YOUR_METRIC_2_VALUE})`}
+      method={`arcee.send({ "YOUR-METRIC-1-KEY": YOUR_METRIC_1_VALUE, "YOUR-METRIC-2-KEY": YOUR_METRIC_2_VALUE })`}
       example={`arcee.send({ "accuracy": 71.44, "loss": 0.37 })`}
     />
   </>
@@ -568,7 +544,7 @@ const SettingArtifactTag = () => (
       method={`arcee.artifact_tag(path="YOUR-ARTIFACT-PATH",
                    key="YOUR-ARTIFACT-TAG-KEY",
                    value=YOUR_ARTIFACT_TAG_VALUE)`}
-      example={`arcee.artifact_tag("https://s3/ml-bucket/artifacts/AccuracyChart.png", 
+      example={`arcee.artifact_tag("https://s3/ml-bucket/artifacts/AccuracyChart.png",
                    "env", "staging demo")`}
     />
   </>
