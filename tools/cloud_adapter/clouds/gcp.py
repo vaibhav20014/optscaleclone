@@ -530,7 +530,8 @@ class GcpAddress(tools.cloud_adapter.model.IpAddressResource, GcpResource):
         available = cloud_address.status == "RESERVED"
         instance_id = None
         if not available:
-            instance_id = cloud_adapter.get_instance_id_for_address(cloud_address)
+            instance_id = cloud_adapter.get_instance_id_for_address(
+                cloud_address)
         super().__init__(
             **self._common_fields,
             available=available,
@@ -540,9 +541,28 @@ class GcpAddress(tools.cloud_adapter.model.IpAddressResource, GcpResource):
     def _get_console_link(self):
         return "https://console.cloud.google.com/networking/addresses/list"
 
+    def _new_labels_request(self, key, value):
+        labels = self._cloud_object.labels
+        labels[key] = value
+        labels_request = compute.RegionSetLabelsRequest(
+            label_fingerprint=self._cloud_object.label_fingerprint,
+            labels=labels,
+        )
+        return labels_request
+
+    def _set_tag(self, key, value):
+        labels_request = self._new_labels_request(key, value)
+        self._cloud_adapter.compute_addresses_client.set_labels(
+            project=self._cloud_adapter.project_id,
+            resource=self._cloud_object.name,
+            region=self._last_path_element(self._cloud_object.region),
+            region_set_labels_request_resource=labels_request,
+            **DEFAULT_KWARGS,
+        )
+
     def post_discover(self):
-        # GCP does not support labels for IP addresses
-        pass
+        # Need to explicitly specify which parent's implementation to use
+        return GcpResource.post_discover(self)
 
 
 class Gcp(CloudBase):
