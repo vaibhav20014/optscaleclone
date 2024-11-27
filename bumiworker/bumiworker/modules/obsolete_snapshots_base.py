@@ -35,6 +35,8 @@ class ObsoleteSnapshotsBase(ModuleBase):
 
     def merge_last_used(self, collection, to_merge):
         for resource_id, last_used in to_merge.items():
+            if resource_id is None:
+                continue
             current_last_used = collection.get(resource_id)
             if current_last_used is None or current_last_used < last_used:
                 collection[resource_id] = last_used
