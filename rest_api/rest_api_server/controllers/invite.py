@@ -202,12 +202,11 @@ class InviteController(BaseController):
             invite_assignment.deleted_at = opttime.utcnow_timestamp()
         super().delete(invite.id)
 
-    def list(self, organization_id=None, user_id=None):
+    def list(self, organization_id=None, email=None):
         query = self.session.query(self.model_type).filter(
             self.model_type.deleted_at == 0)
-        if user_id:
-            user_info = self.get_user_info(user_id)
-            query = query.filter(self.model_type.email == user_info['email'])
+        if email:
+            query = query.filter(self.model_type.email == email)
         if organization_id:
             pool_query = self.session.query(Pool.id).filter(
                 Pool.deleted_at == 0,

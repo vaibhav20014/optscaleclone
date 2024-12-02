@@ -219,7 +219,8 @@ class InviteAsyncCollectionHandler(BaseAsyncCollectionHandler,
         """
         ---
         description: |
-            Get list of invites for current user by token
+            Get list of invites. If used with token returns invites for current
+            user.
             Required permission: TOKEN or CLUSTER_SECRET
         tags: [invites]
         summary: List of invites
@@ -229,10 +230,10 @@ class InviteAsyncCollectionHandler(BaseAsyncCollectionHandler,
             description: Organization id to filter
             required: false
             type: string
-        -   name: user_id
+        -   name: email
             in: query
             type: string
-            description: User id to filter (only with CLUSTER_SECRET)
+            description: invite target email (only with CLUSTER_SECRET)
             required: false
         responses:
             200:
@@ -291,11 +292,13 @@ class InviteAsyncCollectionHandler(BaseAsyncCollectionHandler,
         - secret: []
         """
         if self.check_cluster_secret(raises=False):
-            user_id = self.get_arg('user_id', str, None)
+            email = self.get_arg('email', str, None)
         else:
             user_id = await self.check_self_auth()
+            user_info = await self.get_user_info(user_id)
+            email = user_info['email']
         organization_id = self.get_arg('organization_id', str, None)
-        res = await run_task(self.controller.list, organization_id, user_id)
+        res = await run_task(self.controller.list, organization_id, email)
         invites = {'invites': [invite.to_dict() for invite in res]}
         self.write(json.dumps(invites, cls=ModelEncoder))
 

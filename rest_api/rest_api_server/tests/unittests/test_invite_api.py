@@ -269,13 +269,13 @@ class TestInviteApi(TestApiBase):
         self.assertEqual(code, 200)
         self.assertEqual(len(response['invites']), 2)
 
-    def test_list_user_id(self):
+    def test_list_by_email(self):
         patch('rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler.'
               'check_cluster_secret', return_value=True).start()
         code, response = self.client.invite_create(self.correct_body)
         self.assertEqual(code, 201)
         self.mock_user_info(self.email_1)
-        code, response = self.client.invite_list(user_id=self.user_id)
+        code, response = self.client.invite_list(email=self.email_1)
         self.assertEqual(code, 200)
         invites = response['invites']
         self.assertEqual(len(invites), 1)

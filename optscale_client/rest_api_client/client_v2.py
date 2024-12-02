@@ -274,10 +274,10 @@ class Client(Client_v1):
     def invite_create(self, params):
         return self.post(self.invite_url(), params)
 
-    def invite_list(self, organization_id=None, user_id=None):
+    def invite_list(self, organization_id=None, email=None):
         params = {
             "organization_id": organization_id,
-            "user_id": user_id
+            "email": email
         }
         return self.get(self.invite_url() + self.query_url(**params))
 
