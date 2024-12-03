@@ -318,9 +318,6 @@ class CleanMongoDB(object):
         return result
 
     def _delete_by_organization(self, org_id, token, infra_token):
-        if not token:
-            self.update_cleaned_at(organization_id=org_id)
-            return
         keeper_collections = [
             self.mongo_client.keeper.event
         ]
@@ -342,6 +339,10 @@ class CleanMongoDB(object):
         for collection in restapi_collections:
             self.limits[collection] = self.delete_in_chunks(
                 collection, 'organization_id', org_id)
+
+        if not token:
+            self.update_cleaned_at(organization_id=org_id)
+            return
         for collection in arcee_collections:
             self.limits[collection] = self.delete_in_chunks(
                 collection, 'token', token)
