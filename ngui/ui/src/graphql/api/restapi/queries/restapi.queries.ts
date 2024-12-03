@@ -110,4 +110,40 @@ const UPDATE_DATA_SOURCE = gql`
   }
 `;
 
-export { GET_DATA_SOURCE, UPDATE_DATA_SOURCE };
+const GET_EMPLOYEE_EMAILS = gql`
+  query EmployeeEmails($employeeId: ID!) {
+    employeeEmails(employeeId: $employeeId) {
+      id
+      employee_id
+      email_template
+      enabled
+      available_by_role
+    }
+  }
+`;
+
+const UPDATE_EMPLOYEE_EMAILS = gql`
+  mutation UpdateEmployeeEmails($employeeId: ID!, $params: UpdateEmployeeEmailsInput!) {
+    updateEmployeeEmails(employeeId: $employeeId, params: $params) {
+      id
+      employee_id
+      email_template
+      enabled
+      available_by_role
+    }
+  }
+`;
+
+const UPDATE_EMPLOYEE_EMAIL = gql`
+  mutation UpdateEmployeeEmail($employeeId: ID!, $params: UpdateEmployeeEmailInput!) {
+    updateEmployeeEmail(employeeId: $employeeId, params: $params) {
+      id
+      employee_id
+      email_template
+      enabled
+      available_by_role
+    }
+  }
+`;
+
+export { GET_DATA_SOURCE, UPDATE_DATA_SOURCE, GET_EMPLOYEE_EMAILS, UPDATE_EMPLOYEE_EMAILS, UPDATE_EMPLOYEE_EMAIL };

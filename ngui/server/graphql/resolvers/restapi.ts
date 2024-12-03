@@ -44,10 +44,23 @@ const resolvers: Resolvers = {
     dataSource: async (_, { dataSourceId, requestParams }, { dataSources }) => {
       return dataSources.restapi.getDataSource(dataSourceId, requestParams);
     },
+    employeeEmails: async (_, { employeeId }, { dataSources }) => {
+      return dataSources.restapi.getEmployeeEmails(employeeId);
+    },
   },
   Mutation: {
     updateDataSource: async (_, { dataSourceId, params }, { dataSources }) => {
       return dataSources.restapi.updateDataSource(dataSourceId, params);
+    },
+    updateEmployeeEmails: async (
+      _,
+      { employeeId, params },
+      { dataSources }
+    ) => {
+      return dataSources.restapi.updateEmployeeEmails(employeeId, params);
+    },
+    updateEmployeeEmail: async (_, { employeeId, params }, { dataSources }) => {
+      return dataSources.restapi.updateEmployeeEmail(employeeId, params);
     },
   },
 };

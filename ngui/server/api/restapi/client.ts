@@ -1,7 +1,9 @@
 import BaseClient from "../baseClient.js";
 import {
   DataSourceRequestParams,
+  MutationUpdateEmployeeEmailsArgs,
   UpdateDataSourceInput,
+  MutationUpdateEmployeeEmailArgs,
 } from "../../graphql/resolvers/restapi.generated.js";
 
 class RestClient extends BaseClient {
@@ -43,6 +45,50 @@ class RestClient extends BaseClient {
     });
 
     return dataSource;
+  }
+
+  async getEmployeeEmails(employeeId: string) {
+    const path = `employees/${employeeId}/emails`;
+
+    const emails = await this.get(path);
+
+    return emails.employee_emails;
+  }
+
+  async updateEmployeeEmails(
+    employeeId: MutationUpdateEmployeeEmailsArgs["employeeId"],
+    params: MutationUpdateEmployeeEmailsArgs["params"]
+  ) {
+    const path = `employees/${employeeId}/emails/bulk`;
+
+    const emails = await this.post(path, {
+      body: params,
+    });
+
+    const emailIds = [...(params?.enable ?? []), ...(params.disable ?? [])];
+
+    return emails.employee_emails.filter((email) =>
+      emailIds.includes(email.id)
+    );
+  }
+
+  async updateEmployeeEmail(
+    employeeId: MutationUpdateEmployeeEmailArgs["employeeId"],
+    params: MutationUpdateEmployeeEmailArgs["params"]
+  ) {
+    const { emailId, action } = params;
+
+    const path = `employees/${employeeId}/emails/bulk`;
+
+    const emails = await this.post(path, {
+      body: {
+        [action === "enable" ? "enable" : "disable"]: [emailId],
+      },
+    });
+
+    const email = emails.employee_emails.find((email) => email.id === emailId);
+
+    return email;
   }
 }
 
