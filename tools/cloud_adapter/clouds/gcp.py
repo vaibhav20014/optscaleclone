@@ -14,6 +14,7 @@ from google.cloud import bigquery
 from google.cloud import compute
 from google.cloud import storage
 from google.cloud import monitoring_v3
+from google.cloud.iam_admin_v1 import IAMClient, types
 
 import tools.cloud_adapter.exceptions
 import tools.cloud_adapter.model
@@ -732,6 +733,12 @@ class Gcp(CloudBase):
         )
 
     @cached_property
+    def iam_client(self):
+        return IAMClient.from_service_account_info(
+            self.credentials,
+        )
+
+    @cached_property
     def storage_client(self):
         return storage.Client.from_service_account_info(
             self.credentials,
@@ -1337,21 +1344,23 @@ class Gcp(CloudBase):
         )
 
     @staticmethod
-    def _metrics_filter(metric_name, instance_ids):
+    def _metrics_filter(metric_name, instance_ids, id_field):
         type_filter = f'metric.type = "{metric_name}"'
         instance_ids_filter = " OR ".join(
             [
-                "resource.labels.instance_id = " + instance_id
+                f"resource.labels.{id_field} = " + instance_id
                 for instance_id in instance_ids
             ]
         )
         return f"{type_filter} AND ({instance_ids_filter})"
 
-    def get_metric(self, metric_name, instance_ids, interval, start_date, end_date):
+    def get_metric(self, metric_name, instance_ids, interval, start_date,
+                   end_date, id_field="instance_id"):
         results = self.metrics_client.list_time_series(
             request={
                 "name": f"projects/{self.project_id}",
-                "filter": self._metrics_filter(metric_name, instance_ids),
+                "filter": self._metrics_filter(metric_name, instance_ids,
+                                               id_field),
                 "interval": self._metrics_interval(start_date, end_date),
                 "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
                 "aggregation": self._metrics_aggregation(interval),
@@ -1601,6 +1610,11 @@ class Gcp(CloudBase):
         if locations is None:
             raise RegionNotFoundException(f"Region `{region}` was not found in cloud")
         return locations
+
+    def service_accounts_list(self):
+        request = types.ListServiceAccountsRequest()
+        request.name = f"projects/{self.project_id}"
+        return list(self.iam_client.list_service_accounts(request=request))
 
     def start_instance(self, instance_name, zone):
         try:
