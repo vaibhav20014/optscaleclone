@@ -20,6 +20,7 @@ export const AZURE_COMPUTE = "azureCompute";
 export const AZURE_NETWORK = "azureNetwork";
 
 export const GCP_COMPUTE_ENGINE = "gcpComputeEngine";
+export const GCP_IAM = "gcpAim";
 
 export const NEBIUS_SERVICE = "nebius";
 
@@ -88,6 +89,10 @@ const GCP_SERVICES = Object.freeze({
   [GCP_COMPUTE_ENGINE]: {
     type: GCP_CNR,
     name: "services.computeEngine"
+  },
+  [GCP_IAM]: {
+    type: GCP_CNR,
+    name: "services.iam"
   }
 });
 
