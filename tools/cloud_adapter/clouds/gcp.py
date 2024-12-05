@@ -488,13 +488,28 @@ class GcpSnapshot(tools.cloud_adapter.model.SnapshotResource, GcpResource):
 
 
 class GcpBucket(tools.cloud_adapter.model.BucketResource, GcpResource):
+
     def __init__(self, cloud_bucket: storage.Bucket, cloud_adapter):
         GcpResource.__init__(self, cloud_bucket, cloud_adapter)
+        is_public_acls = False
+        is_public_policy = False
+        iam_policy = cloud_bucket.get_iam_policy()
+        iam = cloud_bucket.iam_configuration
+        if iam.public_access_prevention != 'enforced':
+            for binding in iam_policy.bindings:
+                if "allUsers" in binding["members"]:
+                    is_public_policy = True
+                    break
+            if not iam.uniform_bucket_level_access_enabled:
+                acls = list(cloud_bucket.acl)
+                for acl in acls:
+                    if acl["entity"] == "allUsers":
+                        is_public_acls = True
+                        break
         super().__init__(
             **self._common_fields,
-            # TODO: how to detect public buckets?
-            is_public_policy=False,
-            is_public_acls=False,
+            is_public_policy=is_public_policy,
+            is_public_acls=is_public_acls,
         )
 
     def _get_console_link(self):
