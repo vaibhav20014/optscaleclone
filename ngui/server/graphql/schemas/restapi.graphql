@@ -351,11 +351,35 @@ input UpdateDataSourceInput {
   k8sConfig: K8sConfigInput
 }
 
+type EmployeeEmail {
+  id: ID!
+  employee_id: ID!
+  email_template: String!
+  enabled: Boolean!
+  available_by_role: Boolean!
+}
+
+input UpdateEmployeeEmailsInput {
+  enable: [ID!]
+  disable: [ID!]
+}
+
+enum UpdateEmployeeEmailsAction {
+  enable
+  disable
+}
+
+input UpdateEmployeeEmailInput {
+  emailId: ID!
+  action: UpdateEmployeeEmailsAction!
+}
+
 type Query {
   dataSource(
     dataSourceId: ID!
     requestParams: DataSourceRequestParams
   ): DataSourceInterface
+  employeeEmails(employeeId: ID!): [EmployeeEmail]
 }
 
 type Mutation {
@@ -363,4 +387,12 @@ type Mutation {
     dataSourceId: ID!
     params: UpdateDataSourceInput!
   ): DataSourceInterface
+  updateEmployeeEmails(
+    employeeId: ID!
+    params: UpdateEmployeeEmailsInput!
+  ): [EmployeeEmail]
+  updateEmployeeEmail(
+    employeeId: ID!
+    params: UpdateEmployeeEmailInput!
+  ): EmployeeEmail
 }

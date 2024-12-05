@@ -235,6 +235,15 @@ export type DatabricksDataSource = DataSourceInterface & {
   type: DataSourceType;
 };
 
+export type EmployeeEmail = {
+  __typename?: 'EmployeeEmail';
+  available_by_role: Scalars['Boolean']['output'];
+  email_template: Scalars['String']['output'];
+  employee_id: Scalars['ID']['output'];
+  enabled: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+};
+
 export type EnvironmentDataSource = DataSourceInterface & {
   __typename?: 'EnvironmentDataSource';
   account_id: Scalars['String']['output'];
@@ -327,12 +336,26 @@ export type K8sDataSource = DataSourceInterface & {
 export type Mutation = {
   __typename?: 'Mutation';
   updateDataSource?: Maybe<DataSourceInterface>;
+  updateEmployeeEmail?: Maybe<EmployeeEmail>;
+  updateEmployeeEmails?: Maybe<Array<Maybe<EmployeeEmail>>>;
 };
 
 
 export type MutationUpdateDataSourceArgs = {
   dataSourceId: Scalars['ID']['input'];
   params: UpdateDataSourceInput;
+};
+
+
+export type MutationUpdateEmployeeEmailArgs = {
+  employeeId: Scalars['ID']['input'];
+  params: UpdateEmployeeEmailInput;
+};
+
+
+export type MutationUpdateEmployeeEmailsArgs = {
+  employeeId: Scalars['ID']['input'];
+  params: UpdateEmployeeEmailsInput;
 };
 
 export type NebiusConfig = {
@@ -376,12 +399,18 @@ export type NebiusDataSource = DataSourceInterface & {
 export type Query = {
   __typename?: 'Query';
   dataSource?: Maybe<DataSourceInterface>;
+  employeeEmails?: Maybe<Array<Maybe<EmployeeEmail>>>;
 };
 
 
 export type QueryDataSourceArgs = {
   dataSourceId: Scalars['ID']['input'];
   requestParams?: InputMaybe<DataSourceRequestParams>;
+};
+
+
+export type QueryEmployeeEmailsArgs = {
+  employeeId: Scalars['ID']['input'];
 };
 
 export type UpdateDataSourceInput = {
@@ -397,6 +426,21 @@ export type UpdateDataSourceInput = {
   lastImportModifiedAt?: InputMaybe<Scalars['Int']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   nebiusConfig?: InputMaybe<NebiusConfigInput>;
+};
+
+export type UpdateEmployeeEmailInput = {
+  action: UpdateEmployeeEmailsAction;
+  emailId: Scalars['ID']['input'];
+};
+
+export enum UpdateEmployeeEmailsAction {
+  Disable = 'disable',
+  Enable = 'enable'
+}
+
+export type UpdateEmployeeEmailsInput = {
+  disable?: InputMaybe<Array<Scalars['ID']['input']>>;
+  enable?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 
@@ -496,6 +540,7 @@ export type ResolversTypes = {
   DatabricksConfig: ResolverTypeWrapper<DatabricksConfig>;
   DatabricksConfigInput: DatabricksConfigInput;
   DatabricksDataSource: ResolverTypeWrapper<DatabricksDataSource>;
+  EmployeeEmail: ResolverTypeWrapper<EmployeeEmail>;
   EnvironmentDataSource: ResolverTypeWrapper<EnvironmentDataSource>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   GcpBillingDataConfig: ResolverTypeWrapper<GcpBillingDataConfig>;
@@ -517,6 +562,9 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   UpdateDataSourceInput: UpdateDataSourceInput;
+  UpdateEmployeeEmailInput: UpdateEmployeeEmailInput;
+  UpdateEmployeeEmailsAction: UpdateEmployeeEmailsAction;
+  UpdateEmployeeEmailsInput: UpdateEmployeeEmailsInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -542,6 +590,7 @@ export type ResolversParentTypes = {
   DatabricksConfig: DatabricksConfig;
   DatabricksConfigInput: DatabricksConfigInput;
   DatabricksDataSource: DatabricksDataSource;
+  EmployeeEmail: EmployeeEmail;
   EnvironmentDataSource: EnvironmentDataSource;
   Float: Scalars['Float']['output'];
   GcpBillingDataConfig: GcpBillingDataConfig;
@@ -563,6 +612,8 @@ export type ResolversParentTypes = {
   Query: {};
   String: Scalars['String']['output'];
   UpdateDataSourceInput: UpdateDataSourceInput;
+  UpdateEmployeeEmailInput: UpdateEmployeeEmailInput;
+  UpdateEmployeeEmailsInput: UpdateEmployeeEmailsInput;
 };
 
 export type AlibabaConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['AlibabaConfig'] = ResolversParentTypes['AlibabaConfig']> = {
@@ -727,6 +778,15 @@ export type DatabricksDataSourceResolvers<ContextType = any, ParentType extends 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type EmployeeEmailResolvers<ContextType = any, ParentType extends ResolversParentTypes['EmployeeEmail'] = ResolversParentTypes['EmployeeEmail']> = {
+  available_by_role?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  email_template?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  employee_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type EnvironmentDataSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['EnvironmentDataSource'] = ResolversParentTypes['EnvironmentDataSource']> = {
   account_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   details?: Resolver<Maybe<ResolversTypes['DataSourceDetails']>, ParentType, ContextType>;
@@ -807,6 +867,8 @@ export type K8sDataSourceResolvers<ContextType = any, ParentType extends Resolve
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   updateDataSource?: Resolver<Maybe<ResolversTypes['DataSourceInterface']>, ParentType, ContextType, RequireFields<MutationUpdateDataSourceArgs, 'dataSourceId' | 'params'>>;
+  updateEmployeeEmail?: Resolver<Maybe<ResolversTypes['EmployeeEmail']>, ParentType, ContextType, RequireFields<MutationUpdateEmployeeEmailArgs, 'employeeId' | 'params'>>;
+  updateEmployeeEmails?: Resolver<Maybe<Array<Maybe<ResolversTypes['EmployeeEmail']>>>, ParentType, ContextType, RequireFields<MutationUpdateEmployeeEmailsArgs, 'employeeId' | 'params'>>;
 };
 
 export type NebiusConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['NebiusConfig'] = ResolversParentTypes['NebiusConfig']> = {
@@ -838,6 +900,7 @@ export type NebiusDataSourceResolvers<ContextType = any, ParentType extends Reso
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   dataSource?: Resolver<Maybe<ResolversTypes['DataSourceInterface']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'dataSourceId'>>;
+  employeeEmails?: Resolver<Maybe<Array<Maybe<ResolversTypes['EmployeeEmail']>>>, ParentType, ContextType, RequireFields<QueryEmployeeEmailsArgs, 'employeeId'>>;
 };
 
 export type Resolvers<ContextType = any> = {
@@ -854,6 +917,7 @@ export type Resolvers<ContextType = any> = {
   DataSourceInterface?: DataSourceInterfaceResolvers<ContextType>;
   DatabricksConfig?: DatabricksConfigResolvers<ContextType>;
   DatabricksDataSource?: DatabricksDataSourceResolvers<ContextType>;
+  EmployeeEmail?: EmployeeEmailResolvers<ContextType>;
   EnvironmentDataSource?: EnvironmentDataSourceResolvers<ContextType>;
   GcpBillingDataConfig?: GcpBillingDataConfigResolvers<ContextType>;
   GcpConfig?: GcpConfigResolvers<ContextType>;

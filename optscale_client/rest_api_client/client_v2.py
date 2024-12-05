@@ -2225,3 +2225,18 @@ class Client(Client_v1):
     def verify_email(self, email):
         url = self.verify_email_url()
         return self.post(url, {'email': email})
+
+    @staticmethod
+    def employee_emails_url(employee_id):
+        return '%s/emails' % Client.employee_url(employee_id)
+
+    def employee_emails_get(self, employee_id, email_template=None):
+        return self.get(self.employee_emails_url(employee_id) + self.query_url(
+            email_template=email_template))
+
+    @staticmethod
+    def employee_emails_bulk_url(employee_id):
+        return '%s/bulk' % Client.employee_emails_url(employee_id)
+
+    def employee_emails_bulk(self, employee_id, params):
+        return self.post(self.employee_emails_bulk_url(employee_id), params)

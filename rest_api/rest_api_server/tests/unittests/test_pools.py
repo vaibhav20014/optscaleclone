@@ -868,8 +868,9 @@ class TestPoolApi(TestApiBase):
         resource = self._create_resource(
             cloud_account['id'], employee2['id'], child_pool['id'])
         self._mock_auth_user(user2_id)
-        patch('rest_api.rest_api_server.controllers.assignment.AssignmentController.'
-              '_authorize_action_for_pool', return_value=True).start()
+        patch('rest_api.rest_api_server.controllers.assignment.'
+              'AssignmentController._authorize_action_for_pool',
+              return_value=True).start()
         code, request = self.client.assignment_request_create(self.org_id, {
             'resource_id': resource['id'],
             'approver_id': employee1['id'],
@@ -895,20 +896,27 @@ class TestPoolApi(TestApiBase):
             'role_name': 'Manager',
             'role_scope': None}]
         patch(
-            'rest_api.rest_api_server.controllers.invite.InviteController.get_invite_expiration_days',
+            'rest_api.rest_api_server.controllers.invite.'
+            'InviteController.get_invite_expiration_days',
             return_value=30).start()
         patch(
-            'rest_api.rest_api_server.controllers.invite.InviteController.check_user_exists',
+            'rest_api.rest_api_server.controllers.invite.'
+            'InviteController.check_user_exists',
             return_value=(True, {})).start()
         patch(
-            'rest_api.rest_api_server.controllers.invite.InviteController.get_user_auth_assignments',
+            'rest_api.rest_api_server.controllers.invite.'
+            'InviteController.get_user_auth_assignments',
             return_value=user_assignments).start()
         patch(
-            'rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler._get_user_info',
+            'rest_api.rest_api_server.handlers.v1.base.'
+            'BaseAuthHandler._get_user_info',
             return_value={
                 'display_name': 'default',
                 'email': 'email@email.com'
             }).start()
+        patch('rest_api.rest_api_server.controllers.invite.'
+              'InviteController.check_user_exists',
+              return_value=(False, {})).start()
         code, invites = self.client.invite_create({
             'invites': {
                 'some@email.com': [
@@ -927,7 +935,8 @@ class TestPoolApi(TestApiBase):
         _, ar = self.client.assignment_request_list(self.org_id)
         self.assertEqual(len(ar['assignment_requests']['outgoing']), 0)
         patch(
-            'rest_api.rest_api_server.handlers.v1.base.BaseAuthHandler._get_user_info',
+            'rest_api.rest_api_server.handlers.v1.base.'
+            'BaseAuthHandler._get_user_info',
             return_value={
                 'display_name': 'default',
                 'email': 'some@email.com'
