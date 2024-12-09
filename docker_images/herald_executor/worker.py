@@ -246,12 +246,11 @@ class HeraldExecutorWorker(ConsumerMixin):
         for booking in shareable_booking_data:
             acquired_since = booking['acquired_since']
             released_at = booking['released_at']
-            acquired_by_id = booking.get('acquired_by', {}).get('id')
             utc_acquired_since = int(
                 utcfromtimestamp(acquired_since).timestamp())
             utc_released_at = int(
                 utcfromtimestamp(released_at).timestamp())
-            user_name = employee_id_map.get(acquired_by_id, {}).get('name')
+            user_name = booking.get('acquired_by', {}).get('name')
             if not user_name:
                 LOG.error('Could not detect employee name for booking %s',
                           booking['id'])
