@@ -382,8 +382,9 @@ class RunAsyncItemHandler(BaseAsyncItemHandler, BaseAuthQueryTokenHandler,
                 organization_id, token, raises=False):
             await self.check_permissions(
                 'INFO_ORGANIZATION', 'organization', organization_id)
-        token = await self._get_profiling_token(organization_id)
-        res = await run_task(self.controller.get, organization_id, id, token)
+        profiling_token = await self._get_profiling_token(organization_id)
+        res = await run_task(self.controller.get, organization_id, id,
+                             profiling_token)
         self.write(json.dumps(res, cls=ModelEncoder))
 
     async def delete(self, organization_id, id, **kwargs):

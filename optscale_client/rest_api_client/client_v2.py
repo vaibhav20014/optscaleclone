@@ -2106,8 +2106,10 @@ class Client(Client_v1):
             entity_id=entity_id, token=token)
         return self.get(url)
 
-    def layout_get(self, org_id, layout_id):
+    def layout_get(self, org_id, layout_id, token=None):
         url = self.layouts_url(org_id, layout_id)
+        if token:
+            url += self.query_url(token=token)
         return self.get(url)
 
     def layout_update(self, org_id, layout_id, params):
@@ -2197,8 +2199,11 @@ class Client(Client_v1):
     def artifacts_get(self, org_id, **params):
         return self.get(self.artifacts_url(org_id) + self.query_url(**params))
 
-    def artifact_get(self, org_id, artifact_id):
-        return self.get(self.artifacts_url(org_id, artifact_id))
+    def artifact_get(self, org_id, artifact_id, token=None):
+        url = self.artifacts_url(org_id, artifact_id)
+        if token:
+            url += self.query_url(token=token)
+        return self.get(url)
 
     def artifact_delete(self, org_id, artifact_id):
         return self.delete(self.artifacts_url(org_id, artifact_id))
