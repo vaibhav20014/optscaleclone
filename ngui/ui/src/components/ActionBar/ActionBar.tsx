@@ -241,7 +241,7 @@ const ActionBar = ({ data, isPage = true }) => {
   return title || !isEmptyActions ? (
     <AppBar position="static" className={mapBarClass}>
       <Toolbar disableGutters ref={wrapperRef}>
-        <Box pt={2} pb={2} width="100%">
+        <Box pt={isPage ? 2 : 0} pb={isPage ? 2 : 0} width="100%">
           {showBreadcrumbs ? <Breadcrumbs withSlashAtTheEnd>{breadcrumbs}</Breadcrumbs> : null}
           <Box display="flex" width="100%">
             {title ? (
