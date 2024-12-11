@@ -2240,24 +2240,30 @@ export const getMlTaskRunsBulk = (organizationId, taskId, runIds) =>
     }
   });
 
-export const getMlRunDetails = (organizationId, runId) =>
+export const getMlRunDetails = (organizationId, runId, params = {}) =>
   apiAction({
     url: `${API_URL}/organizations/${organizationId}/runs/${runId}`,
     method: "GET",
     ttl: 5 * MINUTE,
     onSuccess: handleSuccess(SET_ML_RUN_DETAILS),
     hash: hashParams({ organizationId, runId }),
-    label: GET_ML_RUN_DETAILS
+    label: GET_ML_RUN_DETAILS,
+    params: {
+      token: params.arceeToken
+    }
   });
 
-export const getMlRunDetailsBreakdown = (organizationId, runId) =>
+export const getMlRunDetailsBreakdown = (organizationId, runId, params = {}) =>
   apiAction({
     url: `${API_URL}/organizations/${organizationId}/runs/${runId}/breakdown`,
     method: "GET",
     ttl: 5 * MINUTE,
     onSuccess: handleSuccess(SET_ML_RUN_DETAILS_BREAKDOWN),
     hash: hashParams({ organizationId, runId }),
-    label: GET_ML_RUN_DETAILS_BREAKDOWN
+    label: GET_ML_RUN_DETAILS_BREAKDOWN,
+    params: {
+      token: params.arceeToken
+    }
   });
 
 export const createMlTask = (organizationId, params) =>
@@ -2420,7 +2426,8 @@ export const getMlExecutors = (organizationId, params) =>
     onSuccess: handleSuccess(SET_ML_EXECUTORS),
     params: {
       task_id: params.taskIds,
-      run_id: params.runIds
+      run_id: params.runIds,
+      token: params.arceeToken
     }
   });
 
@@ -2449,7 +2456,8 @@ export const getMlArtifacts = (organizationId, params = {}) =>
       text_like: params.textLike,
       created_at_gt: params.createdAtGt,
       created_at_lt: params.createdAtLt,
-      task_id: params.taskId
+      task_id: params.taskId,
+      token: params.arceeToken
     }
   });
 
@@ -2840,22 +2848,23 @@ export const removeInstancesFromSchedule = (powerScheduleId, instancesToRemove) 
     }
   });
 
-export const getLayouts = (organizationId, { layoutType, entityId, includeShared }) =>
+export const getLayouts = (organizationId, { layoutType, entityId, includeShared, arceeToken }) =>
   apiAction({
     url: `${API_URL}/organizations/${organizationId}/layouts`,
     method: "GET",
-    hash: hashParams({ organizationId, layoutType, entityId, includeShared }),
+    hash: hashParams({ organizationId, layoutType, entityId, includeShared, token: arceeToken }),
     onSuccess: handleSuccess(SET_LAYOUTS),
     label: GET_LAYOUTS,
     ttl: 5 * MINUTE,
     params: {
-      type: layoutType,
+      layout_type: layoutType,
       entity_id: entityId,
-      include_shared: includeShared
+      include_shared: includeShared,
+      token: arceeToken
     }
   });
 
-export const getLayout = (organizationId, layoutId) =>
+export const getLayout = (organizationId, layoutId, params = {}) =>
   apiAction({
     url: `${API_URL}/organizations/${organizationId}/layouts/${layoutId}`,
     method: "GET",
@@ -2863,7 +2872,10 @@ export const getLayout = (organizationId, layoutId) =>
     onSuccess: handleSuccess(SET_LAYOUT),
     entityId: layoutId,
     label: GET_LAYOUT,
-    ttl: 5 * MINUTE
+    ttl: 5 * MINUTE,
+    params: {
+      token: params.arceeToken
+    }
   });
 
 export const createLayout = (organizationId, params = {}) =>

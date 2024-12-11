@@ -2020,6 +2020,8 @@
   "shareLinkGoogleSingleHeader": "Single day expenses",
   "shareLinkGoogleSingleTip": "Expenses for a single day will be returned if just start_date is passed.",
   "shareLinkRemoveTip": "By toggling off that switch you will make current link obsolete. Each link is unique and could not be restored!",
+  "shareRunLinkDescription": "This link allows you to share the run with others. Anyone with the link will have access to view and analyze the run. Please ensure sharing complies with your organization's data-sharing policies.",
+  "shareRunLinkTitle": "Share Run Link",
   "shared": "Shared",
   "shortLivingInstances": "Short living instances",
   "shortLivingInstancesDescription": "Some of the instances you have been running for the last <strong>{daysThreshold} {daysThreshold, plural,\n  =1 {day}\n other {days}\n}</strong> have existed for less than <strong>6 hours</strong> and were not created as Spot (or Preemptible) Instances. Consider using Spot (Preemptible) Instances.",

@@ -77,6 +77,7 @@ import poolsRoute from "./poolsRoute";
 import poolTtlAnalysisRoute from "./poolTtlAnalysisRoute";
 import powerScheduleDetailsRoute from "./powerScheduleDetailsRoute";
 import powerSchedulesRoute from "./powerSchedulesRoute";
+import publicMlRun from "./publicMlRun";
 import quotaRoute from "./quotaRoute";
 import quotasRoute from "./quotasRoute";
 import recommendationsRoute from "./recommendationsRoute";
@@ -192,6 +193,7 @@ export const routes = [
   mlCreateRunArtifactRoute,
   mlEditArtifactRoute,
   emailVerificationRoute,
+  publicMlRun,
   // React router 6.x does not require the not found route (*) to be at the end,
   // but the matchPath hook that is used in the DocsPanel component seems to honor the order.
   // Moving it to the bottom for "safety" reasons.
