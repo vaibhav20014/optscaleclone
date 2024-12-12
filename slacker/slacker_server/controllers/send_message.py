@@ -13,7 +13,8 @@ from slacker.slacker_server.message_templates.alerts import (
 from slacker.slacker_server.message_templates.env_alerts import (
     get_property_updated_message, get_message_changed_active_state,
     get_message_acquired, get_message_released)
-from slacker.slacker_server.message_templates.warnings import get_archived_message_block
+from slacker.slacker_server.message_templates.warnings import (
+    get_archived_message_block)
 
 
 LOG = logging.getLogger(__name__)
@@ -49,6 +50,11 @@ class SendMessageController(BaseHandlerController):
                                                      auth_user_id])
             team_id = user.slack_team_id
             channel_id = user.slack_channel_id
+        if channel_id.startswith('C'):
+            # public or private channel, not direct message
+            channels = self.app.client.get_bot_conversations(team_id=team_id)
+            if channel_id not in [x['id'] for x in channels]:
+                raise NotFoundException(Err.OS0020, [channel_id])
 
         template_func = self.MESSAGE_TEMPLATES.get(type_)
         if template_func is None:

@@ -1,6 +1,9 @@
 from tools.optscale_exceptions.http_exc import OptHTTPError
+from tools.optscale_exceptions.common_exc import NotFoundException
 
-from slacker.slacker_server.controllers.send_message import SendMessageAsyncController
+from slacker.slacker_server.controllers.send_message import (
+    SendMessageAsyncController
+)
 from slacker.slacker_server.exceptions import Err
 from slacker.slacker_server.handlers.v2.base import BaseHandler
 
@@ -150,7 +153,10 @@ class SendMessageHandler(BaseHandler):
         data = self._request_body()
         data.update(kwargs)
         await self.validate_params(**data)
-        await self.controller.send_message(**data)
+        try:
+            await self.controller.send_message(**data)
+        except NotFoundException as exc:
+            raise OptHTTPError.from_opt_exception(404, exc)
         self.write_json({})
         self.set_status(201)
 
