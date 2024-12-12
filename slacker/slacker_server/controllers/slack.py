@@ -304,7 +304,8 @@ class SlackController(BaseController):
     def resource_details(self, ack, say, action, body, logger):
         slack_user_id = body['user']['id']
         user = self.get_user(slack_user_id)
-        if user is None or user.auth_user_id is None or user.organization_id is None:
+        if (user is None or user.auth_user_id is None
+                or user.organization_id is None):
             ack()
             return
         target_resource_id = action['value']
@@ -314,20 +315,35 @@ class SlackController(BaseController):
         _, resource = rest_cl.cloud_resource_get(
             target_resource_id, details=True)
         _, org = rest_cl.organization_get(user.organization_id)
+        _, response = rest_cl.resource_limit_hits_list(target_resource_id)
+        limit_hits = response.get('limit_hits', [])
+
         tel_enabled = self.total_expense_limit_enabled(user.organization_id)
         constraint_types = ['ttl', 'daily_expense_limit']
         if tel_enabled:
             constraint_types.append('total_expense_limit')
+
         constraints = {}
-        for constraint in constraint_types:
-            if resource['details']['constraints'].get(constraint):
-                constraints[constraint] = resource['details']['constraints'][
-                    constraint]
-                constraints[constraint]['constraint_type'] = 'resource specific'
-            elif resource['details']['policies'].get(constraint, {}).get('active'):
-                constraints[constraint] = resource['details']['policies'][
-                    constraint]
-                constraints[constraint]['constraint_type'] = 'pool policy'
+        for constraint_type in constraint_types:
+            constraint = {}
+            last_hit = next((x for x in limit_hits
+                             if x['type'] == constraint_type), None)
+            if constraint_type in resource['details']['constraints']:
+                constraint = resource['details']['constraints'][
+                    constraint_type]
+                constraint['constraint_type'] = 'resource specific'
+                if (last_hit and not last_hit['pool_id']
+                        and last_hit['state'] == 'red'):
+                    constraint['last_hit'] = last_hit
+            elif resource['details']['policies'].get(constraint_type, {}).get(
+                    'active'):
+                constraint = resource['details']['policies'][constraint_type]
+                constraint['constraint_type'] = 'pool policy'
+                if (last_hit and last_hit['pool_id'] == resource['pool_id']
+                        and last_hit['state'] == 'red'):
+                    constraint['last_hit'] = last_hit
+            constraints[constraint_type] = constraint
+        resource['constraints'] = constraints
 
         current_booking = None
         if resource['details'].get('shareable_bookings'):
@@ -345,7 +361,8 @@ class SlackController(BaseController):
         say(get_resource_details_message(
             resource=resource, org_id=user.organization_id,
             public_ip=self.config_cl.public_ip(), booking=current_booking,
-            currency=org['currency'], total_expense_limit_enabled=tel_enabled))
+            currency=org['currency'], total_expense_limit_enabled=tel_enabled
+        ))
 
     def create_update_ttl_view(self, ack, action, client, body, say, logger):
         slack_user_id = body['user']['id']

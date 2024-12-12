@@ -54,16 +54,18 @@ def get_resource_details_block(resource, org_id, public_ip):
 def _get_expense_limit_msg(c_sign, total_cost, expense):
     expense_msg = "Not set"
     if expense:
-        if expense['limit'] < total_cost:
-            expense_msg = ":exclamation:*{0}{1}*".format(
-                c_sign, expense['limit'])
-        elif total_cost / expense['limit'] >= EXPENSE_LIMIT_TO_SHOW:
-            expense_msg = ":warning:{0}{1}".format(
-                c_sign, expense['limit'])
-        elif total_cost / expense['limit'] < EXPENSE_LIMIT_TO_SHOW:
-            expense_msg = "{0}{1}".format(c_sign, expense['limit'])
+        last_hit = expense.get('last_hit', {})
+        if last_hit and last_hit['state'] == 'red':
+            if expense['limit'] < total_cost:
+                expense_msg = ":exclamation:*{0}{1}*".format(
+                    c_sign, expense['limit'])
+            elif total_cost / expense['limit'] >= EXPENSE_LIMIT_TO_SHOW:
+                expense_msg = ":warning:{0}{1}".format(
+                    c_sign, expense['limit'])
         elif expense['limit'] == 0:
             expense_msg = ":warning:No limit"
+        else:
+            expense_msg = "{0}{1}".format(c_sign, expense['limit'])
     return expense_msg
 
 
@@ -84,17 +86,8 @@ def get_resource_details_message(
     constraint_types = ['ttl', 'daily_expense_limit']
     if total_expense_limit_enabled:
         constraint_types.append('total_expense_limit')
-    constraints = {}
-    for constraint in constraint_types:
-        if details['constraints'].get(constraint):
-            constraints[constraint] = details['constraints'][constraint]
-            constraints[constraint]['constraint_type'] = '_(resource specific)_'
-        elif details['policies'].get(constraint, {}).get('active'):
-            constraints[constraint] = details['policies'][constraint]
-            constraints[constraint]['constraint_type'] = '_(pool policy)_'
-        else:
-            constraints[constraint] = {}
 
+    constraints = resource.get('constraints', {})
     ttl = constraints.get('ttl')
     if ttl:
         hrs = (ttl['limit'] - utcnow_timestamp()) / SEC_IN_HRS
@@ -114,11 +107,18 @@ def get_resource_details_message(
     else:
         ttl_msg = 'Not set'
 
+    ttl_constraint_type = constraints.get('ttl', {}).get('constraint_type', '')
+    if ttl_constraint_type:
+        ttl_constraint_type = f"_({ttl_constraint_type})_"
+
     daily_expense = constraints.get('daily_expense_limit')
     daily_expense_msg = _get_expense_limit_msg(c_sign, total_cost,
                                                daily_expense)
-    daily_constaint_type = constraints['daily_expense_limit'].get(
+
+    daily_constaint_type = constraints.get('daily_expense_limit', {}).get(
         'constraint_type', '')
+    if daily_constaint_type:
+        daily_constaint_type = f"_({daily_constaint_type})_"
 
     header_blocks = [{
         "type": "section",
@@ -189,7 +189,7 @@ def get_resource_details_message(
             "text": {
                 "type": "mrkdwn",
                 "text": f"TTL\t\t\t\t\t\t\t{ttl_msg} "
-                        f"{constraints['ttl'].get('constraint_type', '')}"
+                        f"{ttl_constraint_type}"
             },
             "accessory": {
                 "type": "button",
@@ -216,8 +216,10 @@ def get_resource_details_message(
         total_expense = constraints.get('total_expense_limit')
         total_expense_msg = _get_expense_limit_msg(c_sign, total_cost,
                                                    total_expense)
-        total_constaint_type = constraints['total_expense_limit'].get(
+        total_constaint_type = constraints.get('total_expense_limit', {}).get(
             'constraint_type', '')
+        if total_constaint_type:
+            total_constaint_type = f"_({total_constaint_type})_"
         resource_blocks.append(
             {
                 "type": "section",
