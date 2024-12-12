@@ -79,6 +79,7 @@ def get_resource_details_message(
     total_cost = details.get('total_cost', 0)
     month_cost = details.get('cost', 0)
     tags = resource.get('tags', {})
+    env_properties = resource.get('env_properties')
 
     constraint_types = ['ttl', 'daily_expense_limit']
     if total_expense_limit_enabled:
@@ -276,6 +277,24 @@ def get_resource_details_message(
                 }
             }
         ]
+    env_prop_block = []
+    if env_properties:
+        env_prop_block = [{
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "\n*Environment properties:*"
+                }
+            }]
+        env_prop_block.extend(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"{k}: {v}"
+                }
+            } for k, v in env_properties.items()
+        )
 
     footer_blocks = [{
             "type": "divider"
@@ -296,6 +315,6 @@ def get_resource_details_message(
     return {
         "text": "Here are the details of the resource you asked",
         "blocks": (header_blocks + tags_blocks + resource_blocks +
-                   booking_blocks + footer_blocks),
+                   env_prop_block + booking_blocks + footer_blocks),
         "unfurl_links": False
     }
