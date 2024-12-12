@@ -369,6 +369,7 @@ class GcpVolume(tools.cloud_adapter.model.VolumeResource, GcpResource):
             volume_type=type_,
             attached=attached,
             zone_id=zone_id,
+            image_id=cloud_volume.source_image_id,
             snapshot_id=cloud_volume.source_snapshot_id
         )
 
