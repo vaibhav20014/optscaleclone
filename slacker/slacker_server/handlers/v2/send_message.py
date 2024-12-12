@@ -135,7 +135,7 @@ class SendMessageHandler(BaseHandler):
                     - OS0012: Duplicated parameters in path and body
                     - OS0014: channel_id with team_id or auth_user_id should be provided
                     - OS0015: channel_id and auth_user_id could not be provided at the same time
-                    - OS0016: User not found
+                    - OS0016: User with auth_user_id was not found
                     - OS0017: channel_id should provide only with team_id
                     - OS0019: Target slack channel is archived
             401:
