@@ -1,10 +1,8 @@
-import { Box } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
 import DeleteEntity from "components/DeleteEntity";
-import InlineSeverityAlert from "components/InlineSeverityAlert";
+import PageContentDescription from "components/PageContentDescription";
 import { useDataSources } from "hooks/useDataSources";
 import { AZURE_TENANT } from "utils/constants";
-import { SPACING_1 } from "utils/layouts";
 import Survey from "./FormElements/Survey";
 import { DisconnectCloudAccountFormProps, FormValues } from "./types";
 import { getDefaultValues } from "./utils";
@@ -27,10 +25,24 @@ const DisconnectCloudAccountForm = ({
     <FormProvider {...methods}>
       <form data-test-id="disconnect-datasource-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         {(parentId || isAzureTenant) && (
-          <Box mb={SPACING_1}>
-            {parentId && <InlineSeverityAlert messageId="childDataSourceDisconnectionWarning" />}
-            {isAzureTenant && <InlineSeverityAlert messageId="parentDataSourceDisconnectionWarning" />}
-          </Box>
+          <>
+            {parentId && (
+              <PageContentDescription
+                position="top"
+                alertProps={{
+                  messageId: "childDataSourceDisconnectionWarning"
+                }}
+              />
+            )}
+            {isAzureTenant && (
+              <PageContentDescription
+                position="top"
+                alertProps={{
+                  messageId: "parentDataSourceDisconnectionWarning"
+                }}
+              />
+            )}
+          </>
         )}
         <DeleteEntity
           message={{

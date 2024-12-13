@@ -334,6 +334,18 @@ const ML_LAUNCH_BASE = "launch";
 export const ML_RUNSETS_BASE = "runsets";
 export const ML_RUN_BASE = "run";
 
+export const ML_PUBLIC_RUN_BASE = "run";
+export const ML_PUBLIC_RUN = concatenateUrl([ML_PUBLIC_RUN_BASE, ML_TASK_RUN_IDENTIFIER]);
+export const getMlPublicRunUrl = (runId, { organizationId, arceeToken }) => {
+  const urlBase = ML_PUBLIC_RUN.replace(ML_TASK_RUN_IDENTIFIER, runId);
+  const searchParams = new URLSearchParams({
+    organizationId,
+    token: arceeToken
+  });
+
+  return `${urlBase}?${searchParams.toString()}`;
+};
+
 export const ML_TASKS = concatenateUrl([ML_TASKS_BASE]);
 export const ML_TASK_CREATE = concatenateUrl([ML_TASKS_BASE, CREATE]);
 

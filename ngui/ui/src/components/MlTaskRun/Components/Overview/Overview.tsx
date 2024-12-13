@@ -197,63 +197,67 @@ const StderrLog = ({ error, isLoading }) => {
   return <CodeBlock height="100%" maxHeight="500px" text={error} />;
 };
 
-const Overview = ({ reachedGoals, dataset, git, tags, hyperparameters, command, console, isLoading = false }) => (
-  <Grid container spacing={SPACING_2}>
-    <Grid item xs={12} sm={6} md={3}>
-      <SubTitle>
-        <FormattedMessage id="metrics" />
-      </SubTitle>
-      <Goals reachedGoals={reachedGoals} isLoading={isLoading} />
-    </Grid>
-    <Grid item xs={12} sm={6} md={3}>
-      <SubTitle>
-        <FormattedMessage id="dataset" />
-      </SubTitle>
-      <Dataset dataset={dataset} isLoading={isLoading} />
-    </Grid>
-    <Grid item xs={12} sm={6} md={3}>
-      <SubTitle>
-        <FormattedMessage id="hyperparameters" />
-      </SubTitle>
-      <Hyperparameters hyperparameters={hyperparameters} isLoading={isLoading} />
-    </Grid>
-    <Grid item xs={12} sm={6} md={3}>
-      <SubTitle>
-        <FormattedMessage id="tags" />
-      </SubTitle>
-      <Tags tags={tags} isLoading={isLoading} />
-    </Grid>
-    <Grid item xs={12}>
-      <SubTitle>
-        <FormattedMessage id="gitStatus" />
-      </SubTitle>
-      <GitStatus git={git} isLoading={isLoading} />
-    </Grid>
-    <Grid item xs={12}>
-      <SubTitle>
-        <FormattedMessage id="command" />
-      </SubTitle>
-      <Command command={command} isLoading={isLoading} />
-    </Grid>
-    <Grid item container xs={12} spacing={SPACING_2}>
-      <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column" }}>
+const Overview = ({ run, isLoading = false }) => {
+  const { reached_goals: reachedGoals, dataset, tags, hyperparameters, git, command, console } = run;
+
+  return (
+    <Grid container spacing={SPACING_2}>
+      <Grid item xs={12} sm={6} md={3}>
         <SubTitle>
-          <FormattedMessage id="stdoutLog" />
+          <FormattedMessage id="metrics" />
         </SubTitle>
-        <Box flexGrow={1}>
-          <StdoutLog output={console?.output} isLoading={isLoading} />
-        </Box>
+        <Goals reachedGoals={reachedGoals} isLoading={isLoading} />
       </Grid>
-      <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column" }}>
+      <Grid item xs={12} sm={6} md={3}>
         <SubTitle>
-          <FormattedMessage id="stderrLog" />
+          <FormattedMessage id="dataset" />
         </SubTitle>
-        <Box flexGrow={1}>
-          <StderrLog error={console?.error} isLoading={isLoading} />
-        </Box>
+        <Dataset dataset={dataset} isLoading={isLoading} />
+      </Grid>
+      <Grid item xs={12} sm={6} md={3}>
+        <SubTitle>
+          <FormattedMessage id="hyperparameters" />
+        </SubTitle>
+        <Hyperparameters hyperparameters={hyperparameters} isLoading={isLoading} />
+      </Grid>
+      <Grid item xs={12} sm={6} md={3}>
+        <SubTitle>
+          <FormattedMessage id="tags" />
+        </SubTitle>
+        <Tags tags={tags} isLoading={isLoading} />
+      </Grid>
+      <Grid item xs={12}>
+        <SubTitle>
+          <FormattedMessage id="gitStatus" />
+        </SubTitle>
+        <GitStatus git={git} isLoading={isLoading} />
+      </Grid>
+      <Grid item xs={12}>
+        <SubTitle>
+          <FormattedMessage id="command" />
+        </SubTitle>
+        <Command command={command} isLoading={isLoading} />
+      </Grid>
+      <Grid item container xs={12} spacing={SPACING_2}>
+        <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column" }}>
+          <SubTitle>
+            <FormattedMessage id="stdoutLog" />
+          </SubTitle>
+          <Box flexGrow={1}>
+            <StdoutLog output={console?.output} isLoading={isLoading} />
+          </Box>
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column" }}>
+          <SubTitle>
+            <FormattedMessage id="stderrLog" />
+          </SubTitle>
+          <Box flexGrow={1}>
+            <StderrLog error={console?.error} isLoading={isLoading} />
+          </Box>
+        </Grid>
       </Grid>
     </Grid>
-  </Grid>
-);
+  );
+};
 
 export default Overview;

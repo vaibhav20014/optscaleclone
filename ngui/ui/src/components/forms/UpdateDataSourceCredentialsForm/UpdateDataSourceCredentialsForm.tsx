@@ -1,6 +1,5 @@
 import { Typography } from "@mui/material";
 import Link from "@mui/material/Link";
-import { Stack } from "@mui/system";
 import { FormProvider, useForm } from "react-hook-form";
 import { FormattedMessage } from "react-intl";
 import Button from "components/Button";
@@ -18,7 +17,7 @@ import {
   AWS_ROOT_USE_AWS_EDP_DISCOUNT_FIELD_NAMES
 } from "components/DataSourceCredentialFields";
 import FormButtonsWrapper from "components/FormButtonsWrapper";
-import InlineSeverityAlert from "components/InlineSeverityAlert";
+import FormContentDescription from "components/FormContentDescription";
 import { FIELD_NAMES as NEBIUS_FIELD_NAMES } from "components/NebiusConfigFormElements";
 import {
   DOCS_HYSTAX_AUTO_BILLING_AWS,
@@ -43,7 +42,6 @@ import {
   AWS_ROOT_CONNECT_CUR_VERSION
 } from "utils/constants";
 import { readFileAsText } from "utils/files";
-import { SPACING_1 } from "utils/layouts";
 import { CredentialInputs } from "./FormElements";
 import { AWS_POOL_UPDATE_DATA_EXPORT_PARAMETERS as AWS_ROOT_UPDATE_DATA_EXPORT_PARAMETERS } from "./FormElements/CredentialInputs";
 
@@ -191,7 +189,13 @@ const Description = ({ type, config }) => {
 };
 
 const UpdateCredentialsWarning = ({ type }) => {
-  const renderUpdateWarning = () => <InlineSeverityAlert messageId="updateDateSourceCredentialsWarning" />;
+  const renderUpdateWarning = () => (
+    <FormContentDescription
+      alertProps={{
+        messageId: "updateDateSourceCredentialsWarning"
+      }}
+    />
+  );
 
   switch (type) {
     case AWS_CNR:
@@ -202,17 +206,17 @@ const UpdateCredentialsWarning = ({ type }) => {
       return renderUpdateWarning();
     case KUBERNETES_CNR:
       return (
-        <InlineSeverityAlert
-          sx={{
-            width: "100%"
-          }}
-          messageId="k8sUpdateWarning"
-          messageValues={{
-            link: (chunks) => (
-              <Link data-test-id="link_guide" href={GITHUB_HYSTAX_K8S_COST_METRICS_COLLECTOR} target="_blank" rel="noopener">
-                {chunks}
-              </Link>
-            )
+        <FormContentDescription
+          fullWidth
+          alertProps={{
+            messageId: "k8sUpdateWarning",
+            messageValues: {
+              link: (chunks) => (
+                <Link data-test-id="link_guide" href={GITHUB_HYSTAX_K8S_COST_METRICS_COLLECTOR} target="_blank" rel="noopener">
+                  {chunks}
+                </Link>
+              )
+            }
           }}
         />
       );
@@ -422,15 +426,9 @@ const UpdateDataSourceCredentialsForm = ({ id, type, config, onSubmit, onCancel,
         })}
         noValidate
       >
-        <Stack spacing={SPACING_1}>
-          <div>
-            <Description type={type} config={config} />
-            <CredentialInputs type={type} config={config} />
-          </div>
-          <div>
-            <UpdateCredentialsWarning type={type} />
-          </div>
-        </Stack>
+        <Description type={type} config={config} />
+        <CredentialInputs type={type} config={config} />
+        <UpdateCredentialsWarning type={type} />
         <FormButtonsWrapper>
           <ButtonLoader
             dataTestId="btn_update_data_source_credentials"
