@@ -94,6 +94,7 @@ class CloudAccountAsyncCollectionHandler(BaseAsyncCollectionHandler,
                     - OE0226: Argument should be True or False
                     - OE0371: Unable to configure billing report
                     - OE0437: Can’t connect the cloud subscription
+                    - OE0455: Cloud connection error
                     - OE0456: Duplicate path parameters in the request body
                     - OE0513: Cloud validation is timed out. Please retry later
             401:
@@ -571,6 +572,7 @@ class CloudAccountAsyncItemHandler(BaseAsyncItemHandler, BaseAuthHandler,
                     - OE0226: Argument should be True or False
                     - OE0371: Unable to configure billing report
                     - OE0437: Can’t connect the cloud subscription
+                    - OE0455: Cloud connection error
                     - OE0449: Parameter of cloud account can\'t be changed
                     - OE0559: Parameter date should be between a month and a year ago
                     - OE0560: Changing import dates is not supported for cloud account type
