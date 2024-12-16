@@ -687,6 +687,50 @@ class TestCloudAccountApi(TestApiBase):
             self.assertEqual(details['resources'], 2)
             self.assertDictEqual(cloud_discovery_info, res_discovery_info)
 
+    def test_get_details_deleted_res(self):
+        self.valid_aws_cloud_acc['name'] = 'cloud_1'
+        code, cloud_acc1 = self.create_cloud_account(
+            self.org_id, self.valid_aws_cloud_acc)
+        self.assertEqual(code, 201)
+
+        day_in_month = datetime.datetime(2020, 1, 14)
+
+        _, resource = self.cloud_resource_create(
+            cloud_acc1['id'], {
+                'cloud_resource_id': 'cloud_resource_id',
+                'resource_type': 'resource_type',
+                'first_seen': int(day_in_month.timestamp()),
+                'last_seen': int(day_in_month.timestamp())
+            })
+        self.expenses.append({
+            'resource_id': resource['id'],
+            'cost': 100,
+            'date': day_in_month,
+            'cloud_account_id': cloud_acc1['id'],
+            'sign': 1,
+        })
+
+        code, res = self.client.discovery_info_list(
+            cloud_acc1['id'])
+        self.assertEqual(code, 200)
+        res_discovery_info = {di['id']: di for di in res['discovery_info']}
+
+        self.resources_collection.update_one({'_id': resource['id']},
+                                             {'$set': {'deleted_at': 1}})
+
+        with freeze_time(datetime.datetime(2020, 1, 15)):
+            code, cloud_acc = self.client.cloud_account_get(
+                cloud_acc1['id'], details=True)
+            details = cloud_acc['details']
+            cloud_discovery_info = {
+                di['id']: di for di in details['discovery_infos']
+            }
+            self.assertEqual(details['cost'], 0)
+            self.assertEqual(details['forecast'], 0)
+            self.assertEqual(details['last_month_cost'], 0)
+            self.assertEqual(details['resources'], 0)
+            self.assertDictEqual(cloud_discovery_info, res_discovery_info)
+
     def test_patch_enable_import(self):
         ca_params = self.valid_aws_cloud_acc
         code, cloud_acc = self.create_cloud_account(
