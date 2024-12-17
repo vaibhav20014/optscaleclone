@@ -1460,6 +1460,7 @@ export const applyAssignmentRules = (organizationId, params) =>
     url: `${API_URL}/organizations/${organizationId}/rules_apply`,
     method: "POST",
     label: APPLY_ASSIGNMENT_RULES,
+    affectedRequests: [GET_CLEAN_EXPENSES],
     params: {
       pool_id: params.poolId,
       include_children: params.includeChildren
