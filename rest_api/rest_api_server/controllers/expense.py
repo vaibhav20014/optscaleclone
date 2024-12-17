@@ -64,6 +64,7 @@ class ExpenseController(MongoMixin, ClickHouseMixin):
             '_last_seen_date': {'$gte': start_date.replace(
                 hour=0, minute=0, second=0, microsecond=0)},
             'last_seen': {'$gte': int(start_date.timestamp())},
+            'deleted_at': 0
         }, resource_fields)
 
         external_resource_table = [{
@@ -75,7 +76,8 @@ class ExpenseController(MongoMixin, ClickHouseMixin):
         expenses_results = self.execute_clickhouse(
             query="""
                 SELECT
-                    date, group_field, cloud_account_id, SUM(cost * sign) AS total_cost
+                    date, group_field, cloud_account_id,
+                    SUM(cost * sign) AS total_cost
                 FROM expenses
                 JOIN resources ON expenses.resource_id = resources._id
                     AND expenses.cloud_account_id = resources.cloud_account_id
