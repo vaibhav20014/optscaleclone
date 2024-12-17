@@ -515,8 +515,6 @@ export const ALERT_SEVERITY = Object.freeze({
   WARNING: "warning"
 });
 
-export const INFINITY_SIGN = "∞";
-
 export const ENVIRONMENT_SOFTWARE_FIELD = "Software ";
 export const ENVIRONMENT_JIRA_TICKETS_FIELD = "Jira tickets ";
 export const ENVIRONMENT_TOUR_IDS_BY_DYNAMIC_FIELDS = Object.freeze({

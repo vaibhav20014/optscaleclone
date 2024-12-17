@@ -903,6 +903,7 @@
   "incorrectDateFormat": "Incorrect date format",
   "independentCompute": "Independent compute",
   "independentComputeTooltip": "Region is recommended for running new workloads that are mostly independent from the existing ones",
+  "infinite": "Infinite",
   "infinity": "Infinity",
   "info": "Info",
   "infrastructure": "Infrastructure",
