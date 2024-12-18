@@ -295,7 +295,7 @@ class RunAsyncItemHandler(BaseAsyncItemHandler, BaseAuthQueryTokenHandler,
             type: string
         -   name: token
             in: query
-            description: Unique token related to organization profiling token
+            description: MD5 hash of organization profiling token
             required: false
             type: string
         responses:
@@ -455,7 +455,7 @@ class RunBreakdownItemHandler(RunAsyncItemHandler, ProfilingHandler):
             type: string
         -   name: token
             in: query
-            description: Unique token related to organization profiling token
+            description: MD5 hash of organization profiling token
             required: false
             type: string
         responses:

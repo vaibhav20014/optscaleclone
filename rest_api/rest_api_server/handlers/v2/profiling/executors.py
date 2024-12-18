@@ -51,8 +51,7 @@ class ExecutorAsyncCollectionHandler(
         -   name: token
             in: query
             description: |
-                Unique token related to organization profiling token (only
-                with run_id)
+                MD5 hash of organization profiling token (only with run_id)
             required: false
             type: string
         responses:

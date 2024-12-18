@@ -121,6 +121,7 @@ class ExpenseController(MongoMixin, ClickHouseMixin):
                             hour=0, minute=0, second=0, microsecond=0)}},
                         {'first_seen': {'$lt': int(end_date.timestamp())}},
                         {'last_seen': {'$gte': int(start_date.timestamp())}},
+                        {'deleted_at': 0}
                     ]
                 }
             },

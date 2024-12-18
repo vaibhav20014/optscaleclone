@@ -48,7 +48,7 @@ class LayoutsAsyncCollectionHandler(
         -   name: token
             in: query
             description: |
-                Unique token related to organization profiling token (only with
+                MD5 hash of organization profiling token (only with
                 layout_type=ml_run_charts_dashboard)
             required: false
             type: string
@@ -247,7 +247,7 @@ class LayoutsAsyncItemHandler(
         -   name: token
             in: query
             description: |
-                Unique token related to organization profiling token
+                MD5 hash of organization profiling token
             required: false
             type: string
         responses:
