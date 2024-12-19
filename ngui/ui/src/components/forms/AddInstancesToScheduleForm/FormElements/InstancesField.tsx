@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { FormControl, FormHelperText } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import FormContentDescription from "components/FormContentDescription";
 import Table from "components/Table";
 import TableLoader from "components/TableLoader";
@@ -107,7 +107,7 @@ const InstancesField = ({ instances, instancesCountLimit, isLoading = false }) =
       rules={{
         validate: {
           atLeastOneSelected: (value) =>
-            isEmptyObject(value) ? <FormattedMessage id="atLeastOneInstanceMustBeSelected" /> : true
+            isEmptyObject(value) ? intl.formatMessage({ id: "atLeastOneInstanceMustBeSelected" }) : true
         }
       }}
       render={({ field: { value, onChange } }) => {
