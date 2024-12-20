@@ -14,10 +14,10 @@ import Table from "components/Table";
 import TableCellActions from "components/TableCellActions";
 import TextWithDataTestId from "components/TextWithDataTestId";
 import Tooltip from "components/Tooltip";
+import { useOrganizationPerspectives } from "hooks/coreData";
 import { useIsAllowed } from "hooks/useAllowedActions";
 import { breakdowns } from "hooks/useBreakdownBy";
 import { useOpenSideModal } from "hooks/useOpenSideModal";
-import { useOrganizationPerspectives } from "hooks/useOrganizationPerspectives";
 import { getResourcesExpensesUrl } from "urls";
 import { isEmpty as isEmptyArray } from "utils/arrays";
 

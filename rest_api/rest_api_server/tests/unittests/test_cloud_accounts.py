@@ -595,7 +595,7 @@ class TestCloudAccountApi(TestApiBase):
             }
             if cloud_acc['id'] == cloud_acc2['id']:
                 self.assertEqual(cloud_acc['details']['cost'], 90)
-                self.assertEqual(cloud_acc['details']['tracked'], 1)
+                self.assertEqual(cloud_acc['details']['resources'], 1)
                 self.assertEqual(cloud_acc['details']['forecast'], 277)
                 self.assertEqual(
                     cloud_acc['details']['last_month_cost'], 240)
@@ -603,7 +603,7 @@ class TestCloudAccountApi(TestApiBase):
                                      res_discovery_info_2)
             else:
                 self.assertEqual(cloud_acc['details']['cost'], 450)
-                self.assertEqual(cloud_acc['details']['tracked'], 2)
+                self.assertEqual(cloud_acc['details']['resources'], 2)
                 self.assertEqual(cloud_acc['details']['forecast'], 807)
                 self.assertEqual(
                     cloud_acc['details']['last_month_cost'], 180)

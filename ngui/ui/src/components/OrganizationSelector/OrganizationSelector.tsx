@@ -43,7 +43,7 @@ const SELECTOR_SX = {
 };
 
 type OrganizationSelectorProps = {
-  organizations?: {
+  organizations: {
     id: string;
     name: string;
   }[];
@@ -53,7 +53,7 @@ type OrganizationSelectorProps = {
 };
 
 const OrganizationSelector = ({
-  organizations = [],
+  organizations,
   organizationId = "",
   onChange,
   isLoading = false
@@ -124,7 +124,7 @@ const OrganizationSelector = ({
   );
 };
 
-// NGUI-2198: selector is always visible and mounted with MainLayoutContainer, organizations and organizationId can be undefined
+// NGUI-2198: selector is always visible and mounted with CoreDataContainer, organizations and organizationId can be undefined
 // TODO - consider mounting those component at different levels
 
 export default OrganizationSelector;

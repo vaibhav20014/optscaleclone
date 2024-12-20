@@ -30,10 +30,11 @@ export const HOME = "/";
 export const getHomeUrl = (organizationId) =>
   organizationId ? concatenateUrl([HOME, `?organizationId=${organizationId}`], "", "") : HOME;
 export const SHOW_POLICY_QUERY_PARAM = "showPolicy";
-export const HOME_FIRST_TIME = `/?${SHOW_POLICY_QUERY_PARAM}=true`;
 export const LOGIN = "/login";
 export const REGISTER = "/register";
 export const INVITED = "/invited";
+export const INITIALIZE = "/initialize";
+export const RESET_PASSWORD = "/reset-password";
 export const ACCEPT_INVITATION = "/accept-invitation";
 export const ACCEPT_INVITATIONS = "/accept-invitations";
 export const PASSWORD_RECOVERY = "/password-recovery";
@@ -592,3 +593,5 @@ export const isProduction = () => window.location.origin === PRODUCTION;
 export const isDemo = () => window.location.origin === DEMO;
 
 export const USER_EMAIL_QUERY_PARAMETER_NAME = "userEmail";
+
+export const NEXT_QUERY_PARAMETER_NAME = "next";

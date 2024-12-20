@@ -216,7 +216,7 @@ class CloudAccountAsyncCollectionHandler(BaseAsyncCollectionHandler,
                                                 description: forecast for this month}
                                             last_month_cost: {type: integer,
                                                 description: total cost in last month}
-                                            tracked: {type: integer,
+                                            resources: {type: integer,
                                                 description: number of tracked resources}
                                             discovery_infos:
                                                 type: object

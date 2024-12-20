@@ -30,7 +30,7 @@ type DataSourceDetails {
   cost: Float!
   discovery_infos: [DataSourceDiscoveryInfos]
   forecast: Float!
-  last_month_cost: Float!
+  last_month_cost: Float
   resources: Int!
 }
 
@@ -336,6 +336,20 @@ input DatabricksConfigInput {
   client_secret: String!
 }
 
+input CreateDataSourceInput {
+  name: String
+  type: String
+  awsRootConfig: AwsRootConfigInput
+  awsLinkedConfig: AwsLinkedConfigInput
+  azureSubscriptionConfig: AzureSubscriptionConfigInput
+  azureTenantConfig: AzureTenantConfigInput
+  gcpConfig: GcpConfigInput
+  alibabaConfig: AlibabaConfigInput
+  nebiusConfig: NebiusConfigInput
+  databricksConfig: DatabricksConfigInput
+  k8sConfig: K8sConfigInput
+}
+
 input UpdateDataSourceInput {
   name: String
   lastImportAt: Int
@@ -374,15 +388,71 @@ input UpdateEmployeeEmailInput {
   action: UpdateEmployeeEmailsAction!
 }
 
+type Organization {
+  id: String!
+  name: String!
+  is_demo: Boolean!
+  currency: String!
+  pool_id: String!
+}
+
+type Employee {
+  id: String!
+  jira_connected: Boolean!
+  slack_connected: Boolean!
+}
+
+type InvitationAssignment {
+  id: String!
+  scope_id: String!
+  scope_type: String!
+  purpose: String!
+}
+
+type Invitation {
+  id: String!
+  owner_name: String!
+  owner_email: String!
+  organization: String!
+  invite_assignments: [InvitationAssignment!]
+}
+
+type OptscaleMode {
+  finops: Boolean
+  mlops: Boolean
+}
+
+input OptscaleModeParams {
+  finops: Boolean
+  mlops: Boolean
+}
+
+input UpdateOrganizationInput {
+  name: String
+  currency: String
+}
+
 type Query {
+  organizations: [Organization]
+  currentEmployee(organizationId: ID!): Employee
+  dataSources(organizationId: ID!): [DataSourceInterface]
   dataSource(
     dataSourceId: ID!
     requestParams: DataSourceRequestParams
   ): DataSourceInterface
   employeeEmails(employeeId: ID!): [EmployeeEmail]
+  invitations: [Invitation]
+  organizationFeatures(organizationId: ID!): JSONObject
+  optscaleMode(organizationId: ID!): OptscaleMode
+  organizationThemeSettings(organizationId: ID!): JSONObject
+  organizationPerspectives(organizationId: ID!): JSONObject
 }
 
 type Mutation {
+  createDataSource(
+    organizationId: ID!
+    params: CreateDataSourceInput!
+  ): DataSourceInterface
   updateDataSource(
     dataSourceId: ID!
     params: UpdateDataSourceInput!
@@ -395,4 +465,24 @@ type Mutation {
     employeeId: ID!
     params: UpdateEmployeeEmailInput!
   ): EmployeeEmail
+  deleteDataSource(dataSourceId: ID!): String
+  createOrganization(organizationName: String!): Organization
+  updateOrganization(
+    organizationId: ID!
+    params: UpdateOrganizationInput!
+  ): Organization
+  deleteOrganization(organizationId: ID!): String
+  updateInvitation(invitationId: String!, action: String!): String
+  updateOptscaleMode(
+    organizationId: ID!
+    value: OptscaleModeParams
+  ): OptscaleMode
+  updateOrganizationThemeSettings(
+    organizationId: ID!
+    value: JSONObject!
+  ): JSONObject
+  updateOrganizationPerspectives(
+    organizationId: ID!
+    value: JSONObject!
+  ): JSONObject
 }
