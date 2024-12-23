@@ -1,7 +1,7 @@
 from collections import defaultdict
 from functools import cached_property
 from concurrent.futures import ThreadPoolExecutor
-import datetime
+from datetime import datetime, timezone, timedelta
 import hashlib
 import logging
 
@@ -27,6 +27,7 @@ from tools.cloud_adapter.utils import CloudParameter, gbs_to_bytes
 
 # can be from 0 to 500 for gcp API
 MAX_RESULTS = 500
+BILLING_THRESHOLD = 3
 
 # Retries logic composed of code from
 # google/cloud/bigquery/retry.py and
@@ -189,7 +190,7 @@ class GcpResource:
     @staticmethod
     def _gcp_date_to_timestamp(date):
         return int(
-            datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f%z").timestamp()
+            datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f%z").timestamp()
         )
 
     @staticmethod
@@ -769,8 +770,21 @@ class Gcp(CloudBase):
     def _billing_table_full_name(self):
         return f"{self.billing_project_id}.{self.billing_dataset}.{self.billing_table}"
 
+    @staticmethod
+    def _get_billing_threshold_date():
+        # billing threshold means datasets should be updated at least 3 days ago
+        return datetime.now(tz=timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        ) - timedelta(days=BILLING_THRESHOLD)
+
     def _test_bigquery_connection(self):
-        query = f"select currency from `{self._billing_table_full_name()}` limit 1"
+        dt = self._get_billing_threshold_date()
+        query = f"""
+            SELECT currency
+            FROM `{self._billing_table_full_name()}`
+            WHERE TIMESTAMP_TRUNC(_PARTITIONTIME, DAY) >= TIMESTAMP("{dt}")
+            LIMIT 1
+        """
         query_job = self.bigquery_client.query(query, **DEFAULT_KWARGS)
         result = list(query_job.result())[0]
         if not result or dict(result).get("currency") != self._currency:
@@ -844,8 +858,7 @@ class Gcp(CloudBase):
             credits, adjustment_info
         FROM `{table_name}`
         WHERE
-            usage_start_time >= TIMESTAMP("{start_date}") AND
-            usage_end_time <= TIMESTAMP("{end_date}") AND
+            TIMESTAMP_TRUNC(_PARTITIONTIME, DAY) = TIMESTAMP("{start_date}") AND
             project.id = "{self.project_id}"
         """
         return self.bigquery_client.query(
@@ -1182,18 +1195,21 @@ class Gcp(CloudBase):
         #             GROUP BY sku.id) inr
         # ON    prices.sku.id = inr.sku_id
         #   AND prices.export_time = inr.export_time
+        dt = self._get_billing_threshold_date()
         inner_query = f"""
-        SELECT sku.id as sku_id, max(export_time) as export_time
-        FROM `{self._pricing_table_full_name()}`
-        WHERE service.id = '{COMPUTE_SERVICE_ID}'
-            AND sku.description LIKE '{sku_desription_pattern}'
-        GROUP BY sku.id"""
+            SELECT sku.id as sku_id, max(export_time) as export_time
+            FROM `{self._pricing_table_full_name()}`
+            WHERE service.id = '{COMPUTE_SERVICE_ID}'
+                AND sku.description LIKE '{sku_desription_pattern}'
+                AND TIMESTAMP_TRUNC(_PARTITIONTIME, DAY) >= TIMESTAMP("{dt}")
+            GROUP BY sku.id"""
         query = f"""
-        SELECT prices.list_price, prices.sku
-        FROM `{self._pricing_table_full_name()}` prices
-        INNER JOIN ({inner_query}) inr
-        ON    prices.sku.id = inr.sku_id
-          AND prices.export_time = inr.export_time
+            SELECT prices.list_price, prices.sku
+            FROM `{self._pricing_table_full_name()}` prices
+            INNER JOIN ({inner_query}) inr
+                ON prices.sku.id = inr.sku_id
+                AND prices.export_time = inr.export_time
+            WHERE TIMESTAMP_TRUNC(_PARTITIONTIME, DAY) >= TIMESTAMP("{dt}")
         """
         return query
 
