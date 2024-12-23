@@ -253,6 +253,7 @@ const GET_INVITATIONS = gql`
       invite_assignments {
         id
         scope_id
+        scope_name
         scope_type
         purpose
       }

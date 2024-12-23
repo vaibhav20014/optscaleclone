@@ -439,6 +439,7 @@ type Employee {
 type InvitationAssignment {
   id: String!
   scope_id: String!
+  scope_name: String!
   scope_type: String!
   purpose: String!
 }

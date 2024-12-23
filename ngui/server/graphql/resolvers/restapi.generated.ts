@@ -369,6 +369,7 @@ export type InvitationAssignment = {
   id: Scalars['String']['output'];
   purpose: Scalars['String']['output'];
   scope_id: Scalars['String']['output'];
+  scope_name: Scalars['String']['output'];
   scope_type: Scalars['String']['output'];
 };
 
@@ -1102,6 +1103,7 @@ export type InvitationAssignmentResolvers<ContextType = any, ParentType extends 
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   purpose?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scope_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  scope_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scope_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
