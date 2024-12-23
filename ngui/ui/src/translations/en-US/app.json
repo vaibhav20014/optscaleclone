@@ -910,6 +910,7 @@
   "infrastructureConstraints": "Infrastructure constraints",
   "inherit": "Inherit",
   "initialization": "Initialization",
+  "initializingOptscale": "OptScale is initializing. Please stand by.",
   "initiationDate": "Initiation date",
   "input": "Input",
   "inputMustContainOnlyUppercaseLatinLettersNumberOrUnderscore": "{inputName} must contain only uppercase latin letters, numbers, or underscore",

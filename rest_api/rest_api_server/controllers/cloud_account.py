@@ -726,7 +726,7 @@ class CloudAccountController(BaseController, ClickHouseMixin):
                 'forecast': expense_ctrl.get_monthly_forecast(
                     last_stats['cost'] + current_stats['cost'],
                     current_stats['cost'], first_expenses.get(acc.id)),
-                'tracked': current_stats['count'],
+                'resources': current_stats['count'],
                 'last_month_cost': last_stats['cost'],
                 'discovery_infos': discovery_infos.get(acc.id, {})
             }

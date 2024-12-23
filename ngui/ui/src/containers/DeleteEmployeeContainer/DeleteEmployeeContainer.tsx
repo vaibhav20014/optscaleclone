@@ -1,9 +1,9 @@
 import { useDispatch } from "react-redux";
 import { deleteEmployee } from "api";
-import { GET_CURRENT_EMPLOYEE, DELETE_EMPLOYEE } from "api/restapi/actionTypes";
+import { DELETE_EMPLOYEE } from "api/restapi/actionTypes";
 import DeleteEmployeeForm from "components/forms/DeleteEmployeeForm";
 import { FormValues } from "components/forms/DeleteEmployeeForm/types";
-import { useApiData } from "hooks/useApiData";
+import { useCurrentEmployee } from "hooks/coreData";
 import { useApiState } from "hooks/useApiState";
 import { useOrganizationInfo } from "hooks/useOrganizationInfo";
 import { isError } from "utils/api";
@@ -31,7 +31,8 @@ const getOrganizationManagersWhoSuitableForAssignment = (organizationManagers, d
     }));
 
 const DeleteEmployeeContainer = ({ employees, closeSideModal, entityToBeDeleted }) => {
-  const { apiData: { currentEmployee: { id: currentEmployeeId } = {} } = {} } = useApiData(GET_CURRENT_EMPLOYEE);
+  const { id: currentEmployeeId } = useCurrentEmployee();
+
   const { isLoading } = useApiState(DELETE_EMPLOYEE);
   const dispatch = useDispatch();
   const { name } = useOrganizationInfo();
