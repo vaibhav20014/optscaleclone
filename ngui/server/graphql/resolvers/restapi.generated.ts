@@ -160,6 +160,7 @@ export type CreateDataSourceInput = {
   azureTenantConfig?: InputMaybe<AzureTenantConfigInput>;
   databricksConfig?: InputMaybe<DatabricksConfigInput>;
   gcpConfig?: InputMaybe<GcpConfigInput>;
+  gcpTenantConfig?: InputMaybe<GcpTenantConfigInput>;
   k8sConfig?: InputMaybe<K8sConfigInput>;
   name?: InputMaybe<Scalars['String']['input']>;
   nebiusConfig?: InputMaybe<NebiusConfigInput>;

@@ -49,7 +49,7 @@ const GcpDataSourceConfigFragment = gql`
 `;
 
 const GcpTenantDataSourceConfigFragment = gql`
-  fragment GcpTenantDataSourceConfigFragment on GcpDataSource {
+  fragment GcpTenantDataSourceConfigFragment on GcpTenantDataSource {
     config {
       billing_data {
         dataset_name
@@ -173,6 +173,7 @@ const GET_DATA_SOURCES = gql`
       ...AzureTenantDataSourceConfigFragment
       ...AzureSubscriptionDataSourceConfigFragment
       ...GcpDataSourceConfigFragment
+      ...GcpTenantDataSourceConfigFragment
       ...AlibabaDataSourceConfigFragment
       ...NebiusDataSourceConfigFragment
       ...DatabricksDataSourceConfigFragment
@@ -183,6 +184,7 @@ const GET_DATA_SOURCES = gql`
   ${AzureTenantDataSourceConfigFragment}
   ${AzureSubscriptionDataSourceConfigFragment}
   ${GcpDataSourceConfigFragment}
+  ${GcpTenantDataSourceConfigFragment}
   ${AlibabaDataSourceConfigFragment}
   ${NebiusDataSourceConfigFragment}
   ${DatabricksDataSourceConfigFragment}

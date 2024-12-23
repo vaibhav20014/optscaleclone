@@ -377,6 +377,7 @@ input CreateDataSourceInput {
   azureSubscriptionConfig: AzureSubscriptionConfigInput
   azureTenantConfig: AzureTenantConfigInput
   gcpConfig: GcpConfigInput
+  gcpTenantConfig: GcpTenantConfigInput
   alibabaConfig: AlibabaConfigInput
   nebiusConfig: NebiusConfigInput
   databricksConfig: DatabricksConfigInput

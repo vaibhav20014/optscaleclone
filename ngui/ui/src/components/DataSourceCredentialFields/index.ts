@@ -10,7 +10,7 @@ import AzureSubscriptionCredentials, {
 import AzureTenantCredentials, { FIELD_NAMES as AZURE_TENANT_CREDENTIALS_FIELD_NAMES } from "./AzureTenantCredentials";
 import DatabricksCredentials, { FIELD_NAMES as DATABRICKS_CREDENTIALS_FIELD_NAMES } from "./DatabricksCredentials";
 import GcpCredentials, { FIELD_NAMES as GCP_CREDENTIALS_FIELD_NAMES } from "./GcpCredentials";
-import GcpTenantCredentials, { FIELD_NAMES as GCP_TENANT_CREDENTIALS_FIELD_NAMES } from "./GcpTenantCredentials ";
+import GcpTenantCredentials, { FIELD_NAMES as GCP_TENANT_CREDENTIALS_FIELD_NAMES } from "./GcpTenantCredentials";
 import KubernetesCredentials, { FIELD_NAMES as KUBERNETES_CREDENTIALS_FIELD_NAMES } from "./KubernetesCredentials";
 import NebiusCredentials from "./NebiusCredentials";
 
