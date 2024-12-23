@@ -95,6 +95,7 @@ class RestApiClient extends BaseClient {
           ...params.azureSubscriptionConfig,
           ...params.azureTenantConfig,
           ...params.gcpConfig,
+          ...params.gcpTenantConfig,
           ...params.alibabaConfig,
           ...params.nebiusConfig,
           ...params.databricksConfig,

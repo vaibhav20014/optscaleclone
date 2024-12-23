@@ -48,6 +48,18 @@ const GcpDataSourceConfigFragment = gql`
   }
 `;
 
+const GcpTenantDataSourceConfigFragment = gql`
+  fragment GcpTenantDataSourceConfigFragment on GcpDataSource {
+    config {
+      billing_data {
+        dataset_name
+        table_name
+        project_id
+      }
+    }
+  }
+`;
+
 const AlibabaDataSourceConfigFragment = gql`
   fragment AlibabaDataSourceConfigFragment on AlibabaDataSource {
     config {
@@ -213,6 +225,7 @@ const GET_DATA_SOURCE = gql`
       ...AzureTenantDataSourceConfigFragment
       ...AzureSubscriptionDataSourceConfigFragment
       ...GcpDataSourceConfigFragment
+      ...GcpTenantDataSourceConfigFragment
       ...AlibabaDataSourceConfigFragment
       ...NebiusDataSourceConfigFragment
       ...DatabricksDataSourceConfigFragment
@@ -223,6 +236,7 @@ const GET_DATA_SOURCE = gql`
   ${AzureTenantDataSourceConfigFragment}
   ${AzureSubscriptionDataSourceConfigFragment}
   ${GcpDataSourceConfigFragment}
+  ${GcpTenantDataSourceConfigFragment}
   ${AlibabaDataSourceConfigFragment}
   ${NebiusDataSourceConfigFragment}
   ${DatabricksDataSourceConfigFragment}

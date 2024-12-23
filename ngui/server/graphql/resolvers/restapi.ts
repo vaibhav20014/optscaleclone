@@ -19,6 +19,9 @@ const resolvers: Resolvers = {
         case "gcp_cnr": {
           return "GcpDataSource";
         }
+        case "gcp_tenant": {
+          return "GcpTenantDataSource";
+        }
         case "alibaba_cnr": {
           return "AlibabaDataSource";
         }
