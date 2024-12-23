@@ -62,7 +62,6 @@ class GoogleOauth2Provider:
             "code": code,
             'redirect_uri': redirect_uri,
         }
-        LOG.error(f"request_body: {request_body}")
         request = google_requests.Request()
         response = request(
             url=self.DEFAULT_TOKEN_URI,
@@ -70,14 +69,11 @@ class GoogleOauth2Provider:
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             body=urlencode(request_body).encode("utf-8"),
         )
-        LOG.error(f"response: {response}")
-        LOG.error(f"response.data: {response.data}")
         response_body = (
             response.data.decode("utf-8")
             if hasattr(response.data, "decode")
             else response.data
         )
-        LOG.error(f"response_body: {response_body}")
         if response.status != 200:
             raise ValueError(response_body)
         response_data = json.loads(response_body)
@@ -85,13 +81,10 @@ class GoogleOauth2Provider:
 
     def verify(self, code, **kwargs):
         try:
-            LOG.error(f"code: {code}")
             redirect_uri = kwargs.pop('redirect_uri', None)
             token = self.exchange_token(code, redirect_uri)
-            LOG.info(f"token: {token}")
             token_info = id_token.verify_oauth2_token(
                 token, google_requests.Request(), self.client_id())
-            LOG.warning(f"token_info: {token_info}")
             if not token_info.get('email_verified', False):
                 raise ForbiddenException(Err.OA0012, [])
             email = token_info['email']
