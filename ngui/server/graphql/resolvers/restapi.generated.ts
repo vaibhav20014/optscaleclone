@@ -292,6 +292,7 @@ export type GcpBillingDataConfig = {
 
 export type GcpBillingDataConfigInput = {
   dataset_name: Scalars['String']['input'];
+  project_id?: InputMaybe<Scalars['String']['input']>;
   table_name: Scalars['String']['input'];
 };
 

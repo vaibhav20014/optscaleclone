@@ -330,6 +330,7 @@ input AzureTenantConfigInput {
 input GcpBillingDataConfigInput {
   dataset_name: String!
   table_name: String!
+  project_id: String
 }
 
 input GcpConfigInput {
