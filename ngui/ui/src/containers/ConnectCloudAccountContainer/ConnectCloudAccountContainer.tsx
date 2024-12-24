@@ -32,7 +32,7 @@ const ConnectCloudAccountContainer = () => {
 
   const onSubmit = (params) => {
     const configName = {
-      [AWS_CNR]: params.linked ? "awsLinkedConfig" : "awsRootConfig",
+      [AWS_CNR]: params.config.linked ? "awsLinkedConfig" : "awsRootConfig",
       [AZURE_TENANT]: "azureTenantConfig",
       [AZURE_CNR]: "azureSubscriptionConfig",
       [GCP_CNR]: "gcpConfig",

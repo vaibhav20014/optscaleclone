@@ -388,6 +388,7 @@ export type K8sConfig = {
 };
 
 export type K8sConfigInput = {
+  cost_model?: InputMaybe<Scalars['JSONObject']['input']>;
   password: Scalars['String']['input'];
   user: Scalars['String']['input'];
 };

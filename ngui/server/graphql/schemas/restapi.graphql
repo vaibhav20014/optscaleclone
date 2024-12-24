@@ -362,6 +362,7 @@ input NebiusConfigInput {
 input K8sConfigInput {
   password: String!
   user: String!
+  cost_model: JSONObject
 }
 
 input DatabricksConfigInput {
