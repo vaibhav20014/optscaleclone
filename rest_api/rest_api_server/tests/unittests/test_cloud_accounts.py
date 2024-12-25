@@ -2035,3 +2035,57 @@ class TestCloudAccountApi(TestApiBase):
     def test_adapter_implemented(self):
         for t in list(CloudTypes):
             CloudAdapter.get_adapter({'type': t.value})
+
+    def test_gcp_tenant_workflow(self):
+        body = {
+            'name': 'gcp cloud_acc',
+            'type': 'gcp_tenant',
+            'config': {
+                'credentials': {
+                    "project_id": "hystax",
+                    "type": "service_account",
+                    "private_key_id": "redacted",
+                    "private_key": "redacted",
+                },
+                'billing_data': {
+                    'dataset_name': 'billing_data',
+                    'table_name': 'gcp_billing_export_v1',
+                },
+            }
+        }
+        code, parent_ca = self.create_cloud_account(self.org_id, body)
+        self.assertEqual(code, 201)
+        self.assertEqual(parent_ca['type'], body['type'])
+        self.assertDictEqual(parent_ca['config']['billing_data'], {
+            'dataset_name': 'billing_data',
+            'project_id': 'hystax',
+            'table_name': 'gcp_billing_export_v1'
+        })
+        patch('tools.cloud_adapter.clouds.gcp_tenant.GcpTenant'
+              '.get_children_configs',
+              return_value=[{
+                  'name': 'child 1',
+                  'config': {'project_id': 'project_1'},
+                  'type': 'gcp_cnr'
+              }]).start()
+        patch('tools.cloud_adapter.clouds.gcp.Gcp.validate_credentials',
+              return_value={'account_id': 'project_1', 'warnings': []}
+              ).start()
+        code, _ = self.client.observe_resources(self.org_id)
+        self.assertEqual(code, 204)
+        code, resp = self.client.cloud_account_list(self.org_id)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(resp['cloud_accounts']), 2)
+
+        for c in resp['cloud_accounts']:
+            if c['id'] != parent_ca['id']:
+                child_ca_id = c['id']
+                self.assertEqual(c['type'], 'gcp_cnr')
+                self.assertDictEqual(c['config']['credentials'], {
+                    "type": "service_account",
+                    "private_key_id": "redacted",
+                    "private_key": "redacted",
+                })
+                ca_obj = self.get_cloud_account_object(child_ca_id)
+                conf = decode_config(ca_obj.config)
+                self.assertEqual(conf, {'project_id': 'project_1'})

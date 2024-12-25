@@ -8,6 +8,7 @@ import {
   ALIBABA_CREDENTIALS_FIELD_NAMES,
   AZURE_SUBSCRIPTION_CREDENTIALS_FIELD_NAMES,
   GCP_CREDENTIALS_FIELD_NAMES,
+  GCP_TENANT_CREDENTIALS_FIELD_NAMES,
   DATABRICKS_CREDENTIALS_FIELD_NAMES,
   KUBERNETES_CREDENTIALS_FIELD_NAMES,
   AWS_LINKED_CREDENTIALS_FIELD_NAMES,
@@ -39,7 +40,8 @@ import {
   GCP_CNR,
   DATABRICKS,
   KUBERNETES_CNR,
-  AWS_ROOT_CONNECT_CUR_VERSION
+  AWS_ROOT_CONNECT_CUR_VERSION,
+  GCP_TENANT
 } from "utils/constants";
 import { readFileAsText } from "utils/files";
 import { CredentialInputs } from "./FormElements";
@@ -222,6 +224,8 @@ const UpdateCredentialsWarning = ({ type }) => {
       );
     case GCP_CNR:
       return renderUpdateWarning();
+    case GCP_TENANT:
+      return renderUpdateWarning();
     case NEBIUS:
       return renderUpdateWarning();
     default:
@@ -374,6 +378,29 @@ const getConfig = (type, config) => {
               billing_data: {
                 dataset_name: formData[GCP_CREDENTIALS_FIELD_NAMES.BILLING_DATA_DATASET],
                 table_name: formData[GCP_CREDENTIALS_FIELD_NAMES.BILLING_DATA_TABLE]
+              }
+            }
+          };
+        }
+      };
+    case GCP_TENANT:
+      return {
+        getDefaultFormValues: () => ({
+          [GCP_TENANT_CREDENTIALS_FIELD_NAMES.BILLING_DATA_DATASET]: config.billing_data.dataset_name,
+          [GCP_TENANT_CREDENTIALS_FIELD_NAMES.BILLING_DATA_TABLE]: config.billing_data.table_name,
+          [GCP_TENANT_CREDENTIALS_FIELD_NAMES.CREDENTIALS]: ""
+        }),
+        parseFormDataToApiParams: async (formData) => {
+          // TODO: the form validates the file itself, not the content.
+          // Try to do both to avoid parsing the string here.
+          const credentials = await readFileAsText(formData[GCP_TENANT_CREDENTIALS_FIELD_NAMES.CREDENTIALS]);
+
+          return {
+            config: {
+              credentials: JSON.parse(credentials),
+              billing_data: {
+                dataset_name: formData[GCP_TENANT_CREDENTIALS_FIELD_NAMES.BILLING_DATA_DATASET],
+                table_name: formData[GCP_TENANT_CREDENTIALS_FIELD_NAMES.BILLING_DATA_TABLE]
               }
             }
           };

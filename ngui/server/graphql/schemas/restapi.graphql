@@ -6,6 +6,7 @@ enum DataSourceType {
   azure_tenant
   azure_cnr
   gcp_cnr
+  gcp_tenant
   alibaba_cnr
   nebius
   databricks
@@ -35,16 +36,16 @@ type DataSourceDetails {
 }
 
 interface DataSourceInterface {
-  id: String!
-  name: String!
-  type: DataSourceType!
+  id: String
+  name: String
+  type: DataSourceType
   parent_id: String
-  account_id: String!
-  last_import_at: Int!
-  last_import_attempt_at: Int!
+  account_id: String
+  last_import_at: Int
+  last_import_attempt_at: Int
   last_import_attempt_error: String
-  last_getting_metrics_at: Int!
-  last_getting_metric_attempt_at: Int!
+  last_getting_metrics_at: Int
+  last_getting_metric_attempt_at: Int
   last_getting_metric_attempt_error: String
   details: DataSourceDetails
 }
@@ -149,6 +150,33 @@ type GcpDataSource implements DataSourceInterface {
   last_getting_metric_attempt_error: String
   details: DataSourceDetails
   config: GcpConfig
+}
+
+# GCP tenant data source
+type GcpTenantBillingDataConfig {
+  dataset_name: String
+  table_name: String
+  project_id: String
+}
+
+type GcpTenantConfig {
+  billing_data: GcpTenantBillingDataConfig
+}
+
+type GcpTenantDataSource implements DataSourceInterface {
+  id: String!
+  name: String!
+  type: DataSourceType!
+  parent_id: String
+  account_id: String
+  last_import_at: Int!
+  last_import_attempt_at: Int!
+  last_import_attempt_error: String
+  last_getting_metrics_at: Int!
+  last_getting_metric_attempt_at: Int!
+  last_getting_metric_attempt_error: String
+  details: DataSourceDetails
+  config: GcpTenantConfig
 }
 
 # Alibaba data source
@@ -302,9 +330,15 @@ input AzureTenantConfigInput {
 input GcpBillingDataConfigInput {
   dataset_name: String!
   table_name: String!
+  project_id: String
 }
 
 input GcpConfigInput {
+  billing_data: GcpBillingDataConfigInput!
+  credentials: JSONObject!
+}
+
+input GcpTenantConfigInput {
   billing_data: GcpBillingDataConfigInput!
   credentials: JSONObject!
 }
@@ -328,6 +362,7 @@ input NebiusConfigInput {
 input K8sConfigInput {
   password: String!
   user: String!
+  cost_model: JSONObject
 }
 
 input DatabricksConfigInput {
@@ -344,6 +379,7 @@ input CreateDataSourceInput {
   azureSubscriptionConfig: AzureSubscriptionConfigInput
   azureTenantConfig: AzureTenantConfigInput
   gcpConfig: GcpConfigInput
+  gcpTenantConfig: GcpTenantConfigInput
   alibabaConfig: AlibabaConfigInput
   nebiusConfig: NebiusConfigInput
   databricksConfig: DatabricksConfigInput
@@ -359,6 +395,7 @@ input UpdateDataSourceInput {
   azureSubscriptionConfig: AzureSubscriptionConfigInput
   azureTenantConfig: AzureTenantConfigInput
   gcpConfig: GcpConfigInput
+  gcpTenantConfig: GcpTenantConfigInput
   alibabaConfig: AlibabaConfigInput
   nebiusConfig: NebiusConfigInput
   databricksConfig: DatabricksConfigInput
@@ -405,6 +442,7 @@ type Employee {
 type InvitationAssignment {
   id: String!
   scope_id: String!
+  scope_name: String!
   scope_type: String!
   purpose: String!
 }

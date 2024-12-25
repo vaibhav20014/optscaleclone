@@ -1,8 +1,10 @@
+import { Box } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
 import DeleteEntity from "components/DeleteEntity";
 import PageContentDescription from "components/PageContentDescription";
 import { useDataSources } from "hooks/useDataSources";
-import { AZURE_TENANT } from "utils/constants";
+import { AZURE_TENANT, GCP_TENANT } from "utils/constants";
+import { SPACING_1 } from "utils/layouts";
 import Survey from "./FormElements/Survey";
 import { DisconnectCloudAccountFormProps, FormValues } from "./types";
 import { getDefaultValues } from "./utils";
@@ -17,6 +19,7 @@ const DisconnectCloudAccountForm = ({
 }: DisconnectCloudAccountFormProps) => {
   const { disconnectQuestionId } = useDataSources(type);
   const isAzureTenant = type === AZURE_TENANT;
+  const isGcpTenant = type === GCP_TENANT;
 
   const methods = useForm<FormValues>({ defaultValues: getDefaultValues() });
   const { handleSubmit } = methods;
@@ -24,8 +27,8 @@ const DisconnectCloudAccountForm = ({
   return (
     <FormProvider {...methods}>
       <form data-test-id="disconnect-datasource-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        {(parentId || isAzureTenant) && (
-          <>
+        {(parentId || isAzureTenant || isGcpTenant) && (
+          <Box mb={SPACING_1}>
             {parentId && (
               <PageContentDescription
                 position="top"
@@ -34,15 +37,15 @@ const DisconnectCloudAccountForm = ({
                 }}
               />
             )}
-            {isAzureTenant && (
+            {isAzureTenant || isGcpTenant ? (
               <PageContentDescription
                 position="top"
                 alertProps={{
                   messageId: "parentDataSourceDisconnectionWarning"
                 }}
               />
-            )}
-          </>
+            ) : null}
+          </Box>
         )}
         <DeleteEntity
           message={{
