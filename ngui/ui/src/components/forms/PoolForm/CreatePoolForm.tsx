@@ -2,13 +2,22 @@ import { Box } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
 import ButtonLoader from "components/ButtonLoader";
 import FormButtonsWrapper from "components/FormButtonsWrapper";
+import EmployeesService from "services/EmployeesService";
 import PoolsService from "services/PoolsService";
-import { NameField, LimitField, TypeSelector, AutoExtendCheckbox } from "./FormElements";
-import { CreatePoolFormValues } from "./types";
+import { isOrganizationManager, isPoolManager } from "utils/employees";
+import { NameField, LimitField, TypeSelector, AutoExtendCheckbox, OwnerSelector } from "./FormElements";
+import { CreatePoolFormProps, CreatePoolFormValues } from "./types";
 import { getCreateFormDefaultValues } from "./utils";
 
-const CreatePoolForm = ({ parentId, onSuccess, unallocatedLimit }) => {
-  const { isLoading: isCreatePoolLoading, createPool } = PoolsService().useCreatePool();
+const CreatePoolForm = ({ parentId, onSuccess, unallocatedLimit }: CreatePoolFormProps) => {
+  const { useCreatePool } = PoolsService();
+  const { isLoading: isCreatePoolLoading, createPool } = useCreatePool();
+
+  const { useGet: useGetEmployees } = EmployeesService();
+
+  const { isLoading: isGetEmployeesLoading, employees } = useGetEmployees();
+
+  const owners = employees.filter((employee) => isOrganizationManager(employee) || isPoolManager(employee, parentId));
 
   const methods = useForm<CreatePoolFormValues>({
     defaultValues: getCreateFormDefaultValues()
@@ -22,9 +31,10 @@ const CreatePoolForm = ({ parentId, onSuccess, unallocatedLimit }) => {
     <FormProvider {...methods}>
       <form data-test-id="form_add_pool" onSubmit={onSubmit} noValidate>
         <NameField />
+        <TypeSelector />
+        <OwnerSelector isLoading={isGetEmployeesLoading} owners={owners} helpMessageId="createPoolDefaultOwnerHelp" />
         <LimitField unallocatedLimit={unallocatedLimit} />
         <AutoExtendCheckbox />
-        <TypeSelector />
         <FormButtonsWrapper justifyContent="space-between">
           <Box display="flex">
             <ButtonLoader
