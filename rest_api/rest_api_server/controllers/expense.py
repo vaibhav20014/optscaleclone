@@ -1377,8 +1377,8 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
         return traffic_expenses_map
 
     def process_data(self, resources_data, organization_id, filters, **kwargs):
-        (not_clustered_resources, clustered_resources_map,
-         joined_ids) = self._extract_unique_values_from_resources(
+        (not_clustered_resources, clustered_resources_map, joined_ids,
+         cluster_id_cloud_res) = self._extract_unique_values_from_resources(
             resources_data, filters, organization_id)
         not_clustered_expenses, clustered_expenses = [], []
         total_cost = 0
@@ -1425,6 +1425,7 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
             'end_date': self.end_date,
             'total_count': total_count,
             'total_cost': total_cost,
+            'sub_resources_map': cluster_id_cloud_res,
             **expenses_data
         }
         if limit:
@@ -1450,20 +1451,32 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
             organization_id, query_filters.copy(),
             data_filters.copy(), extra_params.copy())
         result = self.process_data(
-            resources_data, organization_id, filters,
-            **query_filters, **extra_params)
+            resources_data, organization_id, filters, **query_filters,
+            **extra_params)
+        cluster_id_cloud_res_id = result.pop('sub_resources_map', None)
         if self.JOIN_TRAFFIC_EXPENSES:
-            self.join_traffic_expenses(result, traffic_expenses_map)
+            self.join_traffic_expenses(result, traffic_expenses_map,
+                                       cluster_id_cloud_res_id)
         return result
 
-    def join_traffic_expenses(self, result, traffic_expenses_map):
+    def join_traffic_expenses(self, result, traffic_expenses_map,
+                              cluster_id_cloud_res_id):
         for e in result[self.EXPENSES_KEY]:
             cloud_resource_id = e.get('cloud_resource_id')
+            cluster_type_id = e.get('cluster_type_id')
+            resource_id = e.get('id')
             if not cloud_resource_id:
                 continue
-            traffic_expenses = traffic_expenses_map.get(cloud_resource_id)
-            if traffic_expenses:
-                e['traffic_expenses'] = traffic_expenses
+            cloud_resource_ids = [cloud_resource_id]
+            if cluster_type_id:
+                cloud_resource_ids = cluster_id_cloud_res_id.get(
+                    resource_id, [])
+            for cloud_res_id in cloud_resource_ids:
+                traffic_expenses = traffic_expenses_map.get(cloud_res_id)
+                if traffic_expenses:
+                    if 'traffic_expenses' not in e:
+                        e['traffic_expenses'] = []
+                    e['traffic_expenses'].extend(traffic_expenses)
 
     def _extract_unique_values_from_resources(
             self, resources_data, input_filters, organization_id,
@@ -1474,9 +1487,10 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
         input_resource_ids = input_filters.get('resource_id', [])
         input_ca_ids = input_filters.get('cloud_account_id', [])
         input_rec_filter = input_filters.get('recommendations')
+        cluster_id_cloud_res = defaultdict(list)
         cluster_ids = set()
         for data in resources_data:
-            _id = data.pop('_id')
+            _id = data['_id']
             ca_id = _id.get('cloud_account_id')
             cluster_id = _id.get('cluster_id')
             r_ids = data.pop('resources', [])
@@ -1508,6 +1522,7 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
             for s in sub_resources:
                 sub_res_id = s['_id']
                 cluster_id = s['cluster_id']
+                cluster_id_cloud_res[cluster_id].append(s['cloud_resource_id'])
                 if cluster_id in clusters_to_exclude:
                     continue
                 if sub_res_id not in clustered_resources_map:
@@ -1528,7 +1543,8 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
             set(clustered_resources_map.values()))
         if include_subresources:
             resource_ids += list(clustered_resources_map.keys())
-        return not_clustered_resources, clustered_resources_map, resource_ids
+        return (not_clustered_resources, clustered_resources_map, resource_ids,
+                cluster_id_cloud_res)
 
     def format_resource(self, resource, last_run_ts):
         optional_params = ['name', 'region', 'employee_id', 'pool_id',
@@ -1618,8 +1634,8 @@ class RawExpenseController(CleanExpenseController):
         return super().get(organization_id=organization_id, **params)
 
     def process_data(self, resources_data, organization_id, filters, **kwargs):
-        res = super().process_data(resources_data, organization_id,
-                                   filters, **kwargs)
+        res = super().process_data(resources_data, organization_id, filters,
+                                   **kwargs)
         res.pop('total_count', None)
         return res
 
@@ -1895,7 +1911,7 @@ class SummaryExpenseController(CleanExpenseController):
                 counted_resource_ids.extend(res_group['resource_ids'])
         if excl_clusters:
             counted_resource_ids = set(counted_resource_ids) - excl_clusters
-            all_resource_ids = set(all_resource_ids) - excl_clusters
+            all_resource_ids = list(set(all_resource_ids) - excl_clusters)
             cluster_savings_map = {k: v for k, v in cluster_savings_map.items()
                                    if k not in excl_clusters}
         for cluster, sub_res in cluster_sub_res.items():
