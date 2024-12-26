@@ -1379,7 +1379,7 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
     def process_data(self, resources_data, organization_id, filters, **kwargs):
         (not_clustered_resources, clustered_resources_map,
          joined_ids) = self._extract_unique_values_from_resources(
-            resources_data, filters)
+            resources_data, filters, organization_id)
         not_clustered_expenses, clustered_expenses = [], []
         total_cost = 0
         cloud_account_ids = kwargs['cloud_account_id']
@@ -1466,20 +1466,22 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
                 e['traffic_expenses'] = traffic_expenses
 
     def _extract_unique_values_from_resources(
-            self, resources_data, input_filters, include_subresources=True):
+            self, resources_data, input_filters, organization_id,
+            include_subresources=True):
         not_clustered_resources = []
         clustered_resources_map = {}
         cloud_account_ids = set()
         input_resource_ids = input_filters.get('resource_id', [])
         input_ca_ids = input_filters.get('cloud_account_id', [])
-        cluster_ids = []
+        input_rec_filter = input_filters.get('recommendations')
+        cluster_ids = set()
         for data in resources_data:
             _id = data.pop('_id')
             ca_id = _id.get('cloud_account_id')
             cluster_id = _id.get('cluster_id')
             r_ids = data.pop('resources', [])
             if ca_id is None and cluster_id is None:
-                cluster_ids.extend(r_ids)
+                cluster_ids.update(r_ids)
             if ca_id:
                 cloud_account_ids.add(ca_id)
                 if cluster_id:
@@ -1490,19 +1492,38 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
                         lambda x: x in input_resource_ids, r_ids))
                     # show specified clustered resources outside of cluster
                     not_clustered_resources.extend(res_ids_in)
-                    clustered_resources_map.update(
-                        {r: cluster_id for r in r_ids if r not in res_ids_in})
+                    res_ids_not_in = {r: cluster_id for r in r_ids
+                                      if r not in res_ids_in}
+                    if res_ids_not_in:
+                        clustered_resources_map.update(res_ids_not_in)
+                        cluster_ids.add(cluster_id)
                 else:
                     not_clustered_resources.extend(r_ids)
-        ext_cluster_ids = set()
-        for cl_id in cluster_ids:
-            if cl_id not in set(clustered_resources_map.values()):
-                ext_cluster_ids.add(cl_id)
-        if ext_cluster_ids:
+        if cluster_ids:
+            clusters_to_exclude = set()
+            last_run = self.get_last_run_ts_by_org_id(organization_id)
+            # find all sub-resources to calculate full cluster cost
             sub_resources = self.resources_collection.find(
-                {'cluster_id': {'$in': list(ext_cluster_ids)}}, ['cluster_id'])
+                {'cluster_id': {'$in': list(cluster_ids)}})
             for s in sub_resources:
-                clustered_resources_map[s['_id']] = s['cluster_id']
+                sub_res_id = s['_id']
+                cluster_id = s['cluster_id']
+                if cluster_id in clusters_to_exclude:
+                    continue
+                if sub_res_id not in clustered_resources_map:
+                    # exclude the whole cluster if recommendation=False and at
+                    # least 1 sub-resource has recommendations
+                    if input_rec_filter is False and s.get(
+                            'recommendations', {}).get(
+                                'run_timestamp', 0) >= last_run:
+                        clusters_to_exclude.add(cluster_id)
+                        continue
+                    clustered_resources_map[sub_res_id] = s['cluster_id']
+            if clusters_to_exclude:
+                clustered_resources_map = {
+                    k: v for k, v in clustered_resources_map.items()
+                    if v not in clusters_to_exclude
+                }
         resource_ids = not_clustered_resources + list(
             set(clustered_resources_map.values()))
         if include_subresources:
@@ -1757,13 +1778,14 @@ class SummaryExpenseController(CleanExpenseController):
             }},
         ]
 
-    def _get_sub_resources_data(self, cluster_ids, last_run_ts):
+    def _get_sub_resources_data(self, cluster_ids, last_run_ts, recommendation):
         match_stage = {'$match': {'$and': [
             {'cluster_id': {'$in': cluster_ids}}, {'deleted_at': 0}]}}
         group_stage = {
             '$group': {
                 '_id': '$cluster_id',
                 'resource_ids': {'$addToSet': '$_id'},
+                'run_timestamp': {'$addToSet': '$run_timestamp'},
                 'total_saving': {
                     '$sum': {
                         '$cond': {
@@ -1780,10 +1802,12 @@ class SummaryExpenseController(CleanExpenseController):
         pipeline = [match_stage] + self._pipeline_unwind_steps() + [group_stage]
 
         data = self.resources_collection.aggregate(pipeline)
-        cluster_resource_ids = []
+        cluster_resource_ids = {}
         cluster_savings_map = {}
         for x in data:
-            cluster_resource_ids.extend(x['resource_ids'])
+            if recommendation is False and x['run_timestamp']:
+                continue
+            cluster_resource_ids[x['_id']] = x['resource_ids']
             cluster_savings_map[x['_id']] = x['total_saving']
         return cluster_resource_ids, cluster_savings_map
 
@@ -1797,7 +1821,7 @@ class SummaryExpenseController(CleanExpenseController):
         self._process_traffic_filters(
             query_filters['cloud_account_id'], data_filters)
         last_run_ts = self.get_last_run_ts_by_org_id(organization_id)
-
+        recommendation = params.get('recommendations')
         filter_cond = self.generate_filters_pipeline(
             organization_id, self.start_date, self.end_date,
             query_filters, data_filters)
@@ -1813,6 +1837,7 @@ class SummaryExpenseController(CleanExpenseController):
                     'first_seen': {'$trunc': {
                         '$divide': ['$first_seen', DAY_IN_SECONDS]}}
                 },
+                'run_timestamp': {'$addToSet': '$run_timestamp'},
                 'resource_ids': {'$addToSet': '$_id'},
                 'total_saving': {
                     '$sum': {
@@ -1833,22 +1858,30 @@ class SummaryExpenseController(CleanExpenseController):
         all_resource_ids = []
         counted_resource_ids = []
         cluster_savings_map = {}
+        excl_clusters = set()
+        cluster_sub_res = {}
         for res_group in sorted(
                 data, key=lambda x: x['_id']['cluster_type_id'] or ''):
             cluster_id = res_group['_id']['cluster_id']
             cluster_type_id = res_group['_id']['cluster_type_id']
             if cluster_type_id:
                 # clusters
-                cluster_ids = list(filter(lambda x: x not in all_resource_ids,
-                                          res_group['resource_ids']))
+                cluster_ids = list(filter(
+                    lambda x: x not in all_resource_ids and x not in excl_clusters,
+                    res_group['resource_ids']))
                 sub_resources_ids, cluster_savings = self._get_sub_resources_data(
-                    cluster_ids, last_run_ts)
+                    cluster_ids, last_run_ts, recommendation)
+                cluster_sub_res.update(sub_resources_ids)
                 cluster_savings_map.update(cluster_savings)
                 all_resource_ids.extend(cluster_ids)
-                all_resource_ids.extend(sub_resources_ids)
-                counted_resource_ids.extend(cluster_ids)
+                counted_resource_ids.extend(list(sub_resources_ids))
             elif cluster_id:
                 # clustered resources
+                if cluster_id in excl_clusters:
+                    continue
+                if recommendation is False and res_group['run_timestamp']:
+                    excl_clusters.add(cluster_id)
+                    continue
                 if 'cloud_account_id' not in filters:
                     if cluster_id not in cluster_savings_map:
                         cluster_savings_map[cluster_id] = 0
@@ -1860,9 +1893,17 @@ class SummaryExpenseController(CleanExpenseController):
                 result['total_saving'] += res_group['total_saving']
                 all_resource_ids.extend(res_group['resource_ids'])
                 counted_resource_ids.extend(res_group['resource_ids'])
+        if excl_clusters:
+            counted_resource_ids = set(counted_resource_ids) - excl_clusters
+            all_resource_ids = set(all_resource_ids) - excl_clusters
+            cluster_savings_map = {k: v for k, v in cluster_savings_map.items()
+                                   if k not in excl_clusters}
+        for cluster, sub_res in cluster_sub_res.items():
+            if cluster not in excl_clusters:
+                all_resource_ids.extend(sub_res)
         result['total_count'] += len(set(counted_resource_ids))
         result['total_cost'] = self._get_clickhouse_total_cost(
-            set(all_resource_ids))
+            all_resource_ids)
         result['total_saving'] += sum(x for x in cluster_savings_map.values())
         return result
 

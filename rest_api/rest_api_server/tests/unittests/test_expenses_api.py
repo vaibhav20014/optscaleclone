@@ -4100,18 +4100,19 @@ class TestExpensesApi(TestApiBase):
         code, response = self.client.clean_expenses_get(
             self.org_id, time - 100, time + 100, body)
         self.assertEqual(code, 200)
-        self.assertEqual(response['total_cost'], 550)
-        self.assertEqual(response['total_count'], 2)
-        self.assertTrue(len(response['clean_expenses']) == 2)
+        # cluster awesome/val excluded as have resource with recommendations
+        self.assertEqual(response['total_cost'], 300)
+        self.assertEqual(response['total_count'], 1)
+        self.assertTrue(len(response['clean_expenses']) == 1)
         self.assertEqual(response['clean_expenses'][0]['resource_id'],
                          resource2['cluster_id'])
 
         code, response = self.client.summary_expenses_get(
             self.org_id, time - 100, time + 100, body)
         self.assertEqual(code, 200)
-        self.assertEqual(response['total_cost'], 550)
-        self.assertEqual(response['total_count'], 2)
-        self.assertEqual(response['total_saving'], 1165)
+        self.assertEqual(response['total_cost'], 300)
+        self.assertEqual(response['total_count'], 1)
+        self.assertEqual(response['total_saving'], 0)
 
         body = {'resource_type': '%s:cluster' % cluster_type['name']}
         code, response = self.client.clean_expenses_get(
@@ -4145,7 +4146,7 @@ class TestExpensesApi(TestApiBase):
 
         self._make_resources_active([resource1['cluster_id']])
         body = {'resource_type': '%s:cluster' % cluster_type['name'],
-                'active': True, 'recommendations': False}
+                'active': True}
         code, response = self.client.clean_expenses_get(
             self.org_id, time - 100, time + 100, body)
         self.assertEqual(code, 200)
@@ -4208,16 +4209,16 @@ class TestExpensesApi(TestApiBase):
         code, response = self.client.clean_expenses_get(
             self.org_id, time - 100, time + 100, body)
         self.assertEqual(code, 200)
-        self.assertEqual(response['total_cost'], 800)
-        self.assertEqual(response['total_count'], 3)
-        self.assertEqual(len(response.get('clean_expenses', [])), 3)
+        self.assertEqual(response['total_cost'], 550)
+        self.assertEqual(response['total_count'], 2)
+        self.assertEqual(len(response.get('clean_expenses', [])), 2)
 
         code, response = self.client.summary_expenses_get(
             self.org_id, time - 100, time + 100, body)
         self.assertEqual(code, 200)
-        self.assertEqual(response['total_cost'], 800)
-        self.assertEqual(response['total_count'], 3)
-        self.assertEqual(response['total_saving'], 1165)
+        self.assertEqual(response['total_cost'], 550)
+        self.assertEqual(response['total_count'], 2)
+        self.assertEqual(response['total_saving'], 0)
 
     def test_clean_expenses_shareables(self):
         code, resource1 = self.create_cloud_resource(
