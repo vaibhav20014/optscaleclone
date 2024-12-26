@@ -518,7 +518,8 @@ export const createPool = (organizationId, params) =>
       parent_id: params.parentId,
       limit: params.limit,
       purpose: params.type,
-      auto_extension: params.autoExtension
+      auto_extension: params.autoExtension,
+      default_owner_id: params.defaultOwnerId
     }
   });
 
