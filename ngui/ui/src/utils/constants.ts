@@ -256,7 +256,7 @@ export const ACTIVE_BE_FILTER = "active";
 export const ACTIVE_FILTER = "active";
 
 export const RECOMMENDATIONS_BE_FILTER = "recommendations";
-export const AVAILABLE_SAVINGS_FILTER = "availableSavings";
+export const RECOMMENDATIONS_FILTER = "recommendations";
 
 export const CONSTRAINT_VIOLATED_BE_FILTER = "constraint_violated";
 export const CONSTRAINT_VIOLATED_FILTER = "constraintViolated";
