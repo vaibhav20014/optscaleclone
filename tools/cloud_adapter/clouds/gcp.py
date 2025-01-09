@@ -1278,8 +1278,11 @@ class Gcp(CloudBase):
         # m2 instance family is a special case.
         # Pricing table only contains "premium" prices
         # that need to be added to the regular m1 prices.
-        prices[("m2", False)].vcpu_price += prices[("m1", False)].vcpu_price
-        prices[("m2", False)].ram_gb_price += prices[("m1", False)].ram_gb_price
+        if ("m2", False) in prices and ("m1", False) in prices:
+            prices[("m2", False)].vcpu_price += prices[
+                ("m1", False)].vcpu_price
+            prices[("m2", False)].ram_gb_price += prices[
+                ("m1", False)].ram_gb_price
 
     def _get_machine_family_resource_prices(
         self, region: str
