@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import MlExecutorsTable from "components/MlExecutorsTable";
 import { useIsOptScaleModeEnabled } from "hooks/useIsOptScaleModeEnabled";
+import { useOrganizationInfo } from "hooks/useOrganizationInfo";
 import MlExecutorsService from "services/MlExecutorsService";
 import { OPTSCALE_MODE } from "utils/constants";
 
@@ -12,7 +13,9 @@ const MlTaskExecutorsContainer = () => {
 
   const taskIds = useMemo(() => [taskId], [taskId]);
 
-  const { isLoading, executors = [] } = useGet({ taskIds });
+  const { organizationId } = useOrganizationInfo();
+
+  const { isLoading, executors = [] } = useGet({ taskIds, organizationId });
 
   const isFinOpsEnabled = useIsOptScaleModeEnabled(OPTSCALE_MODE.FINOPS);
 
