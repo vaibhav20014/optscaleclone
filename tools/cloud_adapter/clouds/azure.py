@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, timedelta
 import enum
 import logging
+import re
 import time
 from requests.models import Request
 from urllib.parse import urlencode
@@ -366,22 +367,6 @@ class Azure(CloudBase):
         except ResourceNotFound:
             return None
         return self._extract_server_status(server.instance_view)
-
-    def _extract_public_ip_ids(self, nic_object):
-        public_ip_ids = [conf.public_ip_address.id
-                         for conf in nic_object.ip_configurations
-                         if conf.public_ip_address]
-        return public_ip_ids
-
-    def _extract_server_ips(self, server_object):
-        public_ip_ids = []
-        for nic in server_object.network_profile.network_interfaces:
-            nic_info = self._parse_azure_id(nic.id)
-            nic = self.network.network_interfaces.get(
-                nic_info['group_name'], nic_info['name'],
-                expand='ipConfigurations/publicIPAddress')
-            public_ip_ids.extend(self._extract_public_ip_ids(nic))
-        return public_ip_ids
 
     def _parse_azure_id(self, azure_id):
         azure_id_parts = azure_id.split('/')
@@ -757,48 +742,35 @@ class Azure(CloudBase):
         return [(self.discover_bucket_resources, ())]
 
     def discover_ip_address_resources(self):
-        vms = {}
-        vm_ids = [vm.id for vm in
-                  list(self.compute.virtual_machines.list_all())]
-        for vm_id in vm_ids:
-            try:
-                vm_parsed_id = self._parse_azure_id(vm_id)
-                vm = self.compute.virtual_machines.get(
-                    vm_parsed_id['group_name'], vm_parsed_id['name'],
-                    expand=InstanceViewTypes.instance_view)
-                ip_address_ids = self._extract_server_ips(vm)
-                for ip_address_id in ip_address_ids:
-                    vms[ip_address_id] = {}
-                    vms[ip_address_id]['status'] = self._extract_server_status(
-                        vm.instance_view)
-                    vms[ip_address_id]['vm_id'] = vm_id
-            except ResourceNotFound:
-                continue
-        lbs = {}
-        load_balancers = self.network.load_balancers.list_all()
-        for lb in load_balancers:
-            for ip_cfg in lb.frontend_ip_configurations:
-                if not ip_cfg.public_ip_address:
-                    continue
-                lbs[ip_cfg.public_ip_address.id] = lb.id
-        gateways = {}
-        app_gateways = self.network.application_gateways.list_all()
-        for app_gateway in app_gateways:
-            for ip_cfg in app_gateway.frontend_ip_configurations:
-                if not ip_cfg.public_ip_address:
-                    continue
-                gateways[ip_cfg.public_ip_address.id] = app_gateway.id
         all_ip_addresses = list(self.network.public_ip_addresses.list_all())
         for public_ip_address in all_ip_addresses:
             tags = public_ip_address.tags or {}
             public_ip_id = public_ip_address.id
             cloud_console_link = self._generate_cloud_link(public_ip_id)
-            vm = vms.get(public_ip_id, {})
-            lb = lbs.get(public_ip_id)
-            gateway = gateways.get(public_ip_id)
-            vm_id = vm.get('vm_id') or lb or gateway
-            available = (vm.get('status') is None and lb is None and
-                         gateway is None)
+            ip_config = public_ip_address.ip_configuration
+            available = True
+            vm_id = None
+            if ip_config:
+                available = False
+                attached_id = public_ip_address.ip_configuration.id
+                pattern = r"[A-Za-z0-9.\/_\-]*\/[A-Za-z0-9.\/_\-]*ipconfigurations"
+                id_ = re.match(pattern, attached_id, re.IGNORECASE)
+                if id_:
+                    info = self._parse_azure_id(id_[0].rsplit('/', 1)[0])
+                    vm_id = info.get('azure_id')
+                    # get vm by nic
+                    if 'networkinterfaces' in vm_id.lower():
+                        nic = self.network.network_interfaces.get(
+                            info['group_name'], info['name'],
+                            expand='ipConfigurations/publicIPAddress')
+                        if nic and nic.virtual_machine:
+                            vm_id = self._parse_azure_id(
+                                nic.virtual_machine.id).get('azure_id')
+                        else:
+                            # ip is attached to nic that is not attached to
+                            # any instance
+                            available = True
+
             resource = IpAddressResource(
                 cloud_account_id=self.cloud_account_id,
                 organization_id=self.organization_id,
