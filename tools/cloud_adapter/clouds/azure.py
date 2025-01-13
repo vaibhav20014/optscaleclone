@@ -1173,6 +1173,11 @@ class Azure(CloudBase):
                 'longitude': -112.074036, 'latitude': 33.448376},
         }
 
+    def alias_location_map(self):
+        coord_map = self._get_coordinates_map()
+        return {v['alias']: k for k, v in coord_map.items()
+                if 'alias' in v}
+
     def get_regions_coordinates(self):
         def to_coord(coordinate):
             if isinstance(coordinate, str):
