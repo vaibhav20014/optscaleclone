@@ -1,7 +1,7 @@
 """"report_import_failed_employee_email"
 
 Revision ID: 03b8dc8f3916
-Revises: a1d0494e9815
+Revises: a8dfe40f34a8
 Create Date: 2024-12-09 13:25:23.392399
 
 """
@@ -14,7 +14,7 @@ from sqlalchemy.sql import table, column
 
 # revision identifiers, used by Alembic.
 revision = '03b8dc8f3916'
-down_revision = 'a1d0494e9815'
+down_revision = 'a8dfe40f34a8'
 branch_labels = None
 depends_on = None
 
