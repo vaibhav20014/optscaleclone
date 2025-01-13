@@ -666,6 +666,8 @@
   "emailTemplates.recommendations.new_security_recommendation.title": "New security recommendation detection",
   "emailTemplates.systemNotifications.environment_changes.description": "Notification of changes made in a Shared Environment",
   "emailTemplates.systemNotifications.environment_changes.title": "Environment changed",
+  "emailTemplates.systemNotifications.report_import_failed.description": "Notification about failed report import attempts for your data source",
+  "emailTemplates.systemNotifications.report_import_failed.title": "Report import failed",
   "emailTemplates.systemNotifications.report_imports_passed_for_org.description": "Confirmation that initial expense processing for your organization is complete",
   "emailTemplates.systemNotifications.report_imports_passed_for_org.title": "Expenses initial processing completed",
   "emailVerificationDescription": "To verify your email, please enter the verification code sent to:",
