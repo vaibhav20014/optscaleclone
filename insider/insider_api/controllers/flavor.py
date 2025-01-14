@@ -147,7 +147,9 @@ class FlavorController(BaseController):
 
     def get_azure_locations(self):
         location_map = self.azure.location_map
-        return {v: k for k, v in location_map.items()}
+        result = {v: k for k, v in location_map.items()}
+        result.update(self.azure.alias_location_map())
+        return result
 
     def get_azure_flavors(self):
         return self.azure.get_flavors_info()
@@ -220,6 +222,8 @@ class FlavorController(BaseController):
                         continue
             flavor = flavors_info.get(p['armSkuName'])
             if not flavor:
+                continue
+            if mode != "current" and "Promo" in flavor:
                 continue
             product_name = p['productName']
             # according to azure pricing api we have 'windows'
