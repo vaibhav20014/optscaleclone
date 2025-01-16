@@ -240,7 +240,7 @@ class Azure(CloudBase):
         if self._network:
             return self._network
         self._network = NetworkManagementClient(
-            self.service_principal_credentials, self._subscription_id)
+            self.client_secret_credentials, self._subscription_id)
         return self._network
 
     @property
@@ -770,6 +770,10 @@ class Azure(CloudBase):
                             # ip is attached to nic that is not attached to
                             # any instance
                             available = True
+            nat = public_ip_address.nat_gateway
+            if nat:
+                available = False
+                vm_id = nat.id
 
             resource = IpAddressResource(
                 cloud_account_id=self.cloud_account_id,
