@@ -63,45 +63,50 @@ const CapabilityCard = ({
   typographyVariant = "body2"
 }: CapabilityCardProps) => (
   <ContentBackdropLoader isLoading={isLoading} size="medium">
-    <label
-      style={{
-        cursor: "pointer",
+    <Box
+      sx={{
         height: "100%",
-        width: "100%",
-        display: "flex"
+        width: "100%"
       }}
     >
-      <Paper
-        elevation={0}
-        sx={{
-          border: (theme) => `1px solid ${lighten(theme.palette.info.main, 0.8)}`,
-          width: "100%",
-          height: "100%"
+      <label
+        style={{
+          cursor: "pointer",
+          display: "flex"
         }}
       >
-        <Box
+        <Paper
+          elevation={0}
           sx={{
-            padding: "1rem"
+            border: (theme) => `1px solid ${lighten(theme.palette.info.main, 0.8)}`,
+            width: "100%",
+            height: "100%"
           }}
         >
           <Box
             sx={{
-              ml: "-11px",
-              display: "flex",
-              alignItems: "center"
+              padding: "1rem"
             }}
           >
-            <Checkbox checked={checked} onChange={onChange} disabled={disabled} />
-            <Typography variant={typographyVariant}>
-              <FormattedMessage id={capabilityName[capability]} />
-            </Typography>
+            <Box
+              sx={{
+                ml: "-11px",
+                display: "flex",
+                alignItems: "center"
+              }}
+            >
+              <Checkbox checked={checked} onChange={onChange} disabled={disabled} />
+              <Typography variant={typographyVariant}>
+                <FormattedMessage id={capabilityName[capability]} />
+              </Typography>
+            </Box>
+            <Box>
+              <FeatureList messageIds={capabilityMessages[capability]} variant={typographyVariant} />
+            </Box>
           </Box>
-          <Box>
-            <FeatureList messageIds={capabilityMessages[capability]} variant={typographyVariant} />
-          </Box>
-        </Box>
-      </Paper>
-    </label>
+        </Paper>
+      </label>
+    </Box>
   </ContentBackdropLoader>
 );
 
