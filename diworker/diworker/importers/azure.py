@@ -393,7 +393,8 @@ class AzureReportImporter(BaseReportImporter):
                             're-generating from raw expenses obtained by old '
                             'Consumption API. Usage dict: %s', expenses[-1])
                 region_field = 'instance_location'
-            region_set = {e.get(region_field) for e in expenses}
+            region_set = {e[region_field] for e in expenses
+                          if region_field in e}
             # instance_location may contain network az (DE Zone 1) if record
             # relates to networking charges. we can't map such info to proper
             # region, so looking for smth present in our map
@@ -410,8 +411,10 @@ class AzureReportImporter(BaseReportImporter):
                     region = regions_map.get(r)
                     break
             else:
-                LOG.warning('Unable to find regions %s in map', region_set)
-                region = region_set.pop() or None
+                region = None
+                if region_set:
+                    LOG.warning('Unable to find regions %s in map', region_set)
+                    region = region_set.pop()
             tags = self.extract_tags(expenses[-1].get('tags', {}))
             service = expenses[-1].get('consumed_service')
 
