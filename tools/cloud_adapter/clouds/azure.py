@@ -1123,7 +1123,7 @@ class Azure(CloudBase):
                 'name': 'Mexico Central',
                 'longitude': -100.389888, 'latitude': 20.588818},
             'newzealandnorth': {
-                'name': 'New Zealand North',
+                'name': 'New Zealand North', 'alias': 'NZ North',
                 'longitude': 174.76349, 'latitude': -36.84853},
             'spaincentral': {
                 'name': 'Spain Central',
