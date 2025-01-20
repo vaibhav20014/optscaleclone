@@ -40,14 +40,14 @@ const CapabilityField = () => {
             <CapabilityCard
               capability="finops"
               checked={value[FIELD_NAMES.CAPABILITY_FIN]}
-              onChange={(_, checked) => {
+              onChange={(checked) => {
                 onChange({ ...value, [FIELD_NAMES.CAPABILITY_FIN]: checked });
               }}
             />
             <CapabilityCard
               capability="mlops"
               checked={value[FIELD_NAMES.CAPABILITY_ML]}
-              onChange={(_, checked) => {
+              onChange={(checked) => {
                 onChange({ ...value, [FIELD_NAMES.CAPABILITY_ML]: checked });
               }}
             />

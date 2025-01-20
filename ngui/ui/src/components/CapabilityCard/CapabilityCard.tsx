@@ -1,5 +1,5 @@
-import { ChangeEvent } from "react";
-import { Box, Typography, Paper, lighten } from "@mui/material";
+import { useRef } from "react";
+import { Box, Typography, Paper, lighten, FormControlLabel } from "@mui/material";
 import { FormattedMessage } from "react-intl";
 import Checkbox from "components/Checkbox";
 import ContentBackdropLoader from "components/ContentBackdropLoader";
@@ -7,7 +7,7 @@ import ContentBackdropLoader from "components/ContentBackdropLoader";
 type CapabilityCardProps = {
   capability: "mlops" | "finops";
   checked?: boolean;
-  onChange: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+  onChange: (checked: boolean) => void;
   isLoading?: boolean;
   disabled?: boolean;
   typographyVariant?: "body1" | "body2" | "subtitle1" | "subtitle2" | "caption" | "overline";
@@ -61,26 +61,36 @@ const CapabilityCard = ({
   isLoading = false,
   disabled = false,
   typographyVariant = "body2"
-}: CapabilityCardProps) => (
-  <ContentBackdropLoader isLoading={isLoading} size="medium">
-    <Box
-      sx={{
-        height: "100%",
-        width: "100%"
-      }}
-    >
-      <label
-        style={{
-          cursor: "pointer",
-          display: "flex"
-        }}
-      >
+}: CapabilityCardProps) => {
+  const clickTimeRef = useRef<number>(0);
+
+  return (
+    <ContentBackdropLoader isLoading={isLoading} size="medium">
+      <Box width="100%" height="100%">
         <Paper
           elevation={0}
           sx={{
             border: (theme) => `1px solid ${lighten(theme.palette.info.main, 0.8)}`,
             width: "100%",
-            height: "100%"
+            height: "100%",
+            cursor: disabled ? "default" : "pointer"
+          }}
+          onMouseDown={() => {
+            clickTimeRef.current = Date.now();
+          }}
+          onMouseUp={() => {
+            const timeDiff = Date.now() - clickTimeRef.current;
+
+            const textSelection = window.getSelection()?.toString();
+
+            if (timeDiff < 150) {
+              onChange(!checked);
+            } else {
+              if (textSelection) {
+                return;
+              }
+              onChange(!checked);
+            }
           }}
         >
           <Box
@@ -88,26 +98,25 @@ const CapabilityCard = ({
               padding: "1rem"
             }}
           >
-            <Box
+            <FormControlLabel
               sx={{
-                ml: "-11px",
-                display: "flex",
-                alignItems: "center"
+                pointerEvents: "none"
               }}
-            >
-              <Checkbox checked={checked} onChange={onChange} disabled={disabled} />
-              <Typography variant={typographyVariant}>
-                <FormattedMessage id={capabilityName[capability]} />
-              </Typography>
-            </Box>
+              control={<Checkbox checked={checked} disabled={disabled} onChange={(_, checked) => onChange(checked)} />}
+              label={
+                <Typography variant={typographyVariant}>
+                  <FormattedMessage id={capabilityName[capability]} />
+                </Typography>
+              }
+            />
             <Box>
               <FeatureList messageIds={capabilityMessages[capability]} variant={typographyVariant} />
             </Box>
           </Box>
         </Paper>
-      </label>
-    </Box>
-  </ContentBackdropLoader>
-);
+      </Box>
+    </ContentBackdropLoader>
+  );
+};
 
 export default CapabilityCard;
