@@ -32,12 +32,17 @@ const getRedirectionPath = (scopeUserEmail: string) => {
     return next;
   };
 
-  const getSearchParams = () => {
-    const searchParams = [showPolicyQueryParameter ? `${SHOW_POLICY_QUERY_PARAM}=${showPolicyQueryParameter}` : ""].join("&");
-    return searchParams;
-  };
+  const nextPath = getNextPath();
 
-  return `${getNextPath()}?${getSearchParams()}`;
+  const url = new URL(nextPath, window.location.origin);
+
+  // Add showPolicy param if needed
+  if (showPolicyQueryParameter) {
+    url.searchParams.set(SHOW_POLICY_QUERY_PARAM, showPolicyQueryParameter);
+  }
+
+  // Return just the pathname and search parts, removing the origin
+  return `${url.pathname}${url.search}`;
 };
 
 const InitializeContainer = () => {

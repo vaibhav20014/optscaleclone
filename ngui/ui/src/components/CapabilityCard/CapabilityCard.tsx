@@ -1,5 +1,5 @@
-import { ChangeEvent } from "react";
-import { Box, Typography, Paper, lighten } from "@mui/material";
+import { useRef } from "react";
+import { Box, Typography, Paper, lighten, FormControlLabel } from "@mui/material";
 import { FormattedMessage } from "react-intl";
 import Checkbox from "components/Checkbox";
 import ContentBackdropLoader from "components/ContentBackdropLoader";
@@ -7,10 +7,11 @@ import ContentBackdropLoader from "components/ContentBackdropLoader";
 type CapabilityCardProps = {
   capability: "mlops" | "finops";
   checked?: boolean;
-  onChange: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+  onChange: (checked: boolean) => void;
   isLoading?: boolean;
   disabled?: boolean;
   typographyVariant?: "body1" | "body2" | "subtitle1" | "subtitle2" | "caption" | "overline";
+  sx?: Record<string, unknown>;
 };
 
 type FeatureListProps = {
@@ -60,54 +61,63 @@ const CapabilityCard = ({
   checked = false,
   isLoading = false,
   disabled = false,
-  typographyVariant = "body2"
-}: CapabilityCardProps) => (
-  <ContentBackdropLoader isLoading={isLoading} size="medium">
-    <Box
+  typographyVariant = "body2",
+  sx
+}: CapabilityCardProps) => {
+  const clickTimeRef = useRef<number>(0);
+
+  return (
+    <Paper
+      elevation={0}
       sx={{
-        height: "100%",
-        width: "100%"
+        border: (theme) => `1px solid ${lighten(theme.palette.info.main, 0.8)}`,
+        ...sx
       }}
     >
-      <label
-        style={{
-          cursor: "pointer",
-          display: "flex"
-        }}
-      >
-        <Paper
-          elevation={0}
+      <ContentBackdropLoader isLoading={isLoading}>
+        <Box
           sx={{
-            border: (theme) => `1px solid ${lighten(theme.palette.info.main, 0.8)}`,
+            padding: "1rem",
             width: "100%",
-            height: "100%"
+            height: "100%",
+            cursor: disabled ? "default" : "pointer"
+          }}
+          onMouseDown={() => {
+            clickTimeRef.current = Date.now();
+          }}
+          onMouseUp={() => {
+            const timeDiff = Date.now() - clickTimeRef.current;
+
+            const textSelection = window.getSelection()?.toString();
+
+            if (timeDiff < 150) {
+              onChange(!checked);
+            } else {
+              if (textSelection) {
+                return;
+              }
+              onChange(!checked);
+            }
           }}
         >
-          <Box
+          <FormControlLabel
             sx={{
-              padding: "1rem"
+              pointerEvents: "none"
             }}
-          >
-            <Box
-              sx={{
-                ml: "-11px",
-                display: "flex",
-                alignItems: "center"
-              }}
-            >
-              <Checkbox checked={checked} onChange={onChange} disabled={disabled} />
+            control={<Checkbox checked={checked} disabled={disabled} onChange={(_, checked) => onChange(checked)} />}
+            label={
               <Typography variant={typographyVariant}>
                 <FormattedMessage id={capabilityName[capability]} />
               </Typography>
-            </Box>
-            <Box>
-              <FeatureList messageIds={capabilityMessages[capability]} variant={typographyVariant} />
-            </Box>
+            }
+          />
+          <Box>
+            <FeatureList messageIds={capabilityMessages[capability]} variant={typographyVariant} />
           </Box>
-        </Paper>
-      </label>
-    </Box>
-  </ContentBackdropLoader>
-);
+        </Box>
+      </ContentBackdropLoader>
+    </Paper>
+  );
+};
 
 export default CapabilityCard;
