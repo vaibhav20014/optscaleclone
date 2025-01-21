@@ -11,6 +11,7 @@ type CapabilityCardProps = {
   isLoading?: boolean;
   disabled?: boolean;
   typographyVariant?: "body1" | "body2" | "subtitle1" | "subtitle2" | "caption" | "overline";
+  sx?: Record<string, unknown>;
 };
 
 type FeatureListProps = {
@@ -60,17 +61,23 @@ const CapabilityCard = ({
   checked = false,
   isLoading = false,
   disabled = false,
-  typographyVariant = "body2"
+  typographyVariant = "body2",
+  sx
 }: CapabilityCardProps) => {
   const clickTimeRef = useRef<number>(0);
 
   return (
-    <ContentBackdropLoader isLoading={isLoading} size="medium">
-      <Box width="100%" height="100%">
-        <Paper
-          elevation={0}
+    <Paper
+      elevation={0}
+      sx={{
+        border: (theme) => `1px solid ${lighten(theme.palette.info.main, 0.8)}`,
+        ...sx
+      }}
+    >
+      <ContentBackdropLoader isLoading={isLoading}>
+        <Box
           sx={{
-            border: (theme) => `1px solid ${lighten(theme.palette.info.main, 0.8)}`,
+            padding: "1rem",
             width: "100%",
             height: "100%",
             cursor: disabled ? "default" : "pointer"
@@ -93,29 +100,23 @@ const CapabilityCard = ({
             }
           }}
         >
-          <Box
+          <FormControlLabel
             sx={{
-              padding: "1rem"
+              pointerEvents: "none"
             }}
-          >
-            <FormControlLabel
-              sx={{
-                pointerEvents: "none"
-              }}
-              control={<Checkbox checked={checked} disabled={disabled} onChange={(_, checked) => onChange(checked)} />}
-              label={
-                <Typography variant={typographyVariant}>
-                  <FormattedMessage id={capabilityName[capability]} />
-                </Typography>
-              }
-            />
-            <Box>
-              <FeatureList messageIds={capabilityMessages[capability]} variant={typographyVariant} />
-            </Box>
+            control={<Checkbox checked={checked} disabled={disabled} onChange={(_, checked) => onChange(checked)} />}
+            label={
+              <Typography variant={typographyVariant}>
+                <FormattedMessage id={capabilityName[capability]} />
+              </Typography>
+            }
+          />
+          <Box>
+            <FeatureList messageIds={capabilityMessages[capability]} variant={typographyVariant} />
           </Box>
-        </Paper>
-      </Box>
-    </ContentBackdropLoader>
+        </Box>
+      </ContentBackdropLoader>
+    </Paper>
   );
 };
 
