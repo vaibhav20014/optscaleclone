@@ -1,9 +1,7 @@
-import { useQuery } from "@apollo/client";
+import { NetworkStatus, useQuery } from "@apollo/client";
 import { Box, Stack, CircularProgress } from "@mui/material";
-import { FormattedMessage } from "react-intl";
 import { Navigate } from "react-router-dom";
 import Logo from "components/Logo";
-import PageTitle from "components/PageTitle";
 import { GET_ORGANIZATIONS, GET_INVITATIONS } from "graphql/api/restapi/queries";
 import { useGetToken } from "hooks/useGetToken";
 import { HOME, NEXT_QUERY_PARAMETER_NAME, SHOW_POLICY_QUERY_PARAM, USER_EMAIL_QUERY_PARAMETER_NAME } from "urls";
@@ -12,6 +10,7 @@ import { SPACING_6 } from "utils/layouts";
 import { getQueryParams } from "utils/network";
 import AcceptInvitations from "./AcceptInvitations";
 import SetupOrganization from "./SetupOrganization";
+import { Title } from "./Title";
 
 const getRedirectionPath = (scopeUserEmail: string) => {
   const {
@@ -50,12 +49,16 @@ const InitializeContainer = () => {
 
   const {
     data: organizations,
-    loading: getOrganizationsLoading,
+    networkStatus: getOrganizationsNetworkStatus,
     error: getOrganizationsError,
     refetch: refetchOrganizations
   } = useQuery(GET_ORGANIZATIONS, {
-    fetchPolicy: "network-only"
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true
   });
+
+  const getOrganizationsLoading = getOrganizationsNetworkStatus === NetworkStatus.loading;
+  const getOrganizationsRefetching = getOrganizationsNetworkStatus === NetworkStatus.refetch;
 
   const {
     data: invitations,
@@ -85,10 +88,23 @@ const InitializeContainer = () => {
     }
 
     if (isEmptyArray(organizations?.organizations ?? [])) {
-      return <SetupOrganization userEmail={userEmail} refetchOrganizations={refetchOrganizations} />;
+      return (
+        <SetupOrganization
+          userEmail={userEmail}
+          refetchOrganizations={refetchOrganizations}
+          isLoading={{
+            getOrganizationsLoading: getOrganizationsRefetching
+          }}
+        />
+      );
     }
 
-    return <Navigate to={getRedirectionPath(userEmail)} />;
+    return (
+      <>
+        <Title messageId="initializingOptscale" dataTestId="p_initializing" />
+        <Navigate to={getRedirectionPath(userEmail)} />
+      </>
+    );
   };
 
   return (
@@ -98,11 +114,7 @@ const InitializeContainer = () => {
       </Box>
       {isLoading ? (
         <>
-          <Box pr={2} pl={2}>
-            <PageTitle dataTestId="p_initializing" align="center">
-              <FormattedMessage id="initializingOptscale" />
-            </PageTitle>
-          </Box>
+          <Title messageId="initializingOptscale" dataTestId="p_initializing" />
           <Box height={60}>
             <CircularProgress data-test-id="svg_loading" />
           </Box>
