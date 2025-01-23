@@ -915,6 +915,16 @@ class AWSReportImporter(CSVBaseReportImporter):
                 res['meta'][k] = val
         return res
 
+    def update_cloud_account_config(self):
+        config = self.cloud_acc.get('config')
+        if not config.get('cur_version'):
+            cur_version = self.cloud_adapter.config.get('cur_version')
+            if cur_version:
+                config.pop('region_name', None)
+                config.update({'cur_version': cur_version})
+                self.rest_cl.cloud_account_update(
+                    self.cloud_acc_id, {'config': config})
+
     def create_traffic_processing_tasks(self):
         self._create_traffic_processing_tasks()
 
