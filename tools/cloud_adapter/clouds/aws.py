@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import enum
+from collections import defaultdict
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import wraps
 import json
@@ -49,11 +50,11 @@ BUCKET_ACCEPTED_URIS = [
 MAX_RESULTS = 1000
 CSV_FORMAT_PATTERN = r'\.csv.(gz|zip)$'
 PARQUET_FORMAT_PATTERN = r'\.snappy.parquet$'
-GROUP_DATES_PATTERNS = [
-    'BILLING_PERIOD=[0-9]{4}-[0-9]{2}/',
-    '[0-9]{8}-[0-9]{8}/',
-    'year=[0-9]{4}/month=([1-9]|1[0-2])/'
-]
+GROUP_DATES_PATTERNS = {
+    2: ['BILLING_PERIOD=[0-9]{4}-[0-9]{2}/'],
+    1: ['[0-9]{8}-[0-9]{8}/',
+        'year=[0-9]{4}/month=([1-9]|1[0-2])/']
+}
 
 
 def _retry_on_error(exc):
@@ -583,7 +584,8 @@ class Aws(S3CloudMixin):
                 path = r['Key']
                 day = path.split(common_prefix)[1].split(report_name)[0]
                 if day:
-                    for rgx in GROUP_DATES_PATTERNS:
+                    for rgx in [el for el_l in GROUP_DATES_PATTERNS.values()
+                                for el in el_l]:
                         if re.search(rgx, day):
                             day = re.sub(rgx, '', day)
                             break
@@ -610,25 +612,42 @@ class Aws(S3CloudMixin):
 
         if not reports:
             raise ReportFilesNotFoundException(
-                'Report files for report {} not found in bucket {}'.format(
-                    report_name, bucket_name))
+                'Report files for report {} not found in bucket {}. Please '
+                'check your CUR version and existence of report files in the '
+                'bucket'.format(report_name, bucket_name))
         return reports
 
     def find_reports_by_format(self, s3_objects, format_pattern):
-        reports = {}
+        reports = defaultdict(list)
+        group_dates_patterns = None
+        cur_version = self.config.get('cur_version')
+        if cur_version:
+            group_dates_patterns = GROUP_DATES_PATTERNS.get(cur_version)
+        if not group_dates_patterns:
+            group_dates_patterns = GROUP_DATES_PATTERNS[2] + GROUP_DATES_PATTERNS[1]
+
+        group_part = None
         try:
-            for report in [f for f in s3_objects['Contents']
-                           if re.search(format_pattern, f['Key'])]:
-                for group_part in GROUP_DATES_PATTERNS:
+            report_candidates = [f for f in s3_objects['Contents']
+                                 if re.search(format_pattern, f['Key'])]
+            for group_pattern in group_dates_patterns:
+                if any(re.search(group_pattern, report['Key'])
+                       for report in report_candidates):
+                    group_part = group_pattern
+                    if not cur_version:
+                        version = [k for k, v in GROUP_DATES_PATTERNS.items()
+                                   if group_part in v][0]
+                        LOG.info('Detected CUR version: %s', version)
+                        self.config['cur_version'] = version
+                    break
+            if group_part:
+                for report in report_candidates:
                     group = re.search(group_part, report['Key'])
                     if group:
                         common_group = self._group_to_daterange(group.group(0))
-                        if common_group not in reports:
-                            reports[common_group] = []
                         reports[common_group].append(report)
-                        break
         except KeyError:
-            reports = {}
+            pass
         return reports
 
     @staticmethod
