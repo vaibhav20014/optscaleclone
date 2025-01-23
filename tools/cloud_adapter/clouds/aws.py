@@ -495,25 +495,51 @@ class Aws(S3CloudMixin):
     def rds_instance_discovery_calls(self):
         return []
 
+    @staticmethod
+    def _get_network_interfaces_attachments(client, eni_ids):
+        result = {}
+        enis = client.describe_network_interfaces(
+            NetworkInterfaceIds=eni_ids)
+        for eni in enis['NetworkInterfaces']:
+            available = eni.get('Status') == 'available'
+            if not available:
+                instance_id = eni.get('Attachment', {}).get(
+                    'InstanceId') or eni.get('Description')
+                result[eni['NetworkInterfaceId']] = instance_id
+        return result
+
     def discover_region_ip_addresses(self, region):
         instance_map = {}
         ec2 = self.session.client('ec2', region)
         described_ip_addresses = ec2.describe_addresses()
+        eni_ids = []
         instance_ids = []
         for address in described_ip_addresses['Addresses']:
+            eni_id = address.get('NetworkInterfaceId')
             instance_id = address.get('InstanceId')
             if instance_id:
                 instance_ids.append(instance_id)
+            elif eni_id:
+                eni_ids.append(eni_id)
         if instance_ids:
-            described_instances = ec2.describe_instances(InstanceIds=instance_ids)
+            described_instances = ec2.describe_instances(
+                InstanceIds=instance_ids)
             for reservation in described_instances['Reservations']:
                 for instance in reservation['Instances']:
-                    instance_map.update({instance['InstanceId']: instance.get('State', {}).get('Name')})
+                    instance_map.update({instance['InstanceId']: instance.get(
+                        'State', {}).get('Name')})
+        eni_instance_map = self._get_network_interfaces_attachments(
+            ec2, eni_ids)
         for address in described_ip_addresses['Addresses']:
             available = True
             instance_id = address.get('InstanceId')
+            eni_id = address.get('NetworkInterfaceId')
             if instance_id:
-                available = instance_map.get(instance_id) in ['stopped', 'terminated']
+                available = instance_map.get(instance_id) == 'terminated'
+            elif eni_id:
+                instance_id = eni_instance_map.get(eni_id)
+                if instance_id:
+                    available = False
             ip_resource = IpAddressResource(
                 cloud_account_id=self.cloud_account_id,
                 organization_id=self.organization_id,
