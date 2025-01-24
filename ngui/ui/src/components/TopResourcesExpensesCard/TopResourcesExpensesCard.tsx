@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { forwardRef, ReactNode } from "react";
 import ExitToAppOutlinedIcon from "@mui/icons-material/ExitToAppOutlined";
 import { Box, ListItemIcon, Stack, Typography } from "@mui/material";
 import List from "@mui/material/List";
@@ -26,18 +26,27 @@ import { FORMATTED_MONEY_TYPES } from "utils/constants";
 import { SPACING_1 } from "utils/layouts";
 import { percentXofY } from "utils/math";
 import { getCloudResourceIdentifier } from "utils/resources";
+import { sliceByLimitWithEllipsis } from "utils/strings";
 import useStyles from "./TopResourcesExpensesCard.styles";
 
 const PERSPECTIVE_NAME_SLICE_THRESHOLD = 30;
 
-const PerspectiveMenuItem = ({ name, onClick }: { name: ReactNode; onClick: () => void }) => (
-  <MenuItem onClick={onClick}>
-    <ListItemIcon>
-      <ExitToAppOutlinedIcon />
-    </ListItemIcon>
-    <ListItemText primary={name} />
-  </MenuItem>
-);
+const PerspectiveMenuItem = forwardRef<
+  HTMLLIElement,
+  {
+    name: ReactNode;
+    onClick: () => void;
+  }
+>(({ name, onClick, ...rest }, ref) => {
+  return (
+    <MenuItem onClick={onClick} {...rest} ref={ref}>
+      <ListItemIcon>
+        <ExitToAppOutlinedIcon />
+      </ListItemIcon>
+      <ListItemText primary={name} />
+    </MenuItem>
+  );
+});
 
 const Property = ({ messageId, value }: { messageId: string; value: ReactNode }) => (
   <Typography component="div">
@@ -164,7 +173,7 @@ const TopResourcesExpensesCard = ({ cleanExpenses, isLoading = false }) => {
                 horizontal: "left"
               }}
               menu={
-                <List>
+                <List sx={{ maxHeight: "300px" }}>
                   {perspectiveNames.map((name) => {
                     const onClick = () => navigate(getResourcesExpensesUrl({ perspective: name }));
 
@@ -172,7 +181,10 @@ const TopResourcesExpensesCard = ({ cleanExpenses, isLoading = false }) => {
 
                     return shouldSlice ? (
                       <Tooltip title={name}>
-                        <PerspectiveMenuItem name={name} onClick={onClick} />
+                        <PerspectiveMenuItem
+                          name={sliceByLimitWithEllipsis(name, PERSPECTIVE_NAME_SLICE_THRESHOLD)}
+                          onClick={onClick}
+                        />
                       </Tooltip>
                     ) : (
                       <PerspectiveMenuItem name={name} onClick={onClick} />
