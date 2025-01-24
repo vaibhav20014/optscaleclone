@@ -1,5 +1,6 @@
+import { forwardRef, ReactNode } from "react";
 import ExitToAppOutlinedIcon from "@mui/icons-material/ExitToAppOutlined";
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, ListItemIcon, Stack, Typography } from "@mui/material";
 import List from "@mui/material/List";
 import ListItemText from "@mui/material/ListItemText";
 import MenuItem from "@mui/material/MenuItem";
@@ -30,25 +31,24 @@ import useStyles from "./TopResourcesExpensesCard.styles";
 
 const PERSPECTIVE_NAME_SLICE_THRESHOLD = 30;
 
-const PerspectiveMenuItem = ({ perspectiveName }) => {
-  const navigate = useNavigate();
-
-  const onClick = () => navigate(getResourcesExpensesUrl({ perspective: perspectiveName }));
-
-  return perspectiveName.length > PERSPECTIVE_NAME_SLICE_THRESHOLD ? (
-    <Tooltip key={perspectiveName} title={perspectiveName}>
-      <MenuItem onClick={onClick}>
-        <ListItemText primary={sliceByLimitWithEllipsis(perspectiveName, PERSPECTIVE_NAME_SLICE_THRESHOLD)} />
-      </MenuItem>
-    </Tooltip>
-  ) : (
-    <MenuItem key={perspectiveName} onClick={onClick}>
-      <ListItemText primary={perspectiveName} />
+const PerspectiveMenuItem = forwardRef<
+  HTMLLIElement,
+  {
+    name: ReactNode;
+    onClick: () => void;
+  }
+>(({ name, onClick, ...rest }, ref) => {
+  return (
+    <MenuItem onClick={onClick} {...rest} ref={ref}>
+      <ListItemIcon>
+        <ExitToAppOutlinedIcon />
+      </ListItemIcon>
+      <ListItemText primary={name} />
     </MenuItem>
   );
-};
+});
 
-const Property = ({ messageId, value }) => (
+const Property = ({ messageId, value }: { messageId: string; value: ReactNode }) => (
   <Typography component="div">
     <strong>
       <FormattedMessage id={messageId} />
@@ -126,7 +126,7 @@ const TopResourcesView = ({ data }) => {
   });
 };
 
-const TopResourcesExpensesCard = ({ cleanExpenses, isLoading }) => {
+const TopResourcesExpensesCard = ({ cleanExpenses, isLoading = false }) => {
   const navigate = useNavigate();
 
   const { validPerspectives } = useOrganizationPerspectives();
@@ -158,9 +158,11 @@ const TopResourcesExpensesCard = ({ cleanExpenses, isLoading }) => {
           {hasPerspectives && (
             <Popover
               label={
-                <DashedTypography component="div">
-                  <FormattedMessage id="perspectives" />
-                </DashedTypography>
+                <Tooltip title={<FormattedMessage id="viewAllPerspectivesTooltip" />} placement="top">
+                  <DashedTypography component="div">
+                    <FormattedMessage id="viewInPerspectives" />
+                  </DashedTypography>
+                </Tooltip>
               }
               anchorOrigin={{
                 vertical: "bottom",
@@ -171,13 +173,27 @@ const TopResourcesExpensesCard = ({ cleanExpenses, isLoading }) => {
                 horizontal: "left"
               }}
               menu={
-                <List>
-                  {[
-                    ...perspectiveNames.map((name) => <PerspectiveMenuItem key={name} perspectiveName={name} />),
-                    <MenuItem key="seeAllPerspectives" onClick={() => navigate(RESOURCE_PERSPECTIVES)}>
-                      <ListItemText primary={<FormattedMessage id="seeAllPerspectives" />} />
-                    </MenuItem>
-                  ]}
+                <List sx={{ maxHeight: "300px" }}>
+                  {perspectiveNames.map((name) => {
+                    const onClick = () => navigate(getResourcesExpensesUrl({ perspective: name }));
+
+                    const shouldSlice = name.length > PERSPECTIVE_NAME_SLICE_THRESHOLD;
+
+                    return shouldSlice ? (
+                      <Tooltip title={name}>
+                        <PerspectiveMenuItem
+                          name={sliceByLimitWithEllipsis(name, PERSPECTIVE_NAME_SLICE_THRESHOLD)}
+                          onClick={onClick}
+                        />
+                      </Tooltip>
+                    ) : (
+                      <PerspectiveMenuItem name={name} onClick={onClick} />
+                    );
+                  })}
+                  <PerspectiveMenuItem
+                    name={<FormattedMessage id="seeAllPerspectives" />}
+                    onClick={() => navigate(RESOURCE_PERSPECTIVES)}
+                  />
                 </List>
               }
             />
