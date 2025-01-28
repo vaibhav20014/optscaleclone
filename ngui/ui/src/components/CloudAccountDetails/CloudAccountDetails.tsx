@@ -43,7 +43,7 @@ import {
 } from "utils/constants";
 import { summarizeChildrenDetails } from "utils/dataSources";
 import { SPACING_2 } from "utils/layouts";
-import { getPercentageChangeModule } from "utils/math";
+import { getPercentageChangeModule, round } from "utils/math";
 
 const {
   DETAILS: DETAILS_TAB,
@@ -382,7 +382,12 @@ const CloudAccountDetails = ({ data = {}, isLoading = false }) => {
       <PageContentWrapper>
         <Grid container spacing={SPACING_2}>
           <Grid item>
-            <Summary lastMonthCost={lastMonthCost} cost={cost} forecast={forecast} isLoading={isLoading} />
+            <Summary
+              lastMonthCost={round(lastMonthCost, 2)}
+              cost={round(cost, 2)}
+              forecast={round(forecast, 2)}
+              isLoading={isLoading}
+            />
           </Grid>
           <Grid item xs={12}>
             <Tabs

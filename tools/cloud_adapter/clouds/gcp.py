@@ -1267,9 +1267,17 @@ class Gcp(CloudBase):
         sku_description = sku_description.split('running')[0]
         for param in ["Core", "Ram", "Custom"]:
             sku_description = sku_description.replace(param + " ", "")
+        sku_description = sku_description.rstrip()
         machine_family = self._resource_priced_machine_series_descriptions.get(
-            sku_description.rstrip()
+            sku_description
         )
+        if not machine_family and custom and sku_description == "Instance":
+            # sku description for custom instance flavor for N1 family doesn't
+            # contain N1 family name:
+            # - Custom Instance Core running in Americas
+            # - Custom Instance Ram running in Americas
+            # so after processing it's just "Instance"
+            machine_family = "n1"
         return machine_family, custom
 
     @staticmethod
@@ -1404,8 +1412,8 @@ class Gcp(CloudBase):
                 "cpu_step": 2,
             },
             "n1": {
-                "cpu": {"min": 0.25, "max": 96},
-                "ram": {"min": 0.6, "max": 624},
+                "cpu": {"min": 1, "max": 96},
+                "ram": {"min": 1, "max": 624},
                 "min_ram_per_cpu": 0.5,
                 "max_ram_per_cpu": 6.5,
                 "cpu_step": 2,
@@ -1525,6 +1533,16 @@ class Gcp(CloudBase):
                 instance_type.parse_machine_family()
                 instance_type.parse_ram_cpu_from_flavor_name()
                 instance_type.parse_custom()
+                if instance_type.custom and instance_type.cpu_cores < 1:
+                    cpu_name = next((
+                        k for k, v in instance_type.SHARED_CPU_VALUES.items()
+                        if v == instance_type.cpu_cores), None)
+                    if not cpu_name:
+                        continue
+                    if cpu_name not in instance_type.type_name:
+                        instance_type.type_name = instance_type.type_name.replace(
+                            str(instance_type.cpu_cores), cpu_name
+                        )
                 custom_instance_types[instance_type.type_name] = instance_type
             else:
                 # generate available custom instance types by family
