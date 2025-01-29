@@ -20,6 +20,7 @@ REGION_NAMES = {
     "AE North": "UAE North",
     "US East 2": "East US 2",
     "EU North": "North Europe",
+    "IN Central": "Central India",
     "NorthCentralUs": "North Central US",
     "SouthCentralUS": "South Central US",
     "WestUS": "West US",
@@ -413,8 +414,10 @@ class AzureReportImporter(BaseReportImporter):
             else:
                 region = None
                 if region_set:
-                    LOG.warning('Unable to find regions %s in map', region_set)
                     region = region_set.pop()
+                    if region not in regions_map.values():
+                        LOG.warning('Unable to find regions %s in map',
+                                    region_set)
             tags = self.extract_tags(expenses[-1].get('tags', {}))
             service = expenses[-1].get('consumed_service')
 

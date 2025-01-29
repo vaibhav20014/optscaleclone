@@ -1159,7 +1159,8 @@ class Azure(CloudBase):
                 'name': 'North Europe', 'alias': 'Europe',
                 'longitude': -6.2597, 'latitude': 53.3478},
             'uksouth': {
-                'name': 'UK South', 'longitude': -0.799, 'latitude': 50.941},
+                'name': 'UK South',
+                'longitude': -0.799, 'latitude': 50.941},
             'eastus': {
                 'name': 'East US', 'alias': 'US East',
                 'longitude': -79.8164, 'latitude': 37.3719},
