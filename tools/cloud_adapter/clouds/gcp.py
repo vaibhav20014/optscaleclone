@@ -568,6 +568,8 @@ class GcpAddress(tools.cloud_adapter.model.IpAddressResource, GcpResource):
         if not available:
             instance_id = cloud_adapter.get_instance_id_for_address(
                 cloud_address)
+            if not instance_id and cloud_address.users:
+                instance_id = cloud_address.users[0]
         super().__init__(
             **self._common_fields,
             available=available,
@@ -748,6 +750,12 @@ class Gcp(CloudBase):
     @cached_property
     def compute_addresses_client(self):
         return compute.AddressesClient.from_service_account_info(
+            self.credentials,
+        )
+
+    @cached_property
+    def compute_global_addresses_client(self):
+        return compute.GlobalAddressesClient.from_service_account_info(
             self.credentials,
         )
 
@@ -1095,16 +1103,25 @@ class Gcp(CloudBase):
     def get_instance_id_for_address(self, address: compute.Address):
         return self._public_ip_to_instance_id_map.get(address.address)
 
-    def discover_region_ip_addresses(self, region):
-        for address in self.discover_entities(
-            self.compute_addresses_client.list,
-            compute.ListAddressesRequest,
-            region=region,
-        ):
+    def discover_ip_addresses(self, region):
+        if region:
+            addresses = self.discover_entities(
+                self.compute_addresses_client.list,
+                compute.ListAddressesRequest,
+                region=region,
+            )
+        else:
+            addresses = self.discover_entities(
+                self.compute_global_addresses_client.list,
+                compute.ListGlobalAddressesRequest,
+            )
+
+        for address in addresses:
             yield GcpAddress(address, self)
 
     def ip_address_discovery_calls(self):
-        return [(self.discover_region_ip_addresses, (r,)) for r in self.regions]
+        return [(self.discover_ip_addresses, (r,))
+                for r in self.regions + [None]]
 
     ######################################################################################
     # NETWORK DISCOVERY
