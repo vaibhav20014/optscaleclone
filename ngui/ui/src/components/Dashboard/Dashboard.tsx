@@ -13,7 +13,7 @@ import RecentModelsCardContainer from "containers/RecentModelsCardContainer";
 import RecentTasksCardContainer from "containers/RecentTasksCardContainer";
 import RecommendationsCardContainer from "containers/RecommendationsCardContainer";
 import TopResourcesExpensesCardContainer from "containers/TopResourcesExpensesCardContainer";
-import { useAllDataSources } from "hooks/coreData";
+import { useAllDataSources } from "hooks/coreData/useAllDataSources";
 import { useIsUpMediaQuery } from "hooks/useMediaQueries";
 import { EMAIL_SUPPORT, DOCS_HYSTAX_OPTSCALE, SHOW_POLICY_QUERY_PARAM } from "urls";
 import { ENVIRONMENT } from "utils/constants";
