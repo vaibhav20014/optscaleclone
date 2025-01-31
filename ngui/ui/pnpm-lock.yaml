@@ -59,6 +59,9 @@ dependencies:
   '@nivo/core':
     specifier: ^0.87.0
     version: 0.87.0(react-dom@18.2.0)(react@18.2.0)
+  '@nivo/legends':
+    specifier: ^0.87.0
+    version: 0.87.0(react-dom@18.2.0)(react@18.2.0)
   '@nivo/line':
     specifier: ^0.87.0
     version: 0.87.0(react-dom@18.2.0)(react@18.2.0)

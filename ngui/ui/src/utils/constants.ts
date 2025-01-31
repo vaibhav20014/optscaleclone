@@ -545,6 +545,29 @@ export const DEFAULT_BAR_CHART_MARGIN = Object.freeze({
   left: 75
 });
 
+export const DEFAULT_LINE_CHART_HEIGHT = 50;
+
+export const DEFAULT_LINE_CHART_MARGIN = Object.freeze({ top: 20, right: 35, left: 75, bottom: 50 });
+
+export const CHART_LEGEND_WIDTH = 200;
+
+export const CHART_LEGEND_LAYOUT_SETTINGS = {
+  anchor: "bottom-right",
+  direction: "column",
+  translateX: 8,
+  itemWidth: 0,
+  itemHeight: 16,
+  itemsSpacing: 4,
+  symbolSize: 16,
+  symbolSpacing: 8
+} as const;
+
+export const MAX_LEGEND_LABEL_WIDTH =
+  CHART_LEGEND_WIDTH -
+  CHART_LEGEND_LAYOUT_SETTINGS.translateX -
+  CHART_LEGEND_LAYOUT_SETTINGS.symbolSize -
+  CHART_LEGEND_LAYOUT_SETTINGS.symbolSpacing;
+
 export const RESOURCE_LIMIT_HIT_STATE = Object.freeze({
   RED: "red",
   GREEN: "green"

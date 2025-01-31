@@ -556,3 +556,29 @@ export const renderCanvasLine = (
 
   ctx.restore();
 };
+
+export const truncateCanvasText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number) => {
+  const getCanvasTextWidth = (textToMeasure: string) => ctx.measureText(textToMeasure).width;
+
+  const ellipsis = "...";
+
+  const textWidth = getCanvasTextWidth(text);
+  if (textWidth <= maxWidth) {
+    return text;
+  }
+
+  // Iterate through text until we find a string that fits with ellipsis
+  let truncatedText = "";
+  for (let i = 0; i < text.length; i += 1) {
+    const testText = text.slice(0, i + 1) + ellipsis;
+    const testWidth = getCanvasTextWidth(testText);
+
+    if (testWidth > maxWidth) {
+      // If this iteration exceeds maxWidth, return previous valid truncation
+      return truncatedText + ellipsis;
+    }
+    truncatedText = text.slice(0, i + 1);
+  }
+
+  return truncatedText + ellipsis;
+};
