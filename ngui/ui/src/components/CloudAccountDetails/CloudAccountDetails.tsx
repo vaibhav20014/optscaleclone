@@ -39,7 +39,8 @@ import {
   AZURE_CNR,
   GCP_CNR,
   ALIBABA_CNR,
-  NEBIUS
+  NEBIUS,
+  GCP_TENANT
 } from "utils/constants";
 import { summarizeChildrenDetails } from "utils/dataSources";
 import { SPACING_2 } from "utils/layouts";
@@ -364,7 +365,7 @@ const CloudAccountDetails = ({ data = {}, isLoading = false }) => {
     discovery_infos: discoveryInfos
   } = { ...details, ...childrenDetails };
 
-  const isTenant = type === AZURE_TENANT;
+  const isTenant = [AZURE_TENANT, GCP_TENANT].includes(type);
   const isChildSubscription = Boolean(parentId);
   const isSubscription = !isTenant && !isChildSubscription;
 
