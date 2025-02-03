@@ -1,7 +1,7 @@
 import { useMutation } from "@apollo/client";
 import CapabilityForm from "components/forms/CapabilityForm";
 import { GET_OPTSCALE_CAPABILITY, UPDATE_OPTSCALE_CAPABILITY } from "graphql/api/restapi/queries";
-import { useGetOptscaleCapability } from "hooks/coreData";
+import { useGetOptscaleCapability } from "hooks/coreData/useGetOptscaleCapability";
 import { useIsAllowed } from "hooks/useAllowedActions";
 import { useOrganizationInfo } from "hooks/useOrganizationInfo";
 

@@ -4,7 +4,7 @@ import CapabilityWrapper from "components/CapabilityWrapper";
 import MenuGroupWrapper from "components/MenuGroupWrapper";
 import MenuItem from "components/MenuItem";
 import { PRODUCT_TOUR, useProductTour, PRODUCT_TOUR_IDS } from "components/Tour";
-import { useGetOptscaleCapability } from "hooks/coreData";
+import { useGetOptscaleCapability } from "hooks/coreData/useGetOptscaleCapability";
 
 const SimpleItem = ({ menuItem, optscaleCapability }) => (
   <CapabilityWrapper capability={menuItem.capability}>

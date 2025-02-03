@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useGetOptscaleCapability } from "./coreData";
+import { useGetOptscaleCapability } from "./coreData/useGetOptscaleCapability";
 
 type Capability = "finops" | "mlops";
 
