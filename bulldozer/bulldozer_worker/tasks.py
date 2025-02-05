@@ -402,6 +402,8 @@ class StartInfra(Continue):
         tags = runner.get("tags", dict())
         # opens ingress ports for runner instance
         open_ingress = runner.get("open_ingress", False)
+        _, runset = self.bulldozer_cl.runset_get(runner["runset_id"])
+        spot_price = runset.get("spot_settings", {}).get("spot_price", None)
 
         if hp is not None and isinstance(hp, dict):
             for k, v in hp.items():
@@ -413,7 +415,7 @@ class StartInfra(Continue):
             state=TaskState.STARTING)
         _, cloud_account = self.rest_cl.cloud_account_get(
             cloud_account_id, True)
-        # TODO: get cloud type form cloud account to support multi-cloud
+        # TODO: get cloud type from cloud account to support multi-cloud
         # Now only AWS is supported
         c_type = "AWS"
         if not self.body.get("type"):
@@ -448,6 +450,7 @@ class StartInfra(Continue):
             key=None,
             tags=tags,
             open_ingress=open_ingress,
+            spot_price=spot_price
         )
 
         LOG.info("Created runner id=%s, instance=%s, ip=%s",
