@@ -393,6 +393,12 @@ const getThemeConfig = (settings = {}) => {
       MuiFormHelperText: {
         defaultProps: {
           margin: "dense"
+        },
+        styleOverrides: {
+          contained: () => ({
+            marginLeft: 0,
+            marginRight: 0
+          })
         }
       },
       MuiIconButton: {

@@ -552,7 +552,7 @@ export const DEFAULT_LINE_CHART_MARGIN = Object.freeze({ top: 20, right: 35, lef
 export const CHART_LEGEND_WIDTH = 200;
 
 export const CHART_LEGEND_LAYOUT_SETTINGS = {
-  anchor: "bottom-right",
+  anchor: "top-right",
   direction: "column",
   translateX: 8,
   itemWidth: 0,
