@@ -406,7 +406,10 @@ class StartInfra(Continue):
         # opens ingress ports for runner instance
         open_ingress = runner.get("open_ingress", False)
         _, runset = self.bulldozer_cl.runset_get(runner["runset_id"])
-        spot_price = runset.get("spot_settings", {}).get("spot_price", None)
+        spot_settings = runset.get("spot_settings")
+        spot_price = None
+        if spot_settings:
+            spot_price = spot_settings.get("spot_price")
 
         if hp is not None and isinstance(hp, dict):
             for k, v in hp.items():
