@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from bulldozer.bulldozer_worker.infra import Infra, InfraException
@@ -74,7 +73,7 @@ class RunsetState:
 
 
 class TaskReason:
-    COMPLETED = "task completed successfully"
+    COMPLETED = "Task completed successfully"
 
 
 class Base:
@@ -237,7 +236,7 @@ class ContinueWithDestroyConditions(Continue):
         _, runner = self.bulldozer_cl.get_runner(runner_id)
         # check for destroy flag set
         if runner.get("destroy"):
-            raise DestroyFlagSet("Destroy flag is set")
+            raise DestroyFlagSet("Aborted - Destroy flag is set")
 
         destroy_conditions = runner.get("destroy_conditions", {})
         # check budget condition
@@ -250,7 +249,8 @@ class ContinueWithDestroyConditions(Continue):
                      "current (estimated): %f", runner_id, max_budget, cost)
             if max_budget < cost:
                 raise BudgetExceeded(
-                    f"Budget exceeded max: {max_budget}, current: {cost}")
+                    f"Aborted - Budget exceeded max: {max_budget}, "
+                    f"current: {cost}")
         max_duration = destroy_conditions.get("max_duration")
         if max_duration:
             LOG.info("checking for max duration %d for runner %s",
@@ -263,7 +263,7 @@ class ContinueWithDestroyConditions(Continue):
                          runner_id, now, threshold)
                 if now > threshold:
                     raise TimeoutConditionExceeded(
-                        f"Duration exceeded: current time: {now} "
+                        f"Aborted - Duration exceeded: current time: {now} "
                         f"threshold: {threshold}"
                     )
 
@@ -366,15 +366,18 @@ class SetFailed(SetFinished):
                 }
             )
             infra.destroy()
-
+            self.bulldozer_cl.update_runner(
+                runner_id,
+                state=TaskState.DESTROYED,
+                destroyed_at=utcnow_timestamp()
+            )
         except Exception as exc:
             # basically exception
             LOG.exception("Cleanup problem: %s", str(exc))
-        finally:
             self.bulldozer_cl.update_runner(
                 runner_id,
-                state=TaskState.ERROR,
-                destroyed_at=utcnow_timestamp())
+                state=TaskState.ERROR)
+        finally:
             self.update_reason()
         self.message.ack()
 
@@ -497,7 +500,7 @@ class WaitArcee(ContinueWithDestroyConditions):
                      current_time, wait_time)
             if current_time > wait_time:
                 # TODO: Do we need automatically destroy env?
-                raise ArceeWaitException("Arcee wait exceeded")
+                raise ArceeWaitException("Aborted - Arcee wait exceeded")
         else:
             self.update_run_info(run_id, runner)
             self.bulldozer_cl.update_runner(
