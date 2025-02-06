@@ -15,12 +15,14 @@ import ExpensesBreakdownByPeriodWidget from "components/ExpensesBreakdown/Breakd
 import ExpensesBreakdownSummaryCards from "components/ExpensesBreakdown/SummaryCards";
 import PageContentWrapper from "components/PageContentWrapper";
 import SubTitle from "components/SubTitle";
+import Tooltip from "components/Tooltip";
 import RangePickerFormContainer from "containers/RangePickerFormContainer";
 import { useBreakdownData } from "hooks/useBreakdownData";
 import { getResourcesExpensesUrl, EXPENSES_BY_CLOUD, EXPENSES_BY_POOL, EXPENSES_BY_OWNER, EXPENSES_MAP } from "urls";
 import { PDF_ELEMENTS } from "utils/constants";
 import { SPACING_2 } from "utils/layouts";
 import { createPdf } from "utils/pdf";
+import { sliceByLimitWithEllipsis } from "utils/strings";
 
 const breakdownByButtons = [
   { messageId: "source", link: EXPENSES_BY_CLOUD, icon: <CloudIcon /> },
@@ -28,6 +30,8 @@ const breakdownByButtons = [
   { messageId: "owner", link: EXPENSES_BY_OWNER, icon: <PeopleIcon /> },
   { messageId: "geography", link: EXPENSES_MAP, icon: <PublicIcon /> }
 ];
+
+const MAX_ORGANIZATION_NAME_LENGTH = 64;
 
 const CostExplorer = ({
   total,
@@ -44,13 +48,21 @@ const CostExplorer = ({
 
   const breakdownData = useBreakdownData(breakdown);
 
+  const isNameLong = organizationName?.length > MAX_ORGANIZATION_NAME_LENGTH;
+
   const actionBarData = {
     title: {
       text: (
         <FormattedMessage
           id="expensesOf"
           values={{
-            name: organizationName
+            name: (
+              <Tooltip title={isNameLong ? organizationName : undefined}>
+                <span>
+                  {isNameLong ? sliceByLimitWithEllipsis(organizationName, MAX_ORGANIZATION_NAME_LENGTH) : organizationName}
+                </span>
+              </Tooltip>
+            )
           }}
         />
       ),
