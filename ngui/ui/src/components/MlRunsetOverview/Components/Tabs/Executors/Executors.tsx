@@ -14,7 +14,7 @@ import { OPTSCALE_CAPABILITY } from "utils/constants";
 import { getCloudResourceIdentifier } from "utils/resources";
 import { CELL_EMPTY_VALUE } from "utils/tables";
 
-const STATUSES = Object.freeze({
+const STATE = Object.freeze({
   STARTING_PREPARING: "starting preparing",
   STARTING: "starting",
   STARTED: "started",
@@ -25,6 +25,19 @@ const STATUSES = Object.freeze({
   ERROR: "error",
   WAITING_ARCEE: "waiting arcee",
   UNKNOWN: "unknown"
+});
+
+const STATE_TRANSLATION_MAP = Object.freeze({
+  [STATE.STARTING_PREPARING]: "startPreparing",
+  [STATE.STARTING]: "starting",
+  [STATE.STARTED]: "started",
+  [STATE.DESTROYING_SCHEDULED]: "terminateScheduled",
+  [STATE.DESTROY_PREPARING]: "terminatePrepared",
+  [STATE.DESTROYING]: "terminating",
+  [STATE.DESTROYED]: "terminated",
+  [STATE.ERROR]: "error",
+  [STATE.WAITING_ARCEE]: "waitingOptscaleArcee",
+  [STATE.UNKNOWN]: "unknown"
 });
 
 const Executors = ({ executors, isLoading }) => {
@@ -43,29 +56,15 @@ const Executors = ({ executors, isLoading }) => {
         cell: ({
           cell,
           row: {
-            original: { reason: errorReason }
+            original: { reason }
           }
         }) => {
-          const status = cell.getValue();
+          const state = cell.getValue();
 
-          const getStatusTranslationId = () =>
-            ({
-              [STATUSES.STARTING_PREPARING]: "startPreparing",
-              [STATUSES.STARTING]: "starting",
-              [STATUSES.STARTED]: "started",
-              [STATUSES.DESTROYING_SCHEDULED]: "terminateScheduled",
-              [STATUSES.DESTROY_PREPARING]: "terminatePrepared",
-              [STATUSES.DESTROYING]: "terminating",
-              [STATUSES.DESTROYED]: "terminated",
-              [STATUSES.ERROR]: "error",
-              [STATUSES.WAITING_ARCEE]: "waitingOptscaleArcee",
-              [STATUSES.UNKNOWN]: "unknown"
-            })[status];
-
-          const translationId = getStatusTranslationId();
+          const translationId = STATE_TRANSLATION_MAP[state];
 
           return translationId ? (
-            <CaptionedCell caption={status === STATUSES.ERROR ? errorReason : undefined}>
+            <CaptionedCell caption={[STATE.ERROR, STATE.DESTROYED].includes(state) ? reason : undefined}>
               <FormattedMessage id={translationId} />
             </CaptionedCell>
           ) : (
