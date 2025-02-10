@@ -3,7 +3,13 @@ import ErrorBoundary from "components/ErrorBoundary";
 import LayoutWrapper from "components/LayoutWrapper";
 import RoutePathContextProvider from "contexts/RoutePathContext/RoutePathContextProvider";
 import { useGetToken } from "hooks/useGetToken";
-import { INITIALIZE, LOGIN, NEXT_QUERY_PARAMETER_NAME, USER_EMAIL_QUERY_PARAMETER_NAME } from "urls";
+import {
+  INITIALIZE,
+  LOGIN,
+  NEXT_QUERY_PARAMETER_NAME,
+  OPTSCALE_MODE_QUERY_PARAMETER_NAME,
+  USER_EMAIL_QUERY_PARAMETER_NAME
+} from "urls";
 import mainMenu from "utils/menus";
 import { formQueryString, getPathname, getQueryParams } from "utils/network";
 import { isEmpty as isEmptyObject } from "utils/objects";
@@ -17,8 +23,13 @@ const LoginNavigation = () => {
   const currentPathName = getPathname();
   const currentQueryParams = getQueryParams();
 
-  const { [USER_EMAIL_QUERY_PARAMETER_NAME]: email, ...restQueryParams } = currentQueryParams as {
+  const {
+    [USER_EMAIL_QUERY_PARAMETER_NAME]: email,
+    [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode,
+    ...restQueryParams
+  } = currentQueryParams as {
     [USER_EMAIL_QUERY_PARAMETER_NAME]: string;
+    [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: string;
   };
 
   const url = new URL(LOGIN, window.location.origin);
@@ -32,6 +43,10 @@ const LoginNavigation = () => {
 
   if (email) {
     url.searchParams.append(USER_EMAIL_QUERY_PARAMETER_NAME, email);
+  }
+
+  if (mode) {
+    url.searchParams.append(OPTSCALE_MODE_QUERY_PARAMETER_NAME, mode);
   }
 
   return <Navigate to={`${url.pathname}${url.search}`} />;

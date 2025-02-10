@@ -617,4 +617,6 @@ export const isDemo = () => window.location.origin === DEMO;
 
 export const USER_EMAIL_QUERY_PARAMETER_NAME = "userEmail";
 
+export const OPTSCALE_MODE_QUERY_PARAMETER_NAME = "mode";
+
 export const NEXT_QUERY_PARAMETER_NAME = "next";

@@ -25,7 +25,7 @@ const writeErrorToCache = (cache: DefaultContext, graphQLError: GraphQLError) =>
 const ApolloClientProvider = ({ children }) => {
   const { token } = useGetToken();
 
-  const singOut = useSignOut();
+  const signOut = useSignOut();
 
   const httpLink = new HttpLink({
     uri: `${httpBase}/api`,
@@ -48,7 +48,7 @@ const ApolloClientProvider = ({ children }) => {
         console.log(`[GraphQL error]: Message: ${message}, Path: ${path}`);
 
         if (extensions?.response?.status === 401) {
-          singOut();
+          signOut();
         }
       });
 
