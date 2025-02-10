@@ -75,14 +75,24 @@ const SetupOrganization = ({ userEmail, refetchOrganizations, isLoading }: Setup
   if (createOrganizationError) {
     return (
       <>
-        <Title
-          dataTestId="p_organization_creation_failed"
-          messageId="organizationCreationFailed"
-          messageValues={{
-            br: <br />,
-            email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} dataTestId="p_organization_creation_failed_email" />
-          }}
-        />
+        <Box>
+          <Title
+            dataTestId="p_organization_creation_failed"
+            messageId="organizationCreationFailed"
+            messageValues={{
+              br: <br />,
+              email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} dataTestId="p_organization_creation_failed_email" />
+            }}
+          />
+          <Typography align="center" variant="body2" px={2}>
+            <FormattedMessage
+              id="pleaseSignInAgainAndIfTheProblemPersists"
+              values={{
+                email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} dataTestId="p_organization_creation_failed_email" />
+              }}
+            />
+          </Typography>
+        </Box>
         <Box height={60} display="flex" alignItems="center" gap={2}>
           <Button size="medium" messageId="signOut" color="primary" onClick={signOut} />
         </Box>

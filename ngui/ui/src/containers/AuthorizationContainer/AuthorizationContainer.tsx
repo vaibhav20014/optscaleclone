@@ -136,7 +136,7 @@ const AuthorizationContainer = () => {
     };
 
     return `${INITIALIZE}?${formQueryString({
-      [NEXT_QUERY_PARAMETER_NAME]: next || INITIALIZE,
+      [NEXT_QUERY_PARAMETER_NAME]: next,
       [USER_EMAIL_QUERY_PARAMETER_NAME]: email,
       [SHOW_POLICY_QUERY_PARAM]: showPolicy
     })}`;
