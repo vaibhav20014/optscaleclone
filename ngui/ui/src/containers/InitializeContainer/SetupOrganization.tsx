@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
@@ -9,7 +9,10 @@ import MailTo from "components/MailTo";
 import SubmitButtonLoader from "components/SubmitButtonLoader";
 import { CREATE_ORGANIZATION, UPDATE_OPTSCALE_CAPABILITY } from "graphql/api/restapi/queries/restapi.queries";
 import { useSignOut } from "hooks/useSignOut";
-import { EMAIL_SUPPORT } from "urls";
+import { EMAIL_SUPPORT, OPTSCALE_MODE_QUERY_PARAMETER_NAME } from "urls";
+import { OPTSCALE_CAPABILITY } from "utils/constants";
+import { getQueryParams } from "utils/network";
+import { ObjectValues } from "utils/types";
 import { Title } from "./Title";
 
 const FIELD_NAMES = Object.freeze({
@@ -49,7 +52,7 @@ const SetupOrganization = ({ userEmail, refetchOrganizations, isLoading }: Setup
     useMutation(CREATE_ORGANIZATION);
   const [organization, setOrganization] = useState(null);
 
-  const [updateOptscaleCapabilityMutation, { loading: updateOptscaleCapabilityLoading }] =
+  const [updateOptscaleCapabilityMutation, { loading: updateOptscaleCapabilityLoading, error: updateOptscaleCapabilityError }] =
     useMutation(UPDATE_OPTSCALE_CAPABILITY);
 
   const methods = useForm<FormValues>({
@@ -58,31 +61,52 @@ const SetupOrganization = ({ userEmail, refetchOrganizations, isLoading }: Setup
 
   const { handleSubmit } = methods;
 
-  const handleCreateOrganization = useCallback(() => {
-    createOrganization({
-      variables: {
-        organizationName: getOrganizationName(userEmail)
-      }
-    }).then(({ data }) => {
-      setOrganization(data.createOrganization);
-    });
-  }, [createOrganization, userEmail]);
-
   useEffect(() => {
-    handleCreateOrganization();
-  }, [handleCreateOrganization]);
+    const initialize = async () => {
+      const { data } = await createOrganization({
+        variables: {
+          organizationName: getOrganizationName(userEmail)
+        }
+      });
 
-  if (createOrganizationError) {
+      const { [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode } = getQueryParams() as {
+        [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: ObjectValues<typeof OPTSCALE_CAPABILITY>;
+      };
+
+      if (Object.values(OPTSCALE_CAPABILITY).includes(mode)) {
+        await updateOptscaleCapabilityMutation({
+          variables: {
+            organizationId: data.createOrganization.id,
+            value: {
+              ...Object.fromEntries(Object.values(OPTSCALE_CAPABILITY).map((capability) => [capability, false])),
+              [mode]: true
+            }
+          }
+        });
+
+        await refetchOrganizations();
+      } else {
+        setOrganization(data.createOrganization);
+      }
+    };
+
+    initialize();
+  }, [createOrganization, refetchOrganizations, updateOptscaleCapabilityMutation, userEmail]);
+
+  if (createOrganizationError || updateOptscaleCapabilityError) {
     return (
       <>
-        <Title
-          dataTestId="p_organization_creation_failed"
-          messageId="organizationCreationFailed"
-          messageValues={{
-            br: <br />,
-            email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} dataTestId="p_organization_creation_failed_email" />
-          }}
-        />
+        <Box>
+          <Title dataTestId="p_organization_creation_failed" messageId="organizationCreationFailed" />
+          <Typography align="center" variant="body2" px={2}>
+            <FormattedMessage
+              id="pleaseSignInAgainAndIfTheProblemPersists"
+              values={{
+                email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} dataTestId="p_organization_creation_failed_email" />
+              }}
+            />
+          </Typography>
+        </Box>
         <Box height={60} display="flex" alignItems="center" gap={2}>
           <Button size="medium" messageId="signOut" color="primary" onClick={signOut} />
         </Box>

@@ -1,10 +1,14 @@
 import { NetworkStatus, useQuery } from "@apollo/client";
-import { Box, Stack, CircularProgress } from "@mui/material";
+import { Box, Stack, CircularProgress, Typography } from "@mui/material";
+import { FormattedMessage } from "react-intl";
 import { Navigate } from "react-router-dom";
+import Button from "components/Button";
 import Logo from "components/Logo";
+import MailTo from "components/MailTo";
 import { GET_ORGANIZATIONS, GET_INVITATIONS } from "graphql/api/restapi/queries";
 import { useGetToken } from "hooks/useGetToken";
-import { HOME, NEXT_QUERY_PARAMETER_NAME, SHOW_POLICY_QUERY_PARAM, USER_EMAIL_QUERY_PARAMETER_NAME } from "urls";
+import { useSignOut } from "hooks/useSignOut";
+import { EMAIL_SUPPORT, HOME, NEXT_QUERY_PARAMETER_NAME, SHOW_POLICY_QUERY_PARAM, USER_EMAIL_QUERY_PARAMETER_NAME } from "urls";
 import { isEmpty as isEmptyArray } from "utils/arrays";
 import { SPACING_6 } from "utils/layouts";
 import { getQueryParams } from "utils/network";
@@ -45,6 +49,7 @@ const getRedirectionPath = (scopeUserEmail: string) => {
 };
 
 const InitializeContainer = () => {
+  const signOut = useSignOut();
   const { userEmail } = useGetToken();
 
   const {
@@ -107,6 +112,32 @@ const InitializeContainer = () => {
     );
   };
 
+  const renderError = () => {
+    return (
+      <>
+        <Box>
+          <Title
+            dataTestId="p_issue_occurred_during_initialization_process"
+            messageId="anIssueOccurredDuringTheInitializationProcess"
+            messageValues={{
+              email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} />,
+              br: <br />
+            }}
+          />
+          <Typography align="center" variant="body2" px={2}>
+            <FormattedMessage
+              id="pleaseSignInAgainAndIfTheProblemPersists"
+              values={{ email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} /> }}
+            />
+          </Typography>
+        </Box>
+        <Box height={60} display="flex" alignItems="center" gap={2}>
+          <Button size="medium" messageId="signOut" color="primary" onClick={signOut} />
+        </Box>
+      </>
+    );
+  };
+
   return (
     <Stack spacing={SPACING_6} alignItems="center">
       <Box>
@@ -120,7 +151,7 @@ const InitializeContainer = () => {
           </Box>
         </>
       ) : (
-        <>{error ? <div>Display error(s), possible actions are TBD</div> : renderContent()}</>
+        <>{error ? renderError() : renderContent()}</>
       )}
     </Stack>
   );
