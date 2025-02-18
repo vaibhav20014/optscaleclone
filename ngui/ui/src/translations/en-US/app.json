@@ -1258,7 +1258,7 @@
   "mlProfilingIntegration.initialization.taskKey": "Task key",
   "mlProfilingIntegration.initialization.taskKeyCanBeFound": "The task key can be found on the <link>Tasks</link> page",
   "mlProfilingIntegration.initialization.title": "Initialization",
-  "mlProfilingIntegration.installation.description": "Arcee requires Python 3.7+ to run. To install the <code>optscale-arcee</code> package, use <code>pip</code>",
+  "mlProfilingIntegration.installation.description": "Arcee requires Python 3.8+ to run. To install the <code>optscale-arcee</code> package, use <code>pip</code>",
   "mlProfilingIntegration.installation.title": "Installation",
   "mlProfilingIntegration.loggingDataset.description": "To log a dataset, use the <code>dataset</code> method with the following parameters",
   "mlProfilingIntegration.loggingDataset.parameters.1.path": "<strong>path</strong> (str, required): dataset path",
