@@ -118,9 +118,7 @@ const GenerateLiveDemoContainer = ({ email, subscribeToNewsletter }: GenerateLiv
           if (token) {
             const organizationId = getState()?.[RESTAPI]?.[GET_LIVE_DEMO].organization_id;
 
-            return Promise.reject(() => {
-              return setGeneratedOrganizationId(organizationId);
-            });
+            return Promise.reject(() => setGeneratedOrganizationId(organizationId));
           }
 
           return Promise.reject();

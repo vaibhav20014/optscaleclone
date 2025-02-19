@@ -36,8 +36,8 @@ const MAX_ROLE_TARGET_LENGTH = 64;
 
 const InviteListElement = ({ message }: InviteListElementProps) => <Typography>●&nbsp;{message}</Typography>;
 
-const PermissionsList = ({ roleTargetMessageId, invites }: PermissionsListProps) => {
-  return invites.map((invite) => {
+const PermissionsList = ({ roleTargetMessageId, invites }: PermissionsListProps) =>
+  invites.map((invite) => {
     const isNameLong = invite.scope_name.length > MAX_ROLE_TARGET_LENGTH;
 
     return (
@@ -62,7 +62,6 @@ const PermissionsList = ({ roleTargetMessageId, invites }: PermissionsListProps)
       />
     );
   });
-};
 
 const AcceptInvitationTitle = ({ ownerName, ownerEmail, organizationNameInvitedTo }: AcceptInvitationTitleProps) => {
   const isNameLong = organizationNameInvitedTo.length > MAX_ROLE_TARGET_LENGTH;
