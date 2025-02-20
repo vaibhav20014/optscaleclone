@@ -3,6 +3,7 @@ import { makeStyles } from "tss-react/mui";
 import { SPACING_2 } from "utils/layouts";
 
 const ALPHA = 0.95;
+
 const useStyles = makeStyles()((theme, color) => ({
   card: {
     display: "flex",
