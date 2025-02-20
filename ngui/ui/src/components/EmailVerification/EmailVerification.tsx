@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import Greeter from "components/Greeter";
 import ConfirmEmailVerificationCodeContainer from "containers/ConfirmEmailVerificationCodeContainer";
 import { initialize } from "containers/InitializeContainer/redux";
-import { INITIALIZE, OPTSCALE_MODE_QUERY_PARAMETER_NAME, SHOW_POLICY_QUERY_PARAM } from "urls";
+import { INITIALIZE, OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME, SHOW_POLICY_QUERY_PARAM } from "urls";
 import { SPACING_2 } from "utils/layouts";
 import macaroon from "utils/macaroons";
 import { formQueryString, getQueryParams } from "utils/network";
@@ -51,15 +51,15 @@ const EmailVerification = () => {
               component="button"
               onClick={() => {
                 const caveats = macaroon.processCaveats(macaroon.deserialize(verificationCodeToken.token).getCaveats());
-                const { [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode } = getQueryParams() as {
-                  [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: string;
+                const { [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability } = getQueryParams() as {
+                  [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: string;
                 };
 
                 dispatch(initialize({ ...verificationCodeToken, caveats }));
                 navigate(
                   `${INITIALIZE}?${formQueryString({
                     [SHOW_POLICY_QUERY_PARAM]: true,
-                    [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode
+                    [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability
                   })}`
                 );
               }}

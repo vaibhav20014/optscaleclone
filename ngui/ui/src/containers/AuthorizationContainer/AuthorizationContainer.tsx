@@ -22,7 +22,7 @@ import {
   SHOW_POLICY_QUERY_PARAM,
   USER_EMAIL_QUERY_PARAMETER_NAME,
   NEXT_QUERY_PARAMETER_NAME,
-  OPTSCALE_MODE_QUERY_PARAMETER_NAME
+  OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME
 } from "urls";
 import { GA_EVENT_CATEGORIES, trackEvent } from "utils/analytics";
 import { SPACING_4 } from "utils/layouts";
@@ -79,14 +79,14 @@ const AuthorizationContainer = () => {
 
     await sendEmailVerificationCode(email);
 
-    const { [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode } = getQueryParams() as {
-      [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: string;
+    const { [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability } = getQueryParams() as {
+      [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: string;
     };
 
     return navigate(
       `${EMAIL_VERIFICATION}?${formQueryString({
         email,
-        mode
+        [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability
       })}`
     );
   };
@@ -133,19 +133,19 @@ const AuthorizationContainer = () => {
   const getRedirectionPath = () => {
     const {
       [NEXT_QUERY_PARAMETER_NAME]: next,
-      [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode,
+      [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability,
       [USER_EMAIL_QUERY_PARAMETER_NAME]: email,
       [SHOW_POLICY_QUERY_PARAM]: showPolicy
     } = getQueryParams() as {
       [NEXT_QUERY_PARAMETER_NAME]: string;
-      [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: string;
+      [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: string;
       [USER_EMAIL_QUERY_PARAMETER_NAME]: string;
       [SHOW_POLICY_QUERY_PARAM]: boolean | string;
     };
 
     return `${INITIALIZE}?${formQueryString({
       [NEXT_QUERY_PARAMETER_NAME]: next,
-      [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode,
+      [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability,
       [USER_EMAIL_QUERY_PARAMETER_NAME]: email,
       [SHOW_POLICY_QUERY_PARAM]: showPolicy
     })}`;

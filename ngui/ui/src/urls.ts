@@ -280,8 +280,8 @@ export const RECOMMENDATION_SERVICE_QUERY_PARAMETER = "service";
 export const RECOMMENDATION_VIEW_QUERY_PARAMETER = "view";
 
 export const getRecommendationsUrl = ({ category, service } = {}) => {
-  const categoryParameter = category ? `${RECOMMENDATION_CATEGORY_QUERY_PARAMETER}=${category}` : "";
-  const serviceParameter = service ? `${RECOMMENDATION_SERVICE_QUERY_PARAMETER}=${service}` : "";
+  const categoryParameter = category ? (`${RECOMMENDATION_CATEGORY_QUERY_PARAMETER}=${category}` as const) : "";
+  const serviceParameter = service ? (`${RECOMMENDATION_SERVICE_QUERY_PARAMETER}=${service}` as const) : "";
 
   return buildQueryParameters(RECOMMENDATIONS, [categoryParameter, serviceParameter]);
 };
@@ -617,6 +617,6 @@ export const isDemo = () => window.location.origin === DEMO;
 
 export const USER_EMAIL_QUERY_PARAMETER_NAME = "userEmail";
 
-export const OPTSCALE_MODE_QUERY_PARAMETER_NAME = "mode";
+export const OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME = "capability";
 
 export const NEXT_QUERY_PARAMETER_NAME = "next";

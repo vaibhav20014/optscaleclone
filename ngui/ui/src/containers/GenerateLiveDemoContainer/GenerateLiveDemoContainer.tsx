@@ -9,7 +9,7 @@ import { initialize } from "containers/InitializeContainer/redux";
 import { CREATE_TOKEN } from "graphql/api/auth/queries";
 import { UPDATE_OPTSCALE_CAPABILITY } from "graphql/api/restapi/queries";
 import { reset } from "reducers/route";
-import { HOME, NEXT_QUERY_PARAMETER_NAME, OPTSCALE_MODE_QUERY_PARAMETER_NAME } from "urls";
+import { HOME, NEXT_QUERY_PARAMETER_NAME, OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME } from "urls";
 import { isError } from "utils/api";
 import { OPTSCALE_CAPABILITY } from "utils/constants";
 import macaroon from "utils/macaroons";
@@ -88,17 +88,17 @@ const GenerateLiveDemoContainer = ({ email, subscribeToNewsletter }: GenerateLiv
         .then(() => {
           const organizationId = getState()?.[RESTAPI]?.[GET_LIVE_DEMO].organization_id;
 
-          const { [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode } = getQueryParams() as {
-            [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: ObjectValues<typeof OPTSCALE_CAPABILITY>;
+          const { [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability } = getQueryParams() as {
+            [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: ObjectValues<typeof OPTSCALE_CAPABILITY>;
           };
 
-          if (Object.values(OPTSCALE_CAPABILITY).includes(mode)) {
+          if (Object.values(OPTSCALE_CAPABILITY).includes(capability)) {
             return updateOptscaleCapabilityMutation({
               variables: {
                 organizationId,
                 value: {
                   ...Object.fromEntries(Object.values(OPTSCALE_CAPABILITY).map((capability) => [capability, false])),
-                  [mode]: true
+                  [capability]: true
                 }
               }
             })
