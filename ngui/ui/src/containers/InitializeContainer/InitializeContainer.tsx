@@ -112,31 +112,29 @@ const InitializeContainer = () => {
     );
   };
 
-  const renderError = () => {
-    return (
-      <>
-        <Box>
-          <Title
-            dataTestId="p_issue_occurred_during_initialization_process"
-            messageId="anIssueOccurredDuringTheInitializationProcess"
-            messageValues={{
-              email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} />,
-              br: <br />
-            }}
+  const renderError = () => (
+    <>
+      <Box>
+        <Title
+          dataTestId="p_issue_occurred_during_initialization_process"
+          messageId="anIssueOccurredDuringTheInitializationProcess"
+          messageValues={{
+            email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} />,
+            br: <br />
+          }}
+        />
+        <Typography align="center" variant="body2" px={2}>
+          <FormattedMessage
+            id="pleaseSignInAgainAndIfTheProblemPersists"
+            values={{ email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} /> }}
           />
-          <Typography align="center" variant="body2" px={2}>
-            <FormattedMessage
-              id="pleaseSignInAgainAndIfTheProblemPersists"
-              values={{ email: <MailTo email={EMAIL_SUPPORT} text={EMAIL_SUPPORT} /> }}
-            />
-          </Typography>
-        </Box>
-        <Box height={60} display="flex" alignItems="center" gap={2}>
-          <Button size="medium" messageId="signOut" color="primary" onClick={signOut} />
-        </Box>
-      </>
-    );
-  };
+        </Typography>
+      </Box>
+      <Box height={60} display="flex" alignItems="center" gap={2}>
+        <Button size="medium" messageId="signOut" color="primary" onClick={signOut} />
+      </Box>
+    </>
+  );
 
   return (
     <Stack spacing={SPACING_6} alignItems="center">
