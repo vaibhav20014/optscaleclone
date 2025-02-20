@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
@@ -13,7 +13,7 @@ import { EMAIL_SUPPORT, OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME } from "urls";
 import { OPTSCALE_CAPABILITY } from "utils/constants";
 import { getQueryParams } from "utils/network";
 import { ObjectValues } from "utils/types";
-import { Title } from "./Title";
+import { Title } from "../../common";
 
 const FIELD_NAMES = Object.freeze({
   CAPABILITY: "capability",
