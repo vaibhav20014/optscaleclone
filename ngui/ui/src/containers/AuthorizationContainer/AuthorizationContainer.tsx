@@ -25,6 +25,7 @@ import {
   OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME
 } from "urls";
 import { GA_EVENT_CATEGORIES, trackEvent } from "utils/analytics";
+import { OPTSCALE_CAPABILITY } from "utils/constants";
 import { SPACING_4 } from "utils/layouts";
 import macaroon from "utils/macaroons";
 import { formQueryString, getQueryParams } from "utils/network";
@@ -77,11 +78,15 @@ const AuthorizationContainer = () => {
       return dispatch(initialize({ ...data.user, caveats }));
     }
 
-    await sendEmailVerificationCode(email);
-
     const { [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability } = getQueryParams() as {
       [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: string;
     };
+
+    await sendEmailVerificationCode(email, {
+      [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: Object.values(OPTSCALE_CAPABILITY).includes(capability)
+        ? capability
+        : undefined
+    });
 
     return navigate(
       `${EMAIL_VERIFICATION}?${formQueryString({
