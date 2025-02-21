@@ -22,15 +22,13 @@ import SubTitle from "components/SubTitle";
 import TopAlertWrapper from "components/TopAlertWrapper";
 import { ALERT_TYPES } from "components/TopAlertWrapper/TopAlertWrapper";
 import { useIsDownMediaQuery, useIsUpMediaQuery } from "hooks/useMediaQueries";
-import { HYSTAX, LIVE_DEMO } from "urls";
+import { HYSTAX, LIVE_DEMO, OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME } from "urls";
 import { tag as tagHotjar } from "utils/hotjar";
 import { SPACING_2, SPACING_6, SPACING_1 } from "utils/layouts";
 import { isEven } from "utils/math";
+import { getQueryParams } from "utils/network";
+import { buildQueryParameters } from "utils/strings";
 import useStyles from "./Greeter.styles";
-
-type LiveDemoButtonProps = {
-  onClick: () => void;
-};
 
 type GreeterProps = {
   content: ReactNode;
@@ -95,16 +93,30 @@ const ImagesWithCaptions = () => {
   );
 };
 
-const LiveDemoButton = ({ onClick }: LiveDemoButtonProps) => (
-  <Button
-    dataTestId="btn_live_demo"
-    color="lightYellow"
-    variant="contained"
-    messageId="liveDemo"
-    size="large"
-    onClick={onClick}
-  />
-);
+const LiveDemoButton = () => {
+  const navigate = useNavigate();
+
+  const onClick = () => {
+    const { [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability } = getQueryParams();
+
+    const url = buildQueryParameters(LIVE_DEMO, [
+      capability ? `${OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME}=${capability}` : ""
+    ]);
+
+    navigate(url);
+  };
+
+  return (
+    <Button
+      dataTestId="btn_live_demo"
+      color="lightYellow"
+      variant="contained"
+      messageId="liveDemo"
+      size="large"
+      onClick={onClick}
+    />
+  );
+};
 
 const defaultOrder = [0, 1, 2, 3, 4, 5] as const;
 
@@ -124,7 +136,6 @@ const getVerticalOrder = () => {
 const Greeter = ({ content }: GreeterProps) => {
   const { classes, cx } = useStyles();
   const theme = useTheme();
-  const navigate = useNavigate();
 
   const isInVerticalOrder = useIsDownMediaQuery("md");
 
@@ -153,7 +164,7 @@ const Greeter = ({ content }: GreeterProps) => {
       key: "link",
       children: (
         <div className={classes.linkWrapper}>
-          <LiveDemoButton onClick={() => navigate(LIVE_DEMO)} />
+          <LiveDemoButton />
           <OptScaleLink />
         </div>
       )

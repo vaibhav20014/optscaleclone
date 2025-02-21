@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
@@ -9,11 +9,11 @@ import MailTo from "components/MailTo";
 import SubmitButtonLoader from "components/SubmitButtonLoader";
 import { CREATE_ORGANIZATION, UPDATE_OPTSCALE_CAPABILITY } from "graphql/api/restapi/queries/restapi.queries";
 import { useSignOut } from "hooks/useSignOut";
-import { EMAIL_SUPPORT, OPTSCALE_MODE_QUERY_PARAMETER_NAME } from "urls";
+import { EMAIL_SUPPORT, OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME } from "urls";
 import { OPTSCALE_CAPABILITY } from "utils/constants";
 import { getQueryParams } from "utils/network";
 import { ObjectValues } from "utils/types";
-import { Title } from "./Title";
+import { Title } from "../../common";
 
 const FIELD_NAMES = Object.freeze({
   CAPABILITY: "capability",
@@ -69,17 +69,17 @@ const SetupOrganization = ({ userEmail, refetchOrganizations, isLoading }: Setup
         }
       });
 
-      const { [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode } = getQueryParams() as {
-        [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: ObjectValues<typeof OPTSCALE_CAPABILITY>;
+      const { [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability } = getQueryParams() as {
+        [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: ObjectValues<typeof OPTSCALE_CAPABILITY>;
       };
 
-      if (Object.values(OPTSCALE_CAPABILITY).includes(mode)) {
+      if (Object.values(OPTSCALE_CAPABILITY).includes(capability)) {
         await updateOptscaleCapabilityMutation({
           variables: {
             organizationId: data.createOrganization.id,
             value: {
               ...Object.fromEntries(Object.values(OPTSCALE_CAPABILITY).map((capability) => [capability, false])),
-              [mode]: true
+              [capability]: true
             }
           }
         });

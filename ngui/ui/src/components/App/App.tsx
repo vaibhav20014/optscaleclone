@@ -7,7 +7,7 @@ import {
   INITIALIZE,
   LOGIN,
   NEXT_QUERY_PARAMETER_NAME,
-  OPTSCALE_MODE_QUERY_PARAMETER_NAME,
+  OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME,
   USER_EMAIL_QUERY_PARAMETER_NAME
 } from "urls";
 import mainMenu from "utils/menus";
@@ -25,11 +25,11 @@ const LoginNavigation = () => {
 
   const {
     [USER_EMAIL_QUERY_PARAMETER_NAME]: email,
-    [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: mode,
+    [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: capability,
     ...restQueryParams
   } = currentQueryParams as {
     [USER_EMAIL_QUERY_PARAMETER_NAME]: string;
-    [OPTSCALE_MODE_QUERY_PARAMETER_NAME]: string;
+    [OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME]: string;
   };
 
   const url = new URL(LOGIN, window.location.origin);
@@ -45,8 +45,8 @@ const LoginNavigation = () => {
     url.searchParams.append(USER_EMAIL_QUERY_PARAMETER_NAME, email);
   }
 
-  if (mode) {
-    url.searchParams.append(OPTSCALE_MODE_QUERY_PARAMETER_NAME, mode);
+  if (capability) {
+    url.searchParams.append(OPTSCALE_CAPABILITY_QUERY_PARAMETER_NAME, capability);
   }
 
   return <Navigate to={`${url.pathname}${url.search}`} />;
