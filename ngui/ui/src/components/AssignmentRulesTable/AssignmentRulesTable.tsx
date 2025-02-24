@@ -159,8 +159,7 @@ const AssignmentRulesTable = ({ rules, managedPools, isLoadingProps = {}, onUpda
         action: () => openSideModal(ReapplyRulesetModal, { managedPools }),
         dataTestId: "btn_re_apply",
         show: !isEmptyArray(managedPools),
-        isLoading: isGetManagedPoolsLoading,
-        requiredActions: ["EDIT_PARTNER"]
+        isLoading: isGetManagedPoolsLoading
       }
     ]
   };
