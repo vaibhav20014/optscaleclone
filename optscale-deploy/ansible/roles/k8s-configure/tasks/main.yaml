@@ -61,7 +61,7 @@
   shell: helm repo update
 
 - name: Install nginx ingress controller
-  shell: helm upgrade --install ngingress bitnami/nginx-ingress-controller --version 11.3.17 --set hostNetwork=true --set extraArgs.default-ssl-certificate=default/defaultcert --set kind=DaemonSet --set daemonset.useHostPort=true --set containerPorts.http=80 --set containerPorts.https=443 --set resources.limits.memory=384Mi --set resources.requests.memory=192Mi
+  shell: helm upgrade --install ngingress bitnami/nginx-ingress-controller --version 11.3.17 --set hostNetwork=true --set extraArgs.default-ssl-certificate=default/defaultcert --set kind=DaemonSet --set daemonset.useHostPort=true --set containerPorts.http=80 --set containerPorts.https=443 --set resources.limits.memory=896Mi --set resources.requests.memory=384Mi
   run_once: true
 
 - name: Copy custom nginx-ingress chart
@@ -97,6 +97,23 @@
     line: 'KUBELET_EXTRA_ARGS=--hostname-override={{ ansible_hostname }} --image-gc-high-threshold={{ image_gc_high_threshold }} --image-gc-low-threshold={{ image_gc_low_threshold }} --eviction-hard={{ eviction_hard }}'
     state: present
     create: yes
+  become: yes
+
+- name: Ensure kubelet config file exists
+  lineinfile:
+    path: /var/lib/kubelet/config.yaml
+    line: ''
+    create: yes
+    mode: '0644'
+  become: yes
+
+- name: Set maxPods to 250 in kubelet config
+  lineinfile:
+    path: /var/lib/kubelet/config.yaml
+    regexp: '^maxPods:'
+    line: 'maxPods: 250'
+    backup: yes
+    mode: '0644'
   become: yes
 
 - name: Restart kubelet service
