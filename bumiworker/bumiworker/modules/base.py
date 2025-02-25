@@ -263,7 +263,7 @@ class ModuleBase(ServiceBase):
                 'date': get_by_cost_saving_timestamp(r, is_saving)
             } for r_id, r in filtered_resources.items()]
             query = """
-                SELECT resource_id, sum(sign), sum(cost * sign)
+                SELECT resource_id, sum(sign), sum(toFloat64(cost) * sign)
                 FROM expenses
                 JOIN resources ON resource_id = resources.id
                 WHERE date >= resources.date

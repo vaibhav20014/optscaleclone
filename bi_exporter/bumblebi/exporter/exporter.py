@@ -83,7 +83,7 @@ class BaseExporter:
                 date,
                 cloud_account_id,
                 resource_id,
-                SUM(cost * sign) AS total_cost
+                SUM(toFloat64(cost) * sign) AS total_cost
             FROM expenses
             WHERE date >= %(start_date)s
                 AND date <= %(end_date)s

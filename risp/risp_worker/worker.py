@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from threading import Thread
+from decimal import Decimal
 
 import os
 import re
@@ -208,19 +209,27 @@ class RISPWorker(ConsumerMixin):
             cloud_resource_ids.add(cloud_resource_id)
             exp_start = datetime(**expense['_id']['start_date'],
                                  tzinfo=timezone.utc)
-            offer_cost = sum(float(x) for x in expense['offer_cost'])
-            on_demand_cost = sum(float(x) for x in expense['on_demand_cost'])
-            usage = sum(float(x) for x in expense['usage_hours']) + sum(
-                float(x) / SECONDS_IN_HOUR for x in expense['usage_seconds'])
-            ri_norm_factor = float(
+            offer_cost = sum(self.to_decimal(x) for x in expense['offer_cost'])
+            on_demand_cost = sum(
+                self.to_decimal(x) for x in expense['on_demand_cost'])
+            usage = sum(
+                self.to_decimal(x) for x in expense['usage_hours']
+            ) + sum(
+                self.to_decimal(x) / SECONDS_IN_HOUR for x in expense['usage_seconds']
+            )
+            ri_norm_factor = self.to_decimal(
                 expense.get('ri_norm_factor') or default_ri_norm_factor)
-            sp_rate = float(expense.get('sp_rate') or 0)
+            sp_rate = self.to_decimal(expense.get('sp_rate') or 0)
             instance_type = expense['_id'].get(
                 'instance_type') or expense['_id'].get('description')
             new_expenses_map[cloud_resource_id][exp_start][cloud_offer_id][
                 instance_type] = (offer_cost, on_demand_cost, usage,
                                   ri_norm_factor, sp_rate)
         return new_expenses_map, cloud_resource_ids
+
+    @staticmethod
+    def to_decimal(value):
+        return Decimal(str(value)) if not isinstance(value, Decimal) else value
 
     @staticmethod
     def ri_sp_usage_expense(cloud_account_id, resource_id, date, instance_type,
@@ -264,12 +273,12 @@ class RISPWorker(ConsumerMixin):
                     'resource_id': 1})
 
     def sp_expected_cost_per_day(self, cloud_account_id, start_date, end_date):
-        sp_date_expected_cost = defaultdict(lambda: defaultdict(float))
+        sp_date_expected_cost = defaultdict(lambda: defaultdict(Decimal))
         expenses = self._sp_expected_cost_per_day(cloud_account_id, start_date,
                                                   end_date)
         for expense in expenses:
             date = expense['start_date'].replace(tzinfo=timezone.utc)
-            sp_date_expected_cost[expense['resource_id']][date] = float(
+            sp_date_expected_cost[expense['resource_id']][date] = self.to_decimal(
                 expense['savingsPlan/TotalCommitmentToDate'])
         return sp_date_expected_cost
 
@@ -298,19 +307,22 @@ class RISPWorker(ConsumerMixin):
             })
 
     def ri_expected_cost_per_day(self, cloud_account_id, start_date, end_date):
-        ri_date_expected_cost = defaultdict(lambda: defaultdict(float))
+        ri_date_expected_cost = defaultdict(lambda: defaultdict(Decimal))
         expenses = self._ri_expected_cost_per_day(
             cloud_account_id, start_date, end_date)
         for expense in expenses:
             # lineItem/TotalReservedNormalizedUnits is missing for RDS instances
-            total_norm_hours = float(expense.get(
+            total_norm_hours = self.to_decimal(expense.get(
                 'reservation/TotalReservedNormalizedUnits') or expense.get(
                 'reservation/TotalReservedUnits'))
-            total_cost_per_month = float(
-                expense.get('lineItem/UnblendedCost', 0)) + float(expense.get(
-                    'reservation/AmortizedUpfrontFeeForBillingPeriod', 0))
+            total_cost_per_month = self.to_decimal(
+                expense.get('lineItem/UnblendedCost', 0)
+            ) + self.to_decimal(
+                expense.get('reservation/AmortizedUpfrontFeeForBillingPeriod', 0)
+            )
             cost_per_n_hr = total_cost_per_month / total_norm_hours
-            norm_factor = float(expense.get('lineItem/NormalizationFactor', 1))
+            norm_factor = self.to_decimal(
+                expense.get('lineItem/NormalizationFactor', 1))
             exp_start_date = expense['start_date'].replace(tzinfo=timezone.utc)
             exp_end_date = expense['end_date'].replace(tzinfo=timezone.utc)
             dates = self.dates_range(exp_start_date, exp_end_date)
@@ -322,8 +334,8 @@ class RISPWorker(ConsumerMixin):
             period_start = self._datetime_from_value(
                 expense['lineItem/UsageStartDate'])
             if period_start > exp_start_date:
-                not_used_hrs = (period_start - exp_start_date
-                                ).total_seconds() / SECONDS_IN_HOUR
+                not_used_hrs = self.to_decimal(
+                    (period_start - exp_start_date).total_seconds() / SECONDS_IN_HOUR)
                 ri_date_expected_cost[expense['resource_id']][
                     exp_start_date] = (HRS_IN_DAY - not_used_hrs
                                        ) * norm_factor * cost_per_n_hr
@@ -510,8 +522,8 @@ class RISPWorker(ConsumerMixin):
                                     expense['resource_id'],
                                     cloud_account_id,
                                     expense['start_date']))
-            cost = float(cost)
-            usage_hrs = float(expense['lineItem/UsageAmount'])
+            cost = Decimal(str(cost))
+            usage_hrs = self.to_decimal(expense['lineItem/UsageAmount'])
             if 'second' in expense['pricing/unit'].lower():
                 usage_hrs = usage_hrs / SECONDS_IN_HOUR
             os_type = expense.get('product/operatingSystem', '')

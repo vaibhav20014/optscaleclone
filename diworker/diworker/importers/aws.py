@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, timezone
 from functools import cached_property
 
 from diworker.diworker.importers.base import CSVBaseReportImporter
+from diworker.diworker.utils import to_decimal
 import tools.optscale_time as opttime
 import pyarrow.parquet as pq
 
@@ -808,13 +809,13 @@ class AWSReportImporter(CSVBaseReportImporter):
             for d in range(days):
                 date = start_date + timedelta(days=d)
                 day = date.replace(hour=0, minute=0, second=0, microsecond=0)
+                daily_cost = to_decimal(e['lineItem/BlendedCost']) / days
                 if day in clean_expenses:
-                    clean_expenses[day]['cost'] += float(
-                        e['lineItem/BlendedCost']) / days
+                    clean_expenses[day]['cost'] += daily_cost
                 else:
                     clean_expenses[day] = {
                         'date': day,
-                        'cost': float(e['lineItem/BlendedCost']) / days,
+                        'cost': daily_cost,
                         'resource_id': resource_id,
                         'cloud_account_id': e['cloud_account_id']
                     }

@@ -2,6 +2,7 @@
 import logging
 from datetime import datetime, timedelta
 from diworker.diworker.importers.base import BaseReportImporter
+from diworker.diworker.utils import to_decimal
 import tools.optscale_time as opttime
 
 LOG = logging.getLogger(__name__)
@@ -149,13 +150,14 @@ class EnvironmentReportImporter(BaseReportImporter):
     def clean_expenses_for_resource(self, resource_id, expenses):
         clean_expenses = {}
         for e in expenses:
+            cost = to_decimal(e['cost'])
             usage_date = e['start_date']
             if usage_date in clean_expenses:
-                clean_expenses[usage_date]['cost'] += e['cost']
+                clean_expenses[usage_date]['cost'] += cost
             else:
                 clean_expenses[usage_date] = {
                     'date': usage_date,
-                    'cost': e['cost'],
+                    'cost': cost,
                     'resource_id': resource_id,
                     'cloud_account_id': e['cloud_account_id']
                 }

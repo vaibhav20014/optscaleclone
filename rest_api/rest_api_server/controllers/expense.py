@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from decimal import Decimal
 from calendar import monthrange
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -348,6 +349,10 @@ class FormattedExpenseController(BaseController):
         super().__init__(*args, **kwargs)
         self.id_pool_map = None
 
+    @staticmethod
+    def to_decimal(value):
+        return Decimal(str(value)) if not isinstance(value, Decimal) else value
+
     def get_hierarchy_down(self, pool_id):
         return BaseHierarchicalController(
             self.session, self._config, self.token
@@ -372,24 +377,25 @@ class FormattedExpenseController(BaseController):
     def get_result_base(self, obj, prev_start_ts):
         return {
             'expenses': {
-                'total': 0,
-                'previous_total': 0,
+                'total': self.to_decimal(0),
+                'previous_total': self.to_decimal(0),
                 'previous_range_start': prev_start_ts,
                 'id': obj.id,
                 'name': obj.name,
-                'breakdown': defaultdict(float),
+                'breakdown': defaultdict(Decimal),
             }
         }
 
     def get_formatted_result(self, db_result, obj, starting_time, prev_start_ts):
         result = self.get_result_base(obj, prev_start_ts)
         for group in db_result:
+            grp_cost = self.to_decimal(group['cost'])
             if group['_id']['date'] >= starting_time:
-                result['expenses']['total'] += group['cost']
+                result['expenses']['total'] += grp_cost
                 date = str(int(group['_id']['date'].timestamp()))
-                result['expenses']['breakdown'][date] += group['cost']
+                result['expenses']['breakdown'][date] += grp_cost
             else:
-                result['expenses']['previous_total'] += group['cost']
+                result['expenses']['previous_total'] += grp_cost
         return result
 
     def _get_organization_id(self, obj):
@@ -454,17 +460,17 @@ class FilteredFormattedExpenseController(FormattedExpenseController):
             _id = group.get('_id', {}).get(self.GROUPING_FIELD)
             if not info_map.get(_id):
                 continue
-
+            grp_cost = self.to_decimal(group['cost'])
             if group['_id']['date'] >= starting_time:
-                result['expenses']['total'] += group['cost']
+                result['expenses']['total'] += grp_cost
                 if 'cost' not in info_map[_id]:
-                    info_map[_id]['cost'] = 0
-                info_map[_id]['cost'] += group['cost']
+                    info_map[_id]['cost'] = self.to_decimal(0)
+                info_map[_id]['cost'] += grp_cost
             else:
-                result['expenses']['previous_total'] += group['cost']
+                result['expenses']['previous_total'] += grp_cost
                 if 'previous_cost' not in info_map[_id]:
-                    info_map[_id]['previous_cost'] = 0
-                info_map[_id]['previous_cost'] += group['cost']
+                    info_map[_id]['previous_cost'] = self.to_decimal(0)
+                info_map[_id]['previous_cost'] += grp_cost
                 continue
 
             date = str(int(group['_id']['date'].timestamp()))
@@ -475,10 +481,10 @@ class FilteredFormattedExpenseController(FormattedExpenseController):
             expense_for_current_date = next((expense for expense in result['expenses']['breakdown'][date]
                                              if expense['id'] == info_map_id['id']), None)
             if expense_for_current_date:
-                expense_for_current_date['expense'] += group['cost']
+                expense_for_current_date['expense'] += grp_cost
             else:
                 result['expenses']['breakdown'][date].append(
-                    self.get_breakdown_group_day(info_map_id, group['cost'])
+                    self.get_breakdown_group_day(info_map_id, grp_cost)
                 )
 
         self.show_expenses_for_all_days(result)
@@ -562,7 +568,7 @@ class PoolFilteredExpenseController(FilteredFormattedExpenseController):
             'id': nil_uuid,
             'name': NOT_SET_NAME,
             'purpose': NOT_SET_NAME,
-            'cost': 0,
+            'cost': self.to_decimal(0),
         }
         return self.id_pool_map
 
@@ -633,7 +639,7 @@ class EmployeeFilteredExpenseController(FilteredFormattedExpenseController):
         employee_map[None] = {
             'id': nil_uuid,
             'name': NOT_SET_NAME,
-            'cost': 0,
+            'cost': self.to_decimal(0),
         }
         return employee_map
 
@@ -1941,8 +1947,8 @@ class RegionExpenseController(FilteredFormattedExpenseController,
 
     def get_result_base(self, prev_start_ts):
         return {
-            'total': 0,
-            'previous_total': 0,
+            'total': self.to_decimal(0),
+            'previous_total': self.to_decimal(0),
             'previous_range_start': prev_start_ts,
             'regions': []
         }
@@ -1973,8 +1979,8 @@ class RegionExpenseController(FilteredFormattedExpenseController,
             (region_name, cloud_type): {
                 'name': region_name,
                 'id': region,
-                'total': 0,
-                'previous_total': 0,
+                'total': self.to_decimal(0),
+                'previous_total': self.to_decimal(0),
                 'longitude': info.get('longitude'),
                 'latitude': info.get('latitude'),
                 'type': cloud_type
@@ -2017,13 +2023,13 @@ class RegionExpenseController(FilteredFormattedExpenseController,
                         region, {'longitude': None, 'latitude': None},
                         cloud_type=cloud_type)
                 )
-
+            grp_cost = self.to_decimal(group['cost'])
             if group['_id']['date'] >= starting_time:
-                result['total'] += group['cost']
-                info_map[key]['total'] += group['cost']
+                result['total'] += grp_cost
+                info_map[key]['total'] += grp_cost
             else:
-                result['previous_total'] += group['cost']
-                info_map[key]['previous_total'] += group['cost']
+                result['previous_total'] += grp_cost
+                info_map[key]['previous_total'] += grp_cost
                 continue
 
         result['total'] = round(result['total'], 6)

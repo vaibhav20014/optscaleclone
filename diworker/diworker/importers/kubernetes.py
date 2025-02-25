@@ -6,7 +6,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from pymongo import UpdateOne
 
-from diworker.diworker.utils import bytes_to_gb
+from diworker.diworker.utils import bytes_to_gb, to_decimal
 from diworker.diworker.importers.base import BaseReportImporter
 
 from tools.cloud_adapter.cloud import Cloud as CloudAdapter
@@ -556,12 +556,13 @@ class KubernetesReportImporter(BaseReportImporter):
         clean_expenses = {}
         for e in expenses:
             usage_date = e['start_date']
+            cost = to_decimal(e['cost'])
             if usage_date in clean_expenses:
-                clean_expenses[usage_date]['cost'] += e['cost']
+                clean_expenses[usage_date]['cost'] += cost
             else:
                 clean_expenses[usage_date] = {
                     'date': usage_date,
-                    'cost': e['cost'],
+                    'cost': cost,
                     'resource_id': resource_id,
                     'cloud_account_id': e['cloud_account_id']
                 }
