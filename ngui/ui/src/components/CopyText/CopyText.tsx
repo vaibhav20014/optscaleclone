@@ -57,7 +57,7 @@ const CopyText = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
     >
-      {children}
+      <span>{children}</span>
       {dynamicCopyIcon && !isHovered ? null : (
         <Typography
           component="span"

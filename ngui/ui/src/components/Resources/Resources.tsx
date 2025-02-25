@@ -12,6 +12,7 @@ import ExpensesFilters from "components/ExpensesFilters";
 import LinearSelector from "components/LinearSelector";
 import PageContentWrapper from "components/PageContentWrapper";
 import { ApplyResourcePerspectiveModal, CreateResourcePerspectiveModal } from "components/SideModalManager/SideModals";
+import Tooltip from "components/Tooltip";
 import TypographyLoader from "components/TypographyLoader";
 import CleanExpensesBreakdownContainer from "containers/CleanExpensesBreakdownContainer";
 import ExpensesSummaryContainer from "containers/ExpensesSummaryContainer";
@@ -33,6 +34,7 @@ import { BREAKDOWN_LINEAR_SELECTOR_ITEMS, CLEAN_EXPENSES_BREAKDOWN_TYPES, DATE_R
 import { SPACING_2 } from "utils/layouts";
 import { getQueryParams, updateQueryParams } from "utils/network";
 import { isEmpty as isEmptyObject } from "utils/objects";
+import { sliceByLimitWithEllipsis } from "utils/strings";
 
 const BreakdownLinearSelector = ({ value, onChange }) => {
   useEffect(() => {
@@ -49,6 +51,8 @@ const BreakdownLinearSelector = ({ value, onChange }) => {
   );
 };
 
+const MAX_PERSPECTIVE_NAME_LENGTH = 60;
+
 const SelectedPerspectiveTitle = ({ perspectiveName }) => {
   const intl = useIntl();
 
@@ -62,12 +66,25 @@ const SelectedPerspectiveTitle = ({ perspectiveName }) => {
     })
   ].join("");
 
+  const isPerspectiveNameLong = perspectiveName.length > MAX_PERSPECTIVE_NAME_LENGTH;
+
   return (
     <CopyText text={copyUrl} variant="h6" Icon={LinkOutlinedIcon} copyMessageId="copyUrl">
-      {intl.formatMessage(
-        { id: "value - value" },
-        { value1: intl.formatMessage({ id: "resources" }), value2: perspectiveName }
-      )}
+      <FormattedMessage
+        id="value - value"
+        values={{
+          value1: intl.formatMessage({ id: "resources" }),
+          value2: (
+            <Tooltip title={isPerspectiveNameLong ? perspectiveName : undefined}>
+              <span>
+                {isPerspectiveNameLong
+                  ? sliceByLimitWithEllipsis(perspectiveName, MAX_PERSPECTIVE_NAME_LENGTH)
+                  : perspectiveName}
+              </span>
+            </Tooltip>
+          )
+        }}
+      />
     </CopyText>
   );
 };
