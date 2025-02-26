@@ -1,4 +1,4 @@
-name: Build Arcee test image and run tests on it
+name: Build arcee test image and run tests on it
 run-name: Build arcee test image and run tests on it - started by ${{ github.actor }}
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build_image:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v3
