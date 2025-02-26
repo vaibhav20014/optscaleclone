@@ -23,6 +23,7 @@ etcd:
   public_ip: {{ .Values.public_ip }}
   encryption_key: {{ .Values.encryption_key }}
   release: {{ .Values.release }}
+  arcee_wait_timeout: {{ .Values.arcee_wait_timeout }}
   katara_scheduler_timeout: {{ .Values.katara_scheduler_timeout }}
   bumi_scheduler_timeout: {{ .Values.bumi_scheduler_timeout }}
   bumi_worker:

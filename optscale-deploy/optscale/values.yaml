@@ -1020,6 +1020,8 @@ invite_expiration_days: 30 # days before invite url expiration
 demo:
   multiplier: 2 # demo multiplier default value
 
+arcee_wait_timeout: 600 # arcee hb wait timeout for runners in seconds
+
 katara_scheduler_timeout: 3600
 
 # filled from optscale overlay
