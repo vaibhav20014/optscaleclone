@@ -50,7 +50,7 @@ class ObsoleteImages(ModuleBase):
     def _get_snapshot_expenses(self, snapshots, start_date):
         query = """
             SELECT resource_id, cloud_resource_id,
-                sum(toFloat64(cost) * sign) / count(distinct(date))
+                sum(cost * sign) / count(distinct(date))
             FROM expenses
             JOIN resources ON resource_id = resources._id AND date >= %(date)s
             GROUP BY resource_id, cloud_resource_id

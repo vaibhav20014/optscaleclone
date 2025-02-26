@@ -31,7 +31,7 @@ class AbandonedBase(ModuleBase):
         start_date = startday(start_date)
         external_table = [{'id': r_id} for r_id in resource_ids]
         query = """
-                    SELECT resource_id, sum(toFloat64(cost) * sign), min(date)
+                    SELECT resource_id, sum(cost * sign), min(date)
                     FROM expenses
                     JOIN resources ON resource_id = resources.id
                         AND date >= %(start_date)s

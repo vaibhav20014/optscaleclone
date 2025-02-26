@@ -13,8 +13,7 @@ from dateutil.relativedelta import relativedelta
 import boto3
 from boto3.session import Config as BotoConfig
 from tools.cloud_adapter.cloud import Cloud as CloudAdapter
-from diworker.diworker.utils import (retry_mongo_upsert, get_month_start,
-                                     to_decimal)
+from diworker.diworker.utils import retry_mongo_upsert, get_month_start
 import tools.optscale_time as opttime
 
 LOG = logging.getLogger(__name__)
@@ -162,11 +161,11 @@ class BaseReportImporter:
             usage_date = e['start_date'].replace(
                 hour=0, minute=0, second=0, microsecond=0)
             if usage_date in clean_expenses:
-                clean_expenses[usage_date]['cost'] += to_decimal(e['cost'])
+                clean_expenses[usage_date]['cost'] += e['cost']
             else:
                 clean_expenses[usage_date] = {
                     'date': usage_date,
-                    'cost': to_decimal(e['cost']),
+                    'cost': e['cost'],
                     'resource_id': resource_id,
                     'cloud_account_id': e['cloud_account_id']
                 }
@@ -283,12 +282,12 @@ class BaseReportImporter:
             max_date, total_cost = info
             last_expense_date, last_expense_cost = last_expense_info[r_id]
             updates = {
-                'total_cost': float(total_cost)
+                'total_cost': total_cost
             }
             if last_expense_date.replace(tzinfo=None) >= max_date:
                 updates['last_expense'] = {
                     'date': int(last_expense_date.timestamp()),
-                    'cost': float(last_expense_cost)
+                    'cost': last_expense_cost
                 }
             bulk.append(
                 UpdateOne(

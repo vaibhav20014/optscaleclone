@@ -1,5 +1,4 @@
 import time
-from decimal import localcontext, Decimal
 from functools import wraps
 from pymongo.errors import BulkWriteError
 from retrying import retry
@@ -50,7 +49,3 @@ def retry_backoff(exc_class, tries=8, delay=2, backoff=2, raise_errors=None,
             return f(*args, **kwargs)
         return f_retry
     return deco_retry
-
-
-def to_decimal(value):
-    return Decimal(str(value)) if not isinstance(value, Decimal) else value

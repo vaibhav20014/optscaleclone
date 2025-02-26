@@ -1,5 +1,4 @@
 import logging
-from decimal import Decimal
 from collections import defaultdict
 from datetime import datetime
 from rest_api.rest_api_server.controllers.ri_breakdown import (
@@ -38,7 +37,7 @@ class SpBreakdownController(RiBreakdownController):
         )
 
     def get_flavors(self, cloud_account_ids):
-        flavor_rate_map = defaultdict(Decimal)
+        flavor_rate_map = defaultdict(float)
         flavors = self.execute_clickhouse(
             """SELECT DISTINCT instance_type, sp_rate
                FROM ri_sp_usage
@@ -58,23 +57,22 @@ class SpBreakdownController(RiBreakdownController):
         for flavor in flavors:
             flavor_name, sp_rate = flavor
             if sp_rate:
-                flavor_rate_map[flavor_name] = self.to_decimal(sp_rate)
+                flavor_rate_map[flavor_name] = sp_rate
         return flavor_rate_map
 
     def get_cloud_account_usage_stats(self, cloud_account_ids):
         cloud_account_usage = defaultdict(
-            lambda: defaultdict(lambda: defaultdict(Decimal)))
+            lambda: defaultdict(lambda: defaultdict(float)))
         usage_breakdown = self.get_usage_breakdown(
             self.start_date, self.end_date, cloud_account_ids)
         for ch_usage in usage_breakdown:
             (cloud_account_id, date, usage, cost_without_offer,
              cost_with_offer) = ch_usage
+            cloud_account_usage[cloud_account_id][date]['usage'] += usage
             cloud_account_usage[cloud_account_id][date][
-                'usage'] += self.to_decimal(usage)
+                'cost_without_offer'] += cost_without_offer
             cloud_account_usage[cloud_account_id][date][
-                'cost_without_offer'] += self.to_decimal(cost_without_offer)
-            cloud_account_usage[cloud_account_id][date][
-                'cost_with_offer'] += self.to_decimal(cost_with_offer)
+                'cost_with_offer'] += cost_with_offer
         return cloud_account_usage
 
     def get_overprovision_ch_expenses(
@@ -109,7 +107,7 @@ class SpBreakdownController(RiBreakdownController):
     def fill_overprovisioning(self, flavor_rate_map, cloud_account_usage,
                               start_date, end_date, offer_type='sp'):
         cloud_acc_ids = list(cloud_account_usage.keys())
-        sp_acc_date_exp = defaultdict(lambda: defaultdict(Decimal))
+        sp_acc_date_exp = defaultdict(lambda: defaultdict(float))
         expenses = self.get_overprovision_ch_expenses(
             cloud_acc_ids, start_date, end_date)
         for data in expenses:
@@ -118,12 +116,10 @@ class SpBreakdownController(RiBreakdownController):
                 overprov_exp = expected - used
             else:
                 overprov_exp = 0
-            sp_acc_date_exp[cloud_account_id][date] += self.to_decimal(
-                overprov_exp)
+            sp_acc_date_exp[cloud_account_id][date] += overprov_exp
         for cloud_acc_id, date_exp in cloud_account_usage.items():
             for date, data in date_exp.items():
-                sp_overprov_exp = self.to_decimal(
-                    sp_acc_date_exp[cloud_acc_id].get(date, 0))
+                sp_overprov_exp = sp_acc_date_exp[cloud_acc_id].get(date, 0)
                 data['overprovision'] = sp_overprov_exp
                 if 'overprovision_hrs' not in data:
                     data.update({'overprovision_hrs': {}})

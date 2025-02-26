@@ -152,7 +152,7 @@ class ObsoleteSnapshotsBase(ModuleBase):
             'cloud_resource_id': {'$in': snapshot_ids},
         }, ['cloud_resource_id']))
         query = """
-            SELECT cloud_resource_id, sum(toFloat64(cost) * sign),
+            SELECT cloud_resource_id, sum(cost * sign),
                 min(date) as min_d, max(date)
             FROM expenses
             JOIN resources ON resource_id = resources._id

@@ -1,5 +1,4 @@
 import logging
-from decimal import Decimal
 from clickhouse_driver import Client as ClickHouseClient
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -39,14 +38,10 @@ class RiBreakdownController(CleanExpenseController):
                 host=host, password=password, database=CH_DB_NAME, user=user)
         return self._clickhouse_client
 
-    @staticmethod
-    def to_decimal(value):
-        return Decimal(str(value)) if not isinstance(value, Decimal) else value
-
     def get_usage_breakdown(self, cloud_account_ids):
         return self.execute_clickhouse(
             """SELECT cloud_account_id, date, sum(usage * sign),
-                   sum(toDecimal128(usage, 12) * ri_norm_factor * sign),
+                   sum(usage * ri_norm_factor * sign),
                    sum(on_demand_cost * sign), sum(offer_cost * sign)
                FROM ri_sp_usage
                WHERE cloud_account_id IN cloud_account_ids AND
@@ -66,7 +61,7 @@ class RiBreakdownController(CleanExpenseController):
 
     def get_total_stats(self, cloud_account_ids):
         cloud_account_total = defaultdict(lambda: defaultdict(
-            lambda: defaultdict(Decimal)))
+            lambda: defaultdict(float)))
         uncovered = self.execute_clickhouse(
             """SELECT cloud_account_id, date, sum(cost * sign),
                  sum(usage * sign)
@@ -86,12 +81,11 @@ class RiBreakdownController(CleanExpenseController):
                                        cloud_account_ids]}])
         for row in uncovered:
             (cloud_account_id, date, cost, usage) = row
+            cloud_account_total[cloud_account_id][date]['usage'] = usage
             cloud_account_total[cloud_account_id][date][
-                'usage'] = self.to_decimal(usage)
+                'cost_with_offer'] = cost
             cloud_account_total[cloud_account_id][date][
-                'cost_with_offer'] = self.to_decimal(cost)
-            cloud_account_total[cloud_account_id][date][
-                'cost_without_offer'] = self.to_decimal(cost)
+                'cost_without_offer'] = cost
         covered = self.execute_clickhouse(
             """SELECT cloud_account_id, date, sum(on_demand_cost * sign),
                  sum(offer_cost * sign), sum(usage * sign)
@@ -111,16 +105,15 @@ class RiBreakdownController(CleanExpenseController):
                                        cloud_account_ids]}])
         for row in covered:
             (cloud_account_id, date, on_demand_cost, offer_cost, usage) = row
+            cloud_account_total[cloud_account_id][date]['usage'] += usage
             cloud_account_total[cloud_account_id][date][
-                'usage'] += self.to_decimal(usage)
+                'cost_with_offer'] += offer_cost
             cloud_account_total[cloud_account_id][date][
-                'cost_with_offer'] += self.to_decimal(offer_cost)
-            cloud_account_total[cloud_account_id][date][
-                'cost_without_offer'] += self.to_decimal(on_demand_cost)
+                'cost_without_offer'] += on_demand_cost
         return cloud_account_total
 
     def get_flavors(self, cloud_account_ids):
-        flavor_factor_map = defaultdict(Decimal)
+        flavor_factor_map = defaultdict(float)
         flavors = self.execute_clickhouse(
             """SELECT DISTINCT instance_type
                FROM ri_sp_usage
@@ -141,11 +134,11 @@ class RiBreakdownController(CleanExpenseController):
             if 'db.' in flavor_name:
                 # RDS instances don't have normalization factor
                 # use 1 as default
-                flavor_factor_map[flavor_name] = self.to_decimal(1)
+                flavor_factor_map[flavor_name] = 1
                 continue
             for key, value in RI_FACTOR_MAP.items():
                 if key in flavor_name:
-                    flavor_factor_map[flavor_name] = self.to_decimal(value)
+                    flavor_factor_map[flavor_name] = value
                     break
         return flavor_factor_map
 
@@ -161,19 +154,18 @@ class RiBreakdownController(CleanExpenseController):
 
     def get_cloud_account_usage_stats(self, cloud_account_ids):
         cloud_account_usage = defaultdict(
-            lambda: defaultdict(lambda: defaultdict(Decimal)))
+            lambda: defaultdict(lambda: defaultdict(float)))
         usage_breakdown = self.get_usage_breakdown(cloud_account_ids)
         for ch_usage in usage_breakdown:
             (cloud_account_id, date, usage, ri_norm_usage, cost_without_offer,
              cost_with_offer) = ch_usage
+            cloud_account_usage[cloud_account_id][date]['usage'] += usage
             cloud_account_usage[cloud_account_id][date][
-                'usage'] += self.to_decimal(usage)
+                'ri_norm_usage'] += ri_norm_usage
             cloud_account_usage[cloud_account_id][date][
-                'ri_norm_usage'] += self.to_decimal(ri_norm_usage)
+                'cost_without_offer'] += cost_without_offer
             cloud_account_usage[cloud_account_id][date][
-                'cost_without_offer'] += self.to_decimal(cost_without_offer)
-            cloud_account_usage[cloud_account_id][date][
-                'cost_with_offer'] += self.to_decimal(cost_with_offer)
+                'cost_with_offer'] += cost_with_offer
         return cloud_account_usage
 
     @staticmethod
@@ -269,7 +261,7 @@ class RiBreakdownController(CleanExpenseController):
                        SELECT offer_id, date, offer_cost, sign,
                          if(expected_cost=0, null, cloud_account_id) as cloud_account_id,
                          if(expected_cost=0, null, expected_cost) as n_expected_cost,
-                         toDecimal128(usage, 12) * ri_norm_factor AS n_usage
+                         usage * ri_norm_factor AS n_usage
                        FROM ri_sp_usage
                        WHERE cloud_account_id IN cloud_account_ids AND
                          date >= %(start_date)s AND date <= %(end_date)s AND
@@ -291,23 +283,21 @@ class RiBreakdownController(CleanExpenseController):
         cloud_acc_ids = list(cloud_account_usage.keys())
         expenses = self.get_overprovision_ch_expenses(
             cloud_acc_ids, start_date, end_date)
-        cloud_acc_overprov = defaultdict(lambda: defaultdict(Decimal))
-        cloud_acc_overprov_n_hrs = defaultdict(lambda: defaultdict(Decimal))
+        cloud_acc_overprov = defaultdict(lambda: defaultdict(float))
+        cloud_acc_overprov_n_hrs = defaultdict(lambda: defaultdict(float))
         for data in expenses:
             cloud_acc_id, date, offer_cost, expected_cost, n_usage = data
             if expected_cost and expected_cost > offer_cost:
                 overprov_exp = expected_cost - offer_cost
             else:
                 overprov_exp = 0
-            cloud_acc_overprov[cloud_acc_id][date] += self.to_decimal(
-                overprov_exp)
+            cloud_acc_overprov[cloud_acc_id][date] += overprov_exp
             if n_usage and offer_cost:
                 cost_per_norm_hr = offer_cost / n_usage
                 overprov_n_hrs = overprov_exp / cost_per_norm_hr
             else:
                 overprov_n_hrs = 0
-            cloud_acc_overprov_n_hrs[cloud_acc_id][date] += self.to_decimal(
-                overprov_n_hrs)
+            cloud_acc_overprov_n_hrs[cloud_acc_id][date] += overprov_n_hrs
         for cloud_acc_id, date_exp in cloud_account_usage.items():
             for date, data in date_exp.items():
                 data['overprovision'] = cloud_acc_overprov.get(

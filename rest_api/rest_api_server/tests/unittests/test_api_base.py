@@ -591,7 +591,7 @@ class TestApiBase(tornado.testing.AsyncHTTPTestCase):
                     ('cloud_account_id', 'String', 'default'),
                     ('resource_id', 'String', 'default'),
                     ('date', 'DateTime', opttime.utcnow()),
-                    ('cost', 'Decimal64(12)', 0),
+                    ('cost', 'Float64', 0),
                     ('sign', 'Int8', 1)
                 ], self.expenses
             ),
@@ -603,8 +603,8 @@ class TestApiBase(tornado.testing.AsyncHTTPTestCase):
                     ('type', "Enum8('outbound' = 1, 'inbound' = 2)", 1),
                     ('from', 'String', 'default'),
                     ('to', 'String', 'default'),
-                    ('usage', 'Decimal64(12)', 0),
-                    ('cost', 'Decimal64(12)', 0),
+                    ('usage', 'Float64', 0),
+                    ('cost', 'Float64', 0),
                     ('sign', 'Int8', 1)
                 ], self.traffic_expenses
             ),
@@ -616,12 +616,12 @@ class TestApiBase(tornado.testing.AsyncHTTPTestCase):
                     ('instance_type', 'String', ''),
                     ('offer_id', 'String', 'default'),
                     ('offer_type', "Enum8('ri' = 1, 'sp' = 2)", 1),
-                    ('offer_cost', 'Decimal64(12)', 0),
-                    ('on_demand_cost', 'Decimal64(12)', 0),
-                    ('usage', 'Decimal64(12)', 0),
-                    ('ri_norm_factor', 'Decimal64(12)', 0),
-                    ('sp_rate', 'Decimal64(12)', 0),
-                    ('expected_cost', 'Decimal64(12)', 0),
+                    ('offer_cost', 'Float64', 0),
+                    ('on_demand_cost', 'Float64', 0),
+                    ('usage', 'Float64', 0),
+                    ('ri_norm_factor', 'Float32', 0),
+                    ('sp_rate', 'Float32', 0),
+                    ('expected_cost', 'Float64', 0),
                     ('sign', 'Int8', 1)
                 ], self.ri_sp_usage
             ),
@@ -633,8 +633,8 @@ class TestApiBase(tornado.testing.AsyncHTTPTestCase):
                     ('instance_type', 'String', 'default'),
                     ('os', 'String', 'default'),
                     ('location', 'String', 'default'),
-                    ('usage', 'Decimal64(12)', 0),
-                    ('cost', 'Decimal64(12)', 0),
+                    ('usage', 'Float64', 0),
+                    ('cost', 'Float64', 0),
                     ('sign', 'Int8', 1)
                 ], self.uncovered_usage
             ),

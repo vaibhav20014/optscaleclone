@@ -1,6 +1,5 @@
 import re
 import requests
-from decimal import Decimal
 from datetime import datetime
 from pymongo import MongoClient
 from kombu.log import get_logger
@@ -8,14 +7,10 @@ from clickhouse_driver import Client as ClickHouseClient
 
 from tools.cloud_adapter.cloud import Cloud as CloudAdapter
 from optscale_client.rest_api_client.client_v2 import Client as RestClient
-from tools.optscale_time import utcfromtimestamp
+from tools.optscale_time import utcfromtimestamp, utcnow
 
 LOG = get_logger(__name__)
 CHUNK_SIZE = 10000
-
-
-def to_decimal(value):
-    return Decimal(str(value)) if not isinstance(value, Decimal) else value
 
 
 class BaseTrafficExpenseProcessor:
@@ -137,10 +132,10 @@ class BaseTrafficExpenseProcessor:
             key = (resource_id, date, from_region, to_region)
             if key not in expenses_map:
                 expenses_map[key] = {
-                    'cost': to_decimal(0),
-                    'usage': to_decimal(0),
+                    'cost': 0,
+                    'usage': 0,
                 }
-            expenses_map[key]['cost'] += to_decimal(str(r.get('cost', 0)))
+            expenses_map[key]['cost'] += r.get('cost', 0)
             expenses_map[key]['usage'] += _usage
         existing_expenses = self.get_existing_expenses(cloud_account_id, tasks)
         collapse_expenses = {}
@@ -205,7 +200,7 @@ class AwsTrafficExpenseProcessor(BaseTrafficExpenseProcessor):
             'product/toRegionCode') or e.get(
             'product_to_region_code') or e.get(
             'product/toLocation') or 'Unknown'
-        _usage = to_decimal(e.get('lineItem/UsageAmount') or 0)
+        _usage = float(e.get('lineItem/UsageAmount') or 0)
         return _from, _to, _usage
 
 
@@ -225,7 +220,7 @@ class AzureTrafficExpenseProcessor(BaseTrafficExpenseProcessor):
             'meter_sub_category')
         if not _to or _to == 'Zone 1':
             _to = 'External'
-        _usage = to_decimal(e.get('usage_quantity') or 0)
+        _usage = float(e.get('usage_quantity') or 0)
         return _from, _to, _usage
 
 
@@ -276,7 +271,7 @@ class AlibabaTrafficExpenseProcessor(BaseTrafficExpenseProcessor):
             zone = self._zone_to_region(zone)
         _from = region or zone or 'Unknown'
         _to = 'Unknown' if e.get('InternetIP') else 'External'
-        _usage = to_decimal(e.get('Usage') or 0)
+        _usage = float(e.get('Usage') or 0)
         return _from, _to, _usage
 
 
@@ -350,7 +345,7 @@ class GcpTrafficExpenseProcessor(BaseTrafficExpenseProcessor):
             _to = 'Unknown'
         _from = _from or 'Unknown'
         _to = _to or 'Unknown'
-        _usage = to_decimal(e.get('usage_amount_in_pricing_units') or 0)
+        _usage = float(e.get('usage_amount_in_pricing_units') or 0)
         return _from, _to, _usage
 
     def extract_resource_id(self, e):
@@ -402,7 +397,7 @@ class NebiusTrafficExpenseProcessor(BaseTrafficExpenseProcessor):
         else:
             _from = 'Unknown'
             _to = 'Unknown'
-        _usage = to_decimal(e.get('pricing_quantity') or 0)
+        _usage = float(e.get('pricing_quantity') or 0)
         return _from, _to, _usage
 
 
