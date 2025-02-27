@@ -37,7 +37,7 @@ etcd:
     recipient: {{ .Values.optscale_error_emails.recipient }}
     enabled: {{ .Values.optscale_error_emails.enabled }}
   bulldozer_worker:
-    arcee_wait_timeout: {{ .Values.bulldozer_worker.config.wait_timeout }}
+    arcee_wait_timeout: {{ .Values.bulldozer_worker.config.arcee_wait_timeout }}
   google_calendar_service:
     enabled: {{ .Values.google_calendar_service.enabled }}
     access_key:
