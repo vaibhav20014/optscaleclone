@@ -23,7 +23,6 @@ etcd:
   public_ip: {{ .Values.public_ip }}
   encryption_key: {{ .Values.encryption_key }}
   release: {{ .Values.release }}
-  arcee_wait_timeout: {{ .Values.arcee_wait_timeout }}
   katara_scheduler_timeout: {{ .Values.katara_scheduler_timeout }}
   bumi_scheduler_timeout: {{ .Values.bumi_scheduler_timeout }}
   bumi_worker:
@@ -38,10 +37,7 @@ etcd:
     recipient: {{ .Values.optscale_error_emails.recipient }}
     enabled: {{ .Values.optscale_error_emails.enabled }}
   bulldozer_worker:
-    max_retries: {{ .Values.bulldozer_worker.config.max_retries }}
-    wait_timeout: {{ .Values.bulldozer_worker.config.wait_timeout }}
-    task_timeout: {{ .Values.bulldozer_worker.config.task_timeout }}
-    run_period: {{ .Values.bulldozer_worker.config.run_period }}
+    arcee_wait_timeout: {{ .Values.bulldozer_worker.config.wait_timeout }}
   google_calendar_service:
     enabled: {{ .Values.google_calendar_service.enabled }}
     access_key:

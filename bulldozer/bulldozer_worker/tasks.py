@@ -485,7 +485,8 @@ class WaitArcee(ContinueWithDestroyConditions):
     @property
     def arcee_wait_timeout(self):
         try:
-            result = int(self.config_cl.get("/arcee_wait_timeout").value)
+            result = int(self.config_cl.get(
+                "/bulldozer_worker/arcee_wait_timeout").value)
         except (ValueError, TypeError):
             result = ARCEE_WAIT_TIMEOUT_SEC
         return result
