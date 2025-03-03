@@ -601,7 +601,7 @@ class FilteredExpensesBaseAsyncHandler(SupportedFiltersMixin,
             if args[filter_name] is not None:
                 try:
                     check_int_attribute(filter_name, args[filter_name],
-                                        min_length=1)
+                                        min_length=0)
                 except WrongArgumentsException as exc:
                     raise OptHTTPError.from_opt_exception(400, exc)
         return args
@@ -630,11 +630,17 @@ class CleanExpenseAsyncHandler(FilteredExpensesBaseAsyncHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.str_filters.append('format')
-        self.int_filters.append('limit')
+        self.int_filters.extend(['limit', 'offset'])
         self.list_filters.append('field')
 
     def _get_controller_class(self):
         return CleanExpenseAsyncController
+
+    def get_expense_arguments(self, filter_required=True):
+        args = super().get_expense_arguments(filter_required=filter_required)
+        if args.get('offset') and not args.get('limit'):
+            raise OptHTTPError(400, Err.OE0561, ['offset', 'limit'])
+        return args
 
     def _fix_expenses_data(self, expenses_data):
         """
@@ -890,7 +896,15 @@ class CleanExpenseAsyncHandler(FilteredExpensesBaseAsyncHandler):
                 sorted by cost (desc) before limiting
             required: false
             type: integer
-        -   name: name_like
+        -   name: offset
+            in: query
+            description: >
+                Offset for query selection. Expenses will be
+                sorted by cost (desc) before limiting. Requires the `limit`
+                parameter
+            required: false
+            type: integer
+        -   name: name_like`
             in: query
             description: name regular expression
             required: false
@@ -1277,14 +1291,14 @@ class CleanExpenseAsyncHandler(FilteredExpensesBaseAsyncHandler):
                         total_count:
                             type: integer
                             description: >
-                                total count of resources matched before limit
-                                applied
+                                total count of resources matched before
+                                limit/offset applied
                             example: 10
                         total_cost:
                             type: number
                             description: >
-                                total cost of resources matched before limit
-                                applied
+                                total cost of resources matched before
+                                limit/offset applied
                             example: 34.421556461467894
                         start_date:
                             type: integer
@@ -1301,6 +1315,11 @@ class CleanExpenseAsyncHandler(FilteredExpensesBaseAsyncHandler):
                             description: >
                                 max objects amount (limit applied)
                             example: 5000
+                        offset:
+                            type: integer
+                            description: >
+                                selected objects offset (offset applied)
+                            example: 1000
             400:
                 description: |
                     Wrong arguments:
@@ -1312,6 +1331,7 @@ class CleanExpenseAsyncHandler(FilteredExpensesBaseAsyncHandler):
                     - OE0446: "end_date" should be greater than "start_date"
                     - OE0473: Format is not allowed
                     - OE0499: Incorrect resource type identity
+                    - OE0561: Cannot use offset without limit
             401:
                 description: |
                     Unauthorized:
