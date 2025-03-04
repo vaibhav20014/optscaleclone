@@ -151,8 +151,6 @@ import {
   SET_ORGANIZATION_CONSTRAINT,
   DELETE_ORGANIZATION_CONSTRAINT,
   UPDATE_ORGANIZATION_CONSTRAINT,
-  GET_ORGANIZATION_LIMIT_HITS,
-  SET_ORGANIZATION_LIMIT_HITS,
   GET_RECOMMENDATIONS_DOWNLOAD_OPTIONS,
   SET_RECOMMENDATIONS_DOWNLOAD_OPTIONS,
   GET_GLOBAL_POOL_POLICIES,
@@ -1745,19 +1743,6 @@ export const getDailyExpensesBreakdown = (organizationId, params) =>
     ttl: 5 * MINUTE,
     hash: hashParams({ organizationId, ...params }),
     params
-  });
-
-export const getOrganizationLimitHits = (organizationId, params) =>
-  apiAction({
-    url: `${API_URL}/organizations/${organizationId}/organization_limit_hits`,
-    method: "GET",
-    label: GET_ORGANIZATION_LIMIT_HITS,
-    ttl: 5 * MINUTE,
-    hash: hashParams({ organizationId, ...params }),
-    onSuccess: handleSuccess(SET_ORGANIZATION_LIMIT_HITS),
-    params: {
-      constraint_id: params.constraintId
-    }
   });
 
 export const getGlobalPoolPolicies = (organizationId, params) =>

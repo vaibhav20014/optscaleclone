@@ -5,7 +5,7 @@ import ListAltOutlinedIcon from "@mui/icons-material/ListAltOutlined";
 import { Skeleton, Stack, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ActionBar from "components/ActionBar";
 import AnomaliesFilters from "components/AnomaliesFilters";
 import DetectedConstraintsHistory from "components/DetectedConstraintsHistory";
@@ -32,6 +32,7 @@ import { SPACING_1 } from "utils/layouts";
 import { isEmpty as isEmptyObject } from "utils/objects";
 import { getResourcesLink } from "utils/organizationConstraints/getResourcesLink";
 import SlicedText from "../SlicedText";
+import BreakdownChart from "./BreakdownChart";
 import TaggingPolicyDescriptionShort from "./TaggingPolicyDescriptionShort";
 
 const ConstraintName = ({ id, name }) => {
@@ -149,6 +150,8 @@ const OrganizationConstraint = ({
   limitHits,
   isLoadingProps = {}
 }) => {
+  const { anomalyId } = useParams();
+
   const navigate = useNavigate();
 
   const openSideModal = useOpenSideModal();
@@ -213,6 +216,7 @@ const OrganizationConstraint = ({
             )}
           </div>
           <div>{renderFiltersSection()}</div>
+          {anomalyId && <BreakdownChart constraint={constraint} isGetConstraintLoading={isGetConstraintLoading} />}
           <DetectedConstraintsHistory
             constraint={constraint}
             limitHits={limitHits}
