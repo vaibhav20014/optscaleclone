@@ -58,7 +58,6 @@ import {
   SET_EXPENSES_DAILY_BREAKDOWN,
   SET_ORGANIZATION_CONSTRAINT,
   UPDATE_ORGANIZATION_CONSTRAINT,
-  SET_ORGANIZATION_LIMIT_HITS,
   SET_RECOMMENDATIONS_DOWNLOAD_OPTIONS,
   SET_GLOBAL_POOL_POLICIES,
   SET_GLOBAL_RESOURCE_CONSTRAINTS,
@@ -587,12 +586,6 @@ const reducer = (state = {}, action) => {
           ...action.payload,
           breakdown: reformatBreakdown(action.payload.breakdown)
         }
-      };
-    }
-    case SET_ORGANIZATION_LIMIT_HITS: {
-      return {
-        ...state,
-        [action.label]: action.payload
       };
     }
     case SET_GLOBAL_POOL_POLICIES: {
