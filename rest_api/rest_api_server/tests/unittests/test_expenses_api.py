@@ -5630,25 +5630,27 @@ class TestExpensesApi(TestApiBase):
             self.org_id, time, time + 1, {'offset': 1})
         self.assertEqual(code, 400)
         self.verify_error_code(resp, 'OE0561')
+        _, cluster_type = self.client.cluster_type_create(
+            self.org_id, {'name': 'cluster', 'tag_key': 'cluster'})
         _, res_1 = self.create_cloud_resource(
             self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
-            name='name_1', first_seen=time, tags={'tag': 'val'},
+            name='name_1', first_seen=time,
             service_name='service_name_1', resource_type='resource_type_1')
         _, res_2 = self.create_cloud_resource(
             self.cloud_acc2['id'], self.employee2['id'], self.org['pool_id'],
-            name='name_2', first_seen=time, tags={'tag_2': 'val'},
+            name='name_2', first_seen=time,
             service_name='service_name_2', resource_type='resource_type_2')
         _, res_3 = self.create_cloud_resource(
             self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
-            name='name_3', first_seen=time, tags={'tag': 'val'},
+            name='name_3', first_seen=time, tags={'cluster': 'test'},
             service_name='service_name_1', resource_type='resource_type_1')
         _, res_4 = self.create_cloud_resource(
             self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
-            name='name_4', first_seen=time, tags={'tag': 'val'},
+            name='name_4', first_seen=time, tags={'cluster': 'test'},
             service_name='service_name_1', resource_type='resource_type_1')
         _, res_5 = self.create_cloud_resource(
             self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
-            name='name_5', first_seen=time, tags={'tag': 'val'},
+            name='name_5', first_seen=time,
             service_name='service_name_1', resource_type='resource_type_1')
         expenses = [
             {
@@ -5660,11 +5662,11 @@ class TestExpensesApi(TestApiBase):
                 'date': day_in_month, 'cloud_acc': self.cloud_acc2['id'],
             },
             {
-                'cost': 20, 'resource_id': res_3['id'],
+                'cost': 100, 'resource_id': res_3['id'],
                 'date': day_in_month, 'cloud_acc': self.cloud_acc1['id'],
             },
             {
-                'cost': 30, 'resource_id': res_3['id'],
+                'cost': 100, 'resource_id': res_4['id'],
                 'date': day_in_month, 'cloud_acc': self.cloud_acc1['id'],
             }
         ]
@@ -5678,18 +5680,23 @@ class TestExpensesApi(TestApiBase):
                 'sign': 1
             })
         for limits, expected_resources in [
-            ({'limit': 1, 'offset': 0}, [res_2['id']]),
-            ({'limit': 4, 'offset': 1}, [res_1['id'], res_3['id'],
-                                         res_4['id'], res_5['id']]),
-            ({'limit': 2, 'offset': 2}, [res_3['id'], res_4['id']]),
-            ({'limit': 2, 'offset': 3}, [res_4['id'], res_5['id']]),
+            ({'limit': 1, 'offset': 0}, [res_2['cloud_resource_id']]),
+            ({'limit': 3, 'offset': 1}, [
+                'cluster/test', res_1['cloud_resource_id'],
+                res_5['cloud_resource_id']
+            ]),
+            ({'limit': 2, 'offset': 2}, [
+                res_1['cloud_resource_id'], res_5['cloud_resource_id']
+            ]),
+            ({'limit': 2, 'offset': 3}, [res_5['cloud_resource_id']]),
             ({'limit': 10, 'offset': 5}, []),
         ]:
             code, resp = self.client.clean_expenses_get(
                 self.org_id, time, time + 1, limits)
             self.assertEqual(
                 len(resp['clean_expenses']), len(expected_resources))
-            resp_ids = list(map(lambda x: x['id'], resp['clean_expenses']))
+            resp_ids = list(map(lambda x: x['cloud_resource_id'],
+                                resp['clean_expenses']))
             self.assertListEqual(resp_ids, expected_resources)
-            self.assertEqual(resp['total_count'], 5)
-            self.assertEqual(resp['total_cost'], 500)
+            self.assertEqual(resp['total_count'], 4)
+            self.assertEqual(resp['total_cost'], 650)

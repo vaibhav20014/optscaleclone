@@ -934,50 +934,12 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
         return list(result.values())
 
     def get_expenses(self, cloud_account_ids, resource_ids, start_date,
-                     end_date, limit=0, offset=0) -> tuple:
+                     end_date, limit=0) -> tuple:
         return self._get_expenses_clickhouse(
-            cloud_account_ids, resource_ids, start_date, end_date, limit, offset)
-
-    def _get_offset_resource_ids(self, cloud_account_ids, resource_ids,
-                                 start_date, end_date, offset):
-        if not offset:
-            return []
-        query = """
-            SELECT resource_id, SUM(cost * sign) AS total_cost
-            FROM expenses
-            WHERE cloud_account_id IN cloud_account_ids
-                AND resource_id IN resource_ids
-                AND date >= %(start_date)s
-                AND date <= %(end_date)s
-            GROUP BY resource_id
-            HAVING SUM(sign) > 0
-            ORDER BY total_cost DESC
-            LIMIT %(limit)s
-        """
-        result = self.execute_clickhouse(
-            query=query,
-            params={
-                'start_date': start_date,
-                'end_date': end_date,
-                'limit': offset,
-            },
-            external_tables=[
-                {
-                    'name': 'resource_ids',
-                    'structure': [('_id', 'String')],
-                    'data': [{'_id': r_id} for r_id in resource_ids]
-                },
-                {
-                    'name': 'cloud_account_ids',
-                    'structure': [('_id', 'String')],
-                    'data': [{'_id': r_id} for r_id in cloud_account_ids]
-                }
-            ],
-        )
-        return [x[0] for x in result]
+            cloud_account_ids, resource_ids, start_date, end_date, limit)
 
     def _get_expenses_clickhouse(self, cloud_account_ids, resource_ids,
-                                 start_date, end_date, limit, offset) -> tuple:
+                                 start_date, end_date, limit) -> tuple:
         query = """
             SELECT
                 cloud_account_id,
@@ -995,15 +957,12 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
         """
         if limit:
             query += 'LIMIT %(limit)s'
-            if offset:
-                query += ' OFFSET %(offset)s'
         result = self.execute_clickhouse(
             query=query,
             params={
                 'start_date': start_date,
                 'end_date': end_date,
                 'limit': limit,
-                'offset': offset
             },
             external_tables=[
                 {
@@ -1426,13 +1385,16 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
         total_cost = 0
         cloud_account_ids = kwargs['cloud_account_id']
         limit = kwargs['limit']
-        offset = kwargs['offset']
+        offset = kwargs['offset'] or 0
         _, organization_cloud_accs = self.get_organization_and_cloud_accs(
             organization_id)
         if not_clustered_resources:
+            _lim = limit
+            if offset:
+                _lim = 0
             not_clustered_expenses, cost = self.get_expenses(
                 cloud_account_ids, not_clustered_resources, self.start_date,
-                self.end_date, limit=limit, offset=offset)
+                self.end_date, limit=_lim)
             total_cost += cost
         if clustered_resources_map:
             all_account_ids = list(map(
@@ -1445,14 +1407,13 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
                           key=lambda x: x['cost'], reverse=True)
         resource_ids = set()
         if limit:
-            expenses = expenses[:limit]
+            offset_ids = list(map(
+                lambda x: x['resource_id'], expenses[:offset]))
+            expenses = expenses[offset:offset+limit]
             resource_ids.update(
                 list(map(lambda x: x.get('resource_id'), expenses))
             )
             if offset and len(resource_ids) < limit:
-                offset_ids = self._get_offset_resource_ids(
-                    cloud_account_ids, not_clustered_resources, self.start_date,
-                    self.end_date, offset)
                 joined_ids = list(filter(
                     lambda x: x not in offset_ids, joined_ids
                 ))[offset - len(offset_ids):]
@@ -1692,7 +1653,7 @@ class RawExpenseController(CleanExpenseController):
         return res
 
     def get_expenses(self, cloud_account_ids, resource_ids, start_date,
-                     end_date, limit=0, offset=0) -> tuple:
+                     end_date, limit=0) -> tuple:
         start = datetime.fromtimestamp(start_date)
         end = datetime.fromtimestamp(end_date)
         (
