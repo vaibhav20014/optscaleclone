@@ -95,7 +95,6 @@ import {
   SET_ML_RUNSET_EXECUTORS,
   SET_ORGANIZATION_BI_EXPORTS,
   SET_BI_EXPORT,
-  SET_RELEVANT_FLAVORS,
   SET_ORGANIZATION_CLOUD_RESOURCES,
   SET_ORGANIZATION_GEMINIS,
   SET_GEMINI,
@@ -784,12 +783,6 @@ const reducer = (state = {}, action) => {
       };
     }
     case SET_BI_EXPORT: {
-      return {
-        ...state,
-        [action.label]: action.payload
-      };
-    }
-    case SET_RELEVANT_FLAVORS: {
       return {
         ...state,
         [action.label]: action.payload

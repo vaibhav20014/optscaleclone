@@ -115,6 +115,16 @@ const resolvers: Resolvers = {
         constraintId
       );
     },
+    relevantFlavors: async (
+      _,
+      { organizationId, requestParams },
+      { dataSources }
+    ) => {
+      return dataSources.restapi.getRelevantFlavors(
+        organizationId,
+        requestParams
+      );
+    },
   },
   Mutation: {
     createDataSource: async (
