@@ -648,6 +648,7 @@ export type Query = {
   organizationPerspectives?: Maybe<Scalars['JSONObject']['output']>;
   organizationThemeSettings?: Maybe<Scalars['JSONObject']['output']>;
   organizations?: Maybe<Array<Maybe<Organization>>>;
+  relevantFlavors?: Maybe<Scalars['JSONObject']['output']>;
   resourceCountBreakdown?: Maybe<ResourceCountBreakdown>;
 };
 
@@ -707,6 +708,12 @@ export type QueryOrganizationPerspectivesArgs = {
 
 export type QueryOrganizationThemeSettingsArgs = {
   organizationId: Scalars['ID']['input'];
+};
+
+
+export type QueryRelevantFlavorsArgs = {
+  organizationId: Scalars['ID']['input'];
+  requestParams?: InputMaybe<Scalars['JSONObject']['input']>;
 };
 
 
@@ -1383,6 +1390,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organizationPerspectives?: Resolver<Maybe<ResolversTypes['JSONObject']>, ParentType, ContextType, RequireFields<QueryOrganizationPerspectivesArgs, 'organizationId'>>;
   organizationThemeSettings?: Resolver<Maybe<ResolversTypes['JSONObject']>, ParentType, ContextType, RequireFields<QueryOrganizationThemeSettingsArgs, 'organizationId'>>;
   organizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  relevantFlavors?: Resolver<Maybe<ResolversTypes['JSONObject']>, ParentType, ContextType, RequireFields<QueryRelevantFlavorsArgs, 'organizationId'>>;
   resourceCountBreakdown?: Resolver<Maybe<ResolversTypes['ResourceCountBreakdown']>, ParentType, ContextType, RequireFields<QueryResourceCountBreakdownArgs, 'organizationId'>>;
 };
 

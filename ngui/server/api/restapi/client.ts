@@ -359,6 +359,31 @@ class RestApiClient extends BaseClient {
 
     return organizationLimitHits.organization_limit_hits;
   }
+
+  async getRelevantFlavors(organizationId, requestParams) {
+    // Rewrite with utility function
+    const getParams = (params: Record<string, string | string[]>) => {
+      const urlParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (Array.isArray(value) && value.length > 0) {
+          value.forEach((datum) => {
+            urlParams.append(key, datum);
+          });
+        } else {
+          urlParams.append(key, value.toString());
+        }
+      });
+      return urlParams.toString();
+    };
+
+    const path = `organizations/${organizationId}/relevant_flavors?${getParams(
+      requestParams
+    )}`;
+
+    const flavors = await this.get(path);
+
+    return flavors;
+  }
 }
 
 export default RestApiClient;

@@ -437,6 +437,12 @@ const GET_ORGANIZATION_LIMIT_HITS = gql`
   }
 `;
 
+const GET_RELEVANT_FLAVORS = gql`
+  query RelevantFlavors($organizationId: ID!, $requestParams: JSONObject) {
+    relevantFlavors(organizationId: $organizationId, requestParams: $requestParams)
+  }
+`;
+
 export {
   CREATE_DATA_SOURCE,
   UPDATE_DATA_SOURCE,
@@ -463,5 +469,6 @@ export {
   GET_ORGANIZATION_CONSTRAINT,
   GET_RESOURCE_COUNT_BREAKDOWN,
   GET_EXPENSES_DAILY_BREAKDOWN,
-  GET_ORGANIZATION_LIMIT_HITS
+  GET_ORGANIZATION_LIMIT_HITS,
+  GET_RELEVANT_FLAVORS
 };

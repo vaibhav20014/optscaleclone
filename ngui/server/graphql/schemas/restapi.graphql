@@ -584,6 +584,7 @@ type Query {
     organizationId: ID!
     constraintId: ID!
   ): [OrganizationLimitHit!]
+  relevantFlavors(organizationId: ID!, requestParams: JSONObject): JSONObject
 }
 
 type Mutation {
