@@ -1,6 +1,8 @@
+import { Link } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { FormattedMessage } from "react-intl";
+import { Link as RouterLink } from "react-router-dom";
 import CloudLabel from "components/CloudLabel";
 import CopyText from "components/CopyText";
 import KeyValueLabel from "components/KeyValueLabel/KeyValueLabel";
@@ -9,6 +11,7 @@ import ResourceLabel from "components/ResourceLabel";
 import ResourceLink from "components/ResourceLink";
 import ResourceTypeLabel from "components/ResourceTypeLabel";
 import SubTitle from "components/SubTitle";
+import { getPowerScheduleDetailsUrl } from "urls";
 import { RESOURCE_PAGE_TABS } from "utils/constants";
 import { formatUTC, EN_FULL_FORMAT } from "utils/datetime";
 import { SPACING_2 } from "utils/layouts";
@@ -162,6 +165,20 @@ const getLastSeenLabelDefinition = (lastSeen) =>
     }
   });
 
+const getPowerScheduleLabelDefinition = (powerScheduleId, powerScheduleName) =>
+  getLabelDefinition({
+    value: (
+      <Link to={getPowerScheduleDetailsUrl(powerScheduleId)} component={RouterLink}>
+        {powerScheduleName}
+      </Link>
+    ),
+    keyMessageId: "powerSchedule",
+    dataTestIds: {
+      key: "lbl_power_schedule",
+      value: "lbl_power_schedule_value"
+    }
+  });
+
 const getCommonLabelsDefinition = ({
   cloudResourceIdentifier,
   isActive,
@@ -237,8 +254,19 @@ const SimpleResourceDetails = ({ commonLabels, resourceDetails }) => {
     vpcIdLabelDefinition
   } = commonLabels;
 
-  const { name, cloudName, serviceName, region, k8sService, k8sNode, k8sNamespace, cloudAccountId, cloudType } =
-    resourceDetails;
+  const {
+    name,
+    cloudName,
+    serviceName,
+    region,
+    k8sService,
+    k8sNode,
+    k8sNamespace,
+    cloudAccountId,
+    cloudType,
+    powerScheduleId,
+    powerScheduleName
+  } = resourceDetails;
 
   return (
     <Grid container spacing={2}>
@@ -255,6 +283,7 @@ const SimpleResourceDetails = ({ commonLabels, resourceDetails }) => {
             k8sNamespace ? getK8sNamespaceLabelDefinition(k8sNamespace) : null,
             poolNameLabelDefinition,
             ownerNameLabelDefinition,
+            powerScheduleId ? getPowerScheduleLabelDefinition(powerScheduleId, powerScheduleName) : null,
             firstSeenLabelDefinition,
             lastSeenLabelDefinition,
             vpcIdLabelDefinition,
