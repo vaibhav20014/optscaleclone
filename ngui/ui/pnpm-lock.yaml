@@ -82,7 +82,7 @@ dependencies:
     version: 18.2.18
   '@uiw/react-textarea-code-editor':
     specifier: ^2.1.1
-    version: 2.1.1(@babel/runtime@7.24.7)(react-dom@18.2.0)(react@18.2.0)
+    version: 2.1.1(@babel/runtime@7.26.9)(react-dom@18.2.0)(react@18.2.0)
   '@vitejs/plugin-react-swc':
     specifier: ^3.7.2
     version: 3.7.2(vite@5.4.14)
@@ -132,8 +132,8 @@ dependencies:
     specifier: ^3.0.0
     version: 3.0.0
   jspdf-autotable:
-    specifier: ^3.8.4
-    version: 3.8.4(jspdf@3.0.0)
+    specifier: ^5.0.2
+    version: 5.0.2(jspdf@3.0.0)
   localforage:
     specifier: ^1.10.0
     version: 1.10.0
@@ -1920,6 +1920,7 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.14.1
+    dev: true
 
   /@babel/runtime@7.26.9:
     resolution: {integrity: sha512-aA63XwOkcl4xxQa3HjPMqOP6LiK0ZDv3mUPYEFXkpHbaFjtGggE1A61FjFzJnB+p7/oy2gA8E+rcBNl/zC1tMg==}
@@ -2975,7 +2976,7 @@ packages:
   /@loaders.gl/core@3.4.15:
     resolution: {integrity: sha512-rPOOTuusWlRRNMWg7hymZBoFmPCXWThsA5ZYRfqqXnsgVeQIi8hzcAhJ7zDUIFAd/OSR8ravtqb0SH+3k6MOFQ==}
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.9
       '@loaders.gl/loader-utils': 3.4.15
       '@loaders.gl/worker-utils': 3.4.15
       '@probe.gl/log': 3.6.0
@@ -2998,7 +2999,7 @@ packages:
   /@loaders.gl/loader-utils@3.4.15:
     resolution: {integrity: sha512-uUx6tCaky6QgCRkqCNuuXiUfpTzKV+ZlJOf6C9bKp62lpvFOv9AwqoXmL23j8nfsENdlzsX3vPhc3en6QQyksA==}
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.9
       '@loaders.gl/worker-utils': 3.4.15
       '@probe.gl/stats': 3.6.0
     dev: false
@@ -3018,7 +3019,7 @@ packages:
   /@loaders.gl/worker-utils@3.4.15:
     resolution: {integrity: sha512-zUUepOYRYmcYIcr/c4Mchox9h5fBFNkD81rsGnLlZyq19QvyHzN+93SVxrLc078gw93t2RKrVcOOZY13zT3t1w==}
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.9
     dev: false
 
   /@luma.gl/constants@8.5.21:
@@ -6022,14 +6023,14 @@ packages:
       eslint-visitor-keys: 4.2.0
     dev: true
 
-  /@uiw/react-textarea-code-editor@2.1.1(@babel/runtime@7.24.7)(react-dom@18.2.0)(react@18.2.0):
+  /@uiw/react-textarea-code-editor@2.1.1(@babel/runtime@7.26.9)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-vFUb58Dj8SCAcAL264ik6rFMzHmOAI4TG8BInu9avCdJ1ugRhrwD+RA7FKQN2xAoBokF9JJacyTqx+EUXIOg2g==}
     peerDependencies:
       '@babel/runtime': '>=7.10.0'
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.9
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       rehype: 12.0.1
@@ -6580,7 +6581,7 @@ packages:
   /babel-plugin-macros@2.8.0:
     resolution: {integrity: sha512-SEP5kJpfGYqYKpBrj5XU3ahw5p5GOHJ0U5ssOSQ/WBVdwkD2Dzlce95exQTs3jOVWPPKLBN2rlEWkCK7dSmLvg==}
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.9
       cosmiconfig: 6.0.0
       resolve: 1.22.8
     dev: false
@@ -10649,10 +10650,10 @@ packages:
       graceful-fs: 4.2.11
     dev: true
 
-  /jspdf-autotable@3.8.4(jspdf@3.0.0):
-    resolution: {integrity: sha512-rSffGoBsJYX83iTRv8Ft7FhqfgEL2nLpGAIiqruEQQ3e4r0qdLFbPUB7N9HAle0I3XgpisvyW751VHCqKUVOgQ==}
+  /jspdf-autotable@5.0.2(jspdf@3.0.0):
+    resolution: {integrity: sha512-YNKeB7qmx3pxOLcNeoqAv3qTS7KuvVwkFe5AduCawpop3NOkBUtqDToxNc225MlNecxT4kP2Zy3z/y/yvGdXUQ==}
     peerDependencies:
-      jspdf: ^2.5.1
+      jspdf: ^2 || ^3
     dependencies:
       jspdf: 3.0.0
     dev: false
