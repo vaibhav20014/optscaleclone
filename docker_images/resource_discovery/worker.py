@@ -15,7 +15,9 @@ import urllib3
 
 from tools.cloud_adapter.cloud import Cloud as CloudAdapter
 from tools.cloud_adapter.exceptions import InvalidResourceTypeException
-from tools.cloud_adapter.model import ResourceTypes, RES_MODEL_MAP
+from tools.cloud_adapter.model import (
+    ResourceTypes, RES_MODEL_MAP, InstanceResource, RdsInstanceResource
+)
 from optscale_client.config_client.client import Client as ConfigClient
 from optscale_client.insider_client.client import Client as InsiderClient
 from optscale_client.rest_api_client.client_v2 import Client as RestClient
@@ -34,6 +36,9 @@ DEFAULT_DISCOVER_SIZE = 10000
 
 
 class ResourcesSaver:
+
+    MODEL_MAP_INVERTED = {v: k for k, v in RES_MODEL_MAP.items()}
+
     def __init__(self, rest_cl, insider_cl, limit, timeout, pause_timeout):
         queue_len = int(limit / CHUNK_SIZE) if CHUNK_SIZE else 0
         self.queue = queue.Queue(queue_len)
@@ -44,9 +49,6 @@ class ResourcesSaver:
         self.recording_available = Event()
         self.empty = Event()
         self._proc = None
-        self._cloud_account_id = None
-        self._cloud_type = None
-        self._resource_type = None
         self.start()
 
     def __del__(self):
@@ -122,52 +124,34 @@ class ResourcesSaver:
             val = getattr(resource, field)
             if val is not None and (isinstance(val, bool) or val):
                 obj[field] = val
-        obj.pop('resource_id', None)
-        obj.pop('organization_id', None)
-        obj['resource_type'] = getattr(ResourceTypes, self.resource_type).value
+        for param in ['resource_id', 'organization_id', 'cloud_type']:
+            obj.pop(param, None)
+        for cl, resource_type in self.MODEL_MAP_INVERTED.items():
+            if issubclass(type(resource), cl):
+                obj['resource_type'] = getattr(ResourceTypes,
+                                               resource_type).value
         obj['last_seen'] = utcnow_timestamp()
         obj['active'] = True
-        return obj
-
-    @property
-    def resource_type(self):
-        return self._resource_type
-
-    @resource_type.setter
-    def resource_type(self, value):
-        self._resource_type = value
-
-    @property
-    def cloud_account_id(self):
-        return self._cloud_account_id
-
-    @cloud_account_id.setter
-    def cloud_account_id(self, value):
-        self._cloud_account_id = value
-
-    @property
-    def cloud_type(self):
-        return self._cloud_type
-
-    @cloud_type.setter
-    def cloud_type(self, value):
-        self._cloud_type = value
+        cloud_acc_id = obj.pop('cloud_account_id')
+        return obj, cloud_acc_id
 
     def process_resource_obj(self, resources):
-        if self.resource_type != 'instance' or self.cloud_type != 'azure_cnr':
-            return resources
         flavors = {}
+        resource_type = None
         for resource in resources:
+            if resource.cloud_type != 'azure_cnr' or type(resource) not in [
+                    InstanceResource, RdsInstanceResource]:
+                break
             flavor = flavors.get(resource.flavor)
             if not flavor:
-                try:
-                    _, flavor = self.insider_cl.find_flavor(
-                        self.cloud_type, self.resource_type, resource.region,
-                        {'source_flavor_id': resource.flavor}, 'current',
-                        cloud_account_id=self.cloud_account_id)
-                except Exception as exc:
-                    LOG.exception(exc)
-                    continue
+                if not resource_type:
+                    resource_type = getattr(
+                        ResourceTypes, self.MODEL_MAP_INVERTED[
+                            type(resource)]).name
+                _, flavor = self.insider_cl.find_flavor(
+                    resource.cloud_type, resource_type, resource.region,
+                    {'source_flavor_id': resource.flavor}, 'current',
+                    cloud_account_id=resource.cloud_account_id)
             if flavor:
                 flavors[resource.flavor] = flavor
                 resource.cpu_count = flavor['cpu']
@@ -178,10 +162,11 @@ class ResourcesSaver:
         payload = []
         resources = self.process_resource_obj(resources)
         for rss in resources:
-            payload.append(self.build_payload(rss))
+            obj, cloud_acc_id = self.build_payload(rss)
+            payload.append(obj)
         if payload:
             _, response = self.rest_cl.cloud_resource_create_bulk(
-                self.cloud_account_id, {'resources': payload},
+                cloud_acc_id, {'resources': payload},
                 behavior='update_existing', return_resources=True)
         for resource in resources:
             try:
@@ -318,9 +303,6 @@ class DiscoveryWorker(ConsumerMixin):
             return
         config = self.get_config(cloud_acc_id)
         gen_list = self.discover(config, resource_type)
-        self.res_saving.cloud_account_id = cloud_acc_id
-        self.res_saving.cloud_type = config['type']
-        self.res_saving.resource_type = resource_type
         discovered_resources = set()
         resources_count = 0
         max_parallel_requests = self.max_parallel_requests(config)
@@ -344,6 +326,8 @@ class DiscoveryWorker(ConsumerMixin):
                         gen_list_chunk.remove(gen)
                         errors.add(str(res))
                     elif res:
+                        res.cloud_account_id = cloud_acc_id
+                        res.cloud_type = config['type']
                         discovered_resources.add(res)
                     else:
                         gen_list_chunk.remove(gen)
