@@ -1655,6 +1655,7 @@
   "possibleSavingsWithSpotInstancesTitle": "Instances with Spot (Preemptible) opportunities",
   "possibleShutdownPeriods": "Possible shutdown periods",
   "postRequests": "POST requests",
+  "powerSchedule": "Power schedule",
   "powerSchedulesTitle": "Power Schedules",
   "preferredCurrency": "Preferred currency",
   "preparingLiveDemoMessage": "OptScale is preparing your live demo experience. Please stand by.",
