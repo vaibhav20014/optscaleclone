@@ -630,7 +630,8 @@ class CleanExpenseAsyncHandler(FilteredExpensesBaseAsyncHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.str_filters.append('format')
-        self.int_filters.extend(['limit', 'offset'])
+        self.int_filters.extend(['limit', 'first_seen_gte', 'first_seen_lte',
+                                 'last_seen_gte', 'last_seen_lte', 'offset'])
         self.list_filters.append('field')
 
     def _get_controller_class(self):
@@ -663,9 +664,11 @@ class CleanExpenseAsyncHandler(FilteredExpensesBaseAsyncHandler):
 
         return expenses_data
 
-    def _filter_expense_fields(self, expense: dict, fields_to_keep: list[list[str]]) -> dict:
+    def _filter_expense_fields(self, expense: dict,
+                               fields_to_keep: list[list[str]]) -> dict:
         """
-        Implements response fields whitelisting for a specific element in expenses response.
+        Implements response fields whitelisting for a specific element in
+        expenses response.
         """
         if not isinstance(expense, dict):
             return expense
@@ -766,6 +769,30 @@ class CleanExpenseAsyncHandler(FilteredExpensesBaseAsyncHandler):
             in: query
             description: End date (timestamp in seconds)
             required: true
+            type: integer
+        -   name: first_seen_gte
+            in: query
+            description: |
+                Timestamp in seconds resource first seen is greater then
+            required: false
+            type: integer
+        -   name: fist_seen_lte
+            in: query
+            description: |
+                Timestamp in seconds resource first seen is less then
+            required: false
+            type: integer
+        -   name: last_seen_gte
+            in: query
+            description: |
+                Timestamp in seconds resource first seen is greater then
+            required: false
+            type: integer
+        -   name: last_seen_lte
+            in: query
+            description: |
+                Timestamp in seconds resource last seen is less then
+            required: false
             type: integer
         -   name: cloud_account_id
             in: query
@@ -1626,6 +1653,30 @@ class SummaryExpenseAsyncHandler(CleanExpenseAsyncHandler):
             in: query
             description: End date (timestamp in seconds)
             required: true
+            type: integer
+        -   name: first_seen_gte
+            in: query
+            description: |
+                Timestamp in seconds resource first seen is greater then
+            required: false
+            type: integer
+        -   name: fist_seen_lte
+            in: query
+            description: |
+                Timestamp in seconds resource first seen is less then
+            required: false
+            type: integer
+        -   name: last_seen_gte
+            in: query
+            description: |
+                Timestamp in seconds resource first seen is greater then
+            required: false
+            type: integer
+        -   name: last_seen_lte
+            in: query
+            description: |
+                Timestamp in seconds resource last seen is less then
+            required: false
             type: integer
         -   name: cloud_account_id
             in: query

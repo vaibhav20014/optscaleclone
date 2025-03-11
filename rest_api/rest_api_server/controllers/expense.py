@@ -1031,7 +1031,8 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
         extra = {'active', 'recommendations', 'constraint_violated',
                  'service_name', 'created_by_kind', 'created_by_name',
                  'k8s_namespace', 'k8s_node', 'k8s_service', 'traffic_from',
-                 'traffic_to'}
+                 'traffic_to', 'first_seen_lte', 'first_seen_gte',
+                 'last_seen_lte', 'last_seen_gte'}
         other_filters = {}
         for f_key in extra:
             f_val = params.pop(f_key, None)
@@ -1128,19 +1129,44 @@ class CleanExpenseController(BaseController, MongoMixin, ClickHouseMixin,
                     {'cloud_account_id': None}
                 ]}
             else:
-                main_filters[False] = {'cloud_account_id': {'$in': cloud_account_ids}}
+                main_filters[False] = {
+                    'cloud_account_id': {'$in': cloud_account_ids}
+                }
+
         query = {
             '$and': [
                 {'$or': list(main_filters.values())},
-                {'_first_seen_date': {'$lte': timestamp_to_day_start(
-                    end_date)}},
-                {'_last_seen_date': {'$gte': timestamp_to_day_start(
-                    start_date)}},
-                {'first_seen': {'$lte': end_date}},
-                {'last_seen': {'$gte': start_date}},
                 {'deleted_at': 0}
             ]
         }
+        first_seen_lte = data_filters.get('first_seen_lte')
+        if first_seen_lte is not None:
+            end_date = min(end_date, first_seen_lte)
+        last_seen_gte = data_filters.get('last_seen_gte')
+        if last_seen_gte is not None:
+            start_date = max(start_date, last_seen_gte)
+        seen_filters = {
+            'first_seen': {'$lte': end_date},
+            '_first_seen_date': {'$lte': timestamp_to_day_start(
+                end_date)},
+            'last_seen': {'$gte': start_date},
+            '_last_seen_date': {'$gte': timestamp_to_day_start(
+                start_date)}
+        }
+        first_seen_gte = data_filters.get('first_seen_gte')
+        if first_seen_gte is not None:
+            seen_filters['first_seen'].update({'$gte': first_seen_gte})
+            seen_filters['_first_seen_date'].update({
+                '$gte': timestamp_to_day_start(first_seen_gte)
+            })
+        last_seen_lte = data_filters.get('last_seen_lte')
+        if last_seen_lte is not None:
+            seen_filters['last_seen'].update({'$lte': last_seen_lte})
+            seen_filters['_last_seen_date'].update({
+                '$lte': timestamp_to_day_start(last_seen_lte)
+            })
+        query['$and'].append(seen_filters)
+
         resource_type_condition = self.get_resource_type_condition(
             params.pop('resource_type', []))
         if resource_type_condition:
