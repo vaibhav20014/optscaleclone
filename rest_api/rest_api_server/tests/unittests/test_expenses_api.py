@@ -4001,6 +4001,250 @@ class TestExpensesApi(TestApiBase):
         violated = exp_violated_map[clean_expense['resource_id']]
         self.assertEqual(clean_expense['constraint_violated'], violated)
 
+    def test_clean_expenses_filter_by_first_seen(self):
+        day_in_month = datetime(2025, 1, 1)
+        time = int(day_in_month.timestamp())
+        _, resource1 = self.create_cloud_resource(
+            self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
+            name='res1', first_seen=time, last_seen=time + 1)
+        _, resource2 = self.create_cloud_resource(
+            self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
+            name='res2', first_seen=time - 1, last_seen=time)
+        expenses = [
+            {
+                'cost': 300,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource1['id'],
+            },
+            {
+                'cost': 70,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource2['id'],
+            }
+        ]
+
+        for e in expenses:
+            self.expenses.append({
+                'cost': e['cost'],
+                'date': e['date'],
+                'resource_id': e['resource_id'],
+                'cloud_account_id': e['cloud_acc'],
+                'sign': 1
+            })
+
+        filters = {'first_seen_lte': time - 1}
+        code, response = self.client.clean_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['clean_expenses']), 1)
+        self.assertEqual(response['total_cost'], 70)
+
+        filters = {'first_seen_lte': time + 1}
+        code, response = self.client.clean_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['clean_expenses']), 2)
+        self.assertEqual(response['total_cost'], 370)
+
+        filters = {'first_seen_gte': time - 1}
+        code, response = self.client.clean_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['clean_expenses']), 2)
+        self.assertEqual(response['total_cost'], 370)
+
+        filters = {'first_seen_gte': time}
+        code, response = self.client.clean_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['clean_expenses']), 1)
+        self.assertEqual(response['total_cost'], 300)
+
+    def test_clean_expenses_filter_by_last_seen(self):
+        day_in_month = datetime(2025, 1, 1)
+        time = int(day_in_month.timestamp())
+        _, resource1 = self.create_cloud_resource(
+            self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
+            name='res1', first_seen=time, last_seen=time + 1)
+        _, resource2 = self.create_cloud_resource(
+            self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
+            name='res2', first_seen=time - 1, last_seen=time)
+        expenses = [
+            {
+                'cost': 300,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource1['id'],
+            },
+            {
+                'cost': 70,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource2['id'],
+            }
+        ]
+
+        for e in expenses:
+            self.expenses.append({
+                'cost': e['cost'],
+                'date': e['date'],
+                'resource_id': e['resource_id'],
+                'cloud_account_id': e['cloud_acc'],
+                'sign': 1
+            })
+
+        filters = {'last_seen_lte': time}
+        code, response = self.client.clean_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['clean_expenses']), 1)
+        self.assertEqual(response['total_cost'], 70)
+
+        filters = {'last_seen_lte': time + 1}
+        code, response = self.client.clean_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['clean_expenses']), 2)
+        self.assertEqual(response['total_cost'], 370)
+
+        filters = {'last_seen_gte': time}
+        code, response = self.client.clean_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['clean_expenses']), 2)
+        self.assertEqual(response['total_cost'], 370)
+
+        filters = {'last_seen_gte': time + 1}
+        code, response = self.client.clean_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['clean_expenses']), 1)
+        self.assertEqual(response['total_cost'], 300)
+
+    def test_summary_expenses_filter_by_first_seen(self):
+        day_in_month = datetime(2025, 1, 1)
+        time = int(day_in_month.timestamp())
+        _, resource1 = self.create_cloud_resource(
+            self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
+            name='res1', first_seen=time, last_seen=time + 1)
+        _, resource2 = self.create_cloud_resource(
+            self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
+            name='res2', first_seen=time - 1, last_seen=time)
+        expenses = [
+            {
+                'cost': 300,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource1['id'],
+            },
+            {
+                'cost': 70,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource2['id'],
+            }
+        ]
+
+        for e in expenses:
+            self.expenses.append({
+                'cost': e['cost'],
+                'date': e['date'],
+                'resource_id': e['resource_id'],
+                'cloud_account_id': e['cloud_acc'],
+                'sign': 1
+            })
+
+        filters = {'first_seen_lte': time - 1}
+        code, response = self.client.summary_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['total_count'], 1)
+        self.assertEqual(response['total_cost'], 70)
+
+        filters = {'first_seen_lte': time + 1}
+        code, response = self.client.summary_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['total_count'], 2)
+        self.assertEqual(response['total_cost'], 370)
+
+        filters = {'first_seen_gte': time - 1}
+        code, response = self.client.summary_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['total_count'], 2)
+        self.assertEqual(response['total_cost'], 370)
+
+        filters = {'first_seen_gte': time}
+        code, response = self.client.summary_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['total_count'], 1)
+        self.assertEqual(response['total_cost'], 300)
+
+    def test_summary_expenses_filter_by_last_seen(self):
+        day_in_month = datetime(2025, 1, 1)
+        time = int(day_in_month.timestamp())
+        _, resource1 = self.create_cloud_resource(
+            self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
+            name='res1', first_seen=time, last_seen=time + 1)
+        _, resource2 = self.create_cloud_resource(
+            self.cloud_acc1['id'], self.employee1['id'], self.org['pool_id'],
+            name='res2', first_seen=time - 1, last_seen=time)
+        expenses = [
+            {
+                'cost': 300,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource1['id'],
+            },
+            {
+                'cost': 70,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource2['id'],
+            }
+        ]
+
+        for e in expenses:
+            self.expenses.append({
+                'cost': e['cost'],
+                'date': e['date'],
+                'resource_id': e['resource_id'],
+                'cloud_account_id': e['cloud_acc'],
+                'sign': 1
+            })
+
+        filters = {'last_seen_lte': time}
+        code, response = self.client.summary_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['total_count'], 1)
+        self.assertEqual(response['total_cost'], 70)
+
+        filters = {'last_seen_lte': time + 1}
+        code, response = self.client.summary_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['total_count'], 2)
+        self.assertEqual(response['total_cost'], 370)
+
+        filters = {'last_seen_gte': time}
+        code, response = self.client.summary_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['total_count'], 2)
+        self.assertEqual(response['total_cost'], 370)
+
+        filters = {'last_seen_gte': time + 1}
+        code, response = self.client.summary_expenses_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['total_count'], 1)
+        self.assertEqual(response['total_cost'], 300)
+
     def test_summary_clean_expenses_clusters(self):
         code, cluster_type = self.client.cluster_type_create(
             self.org_id, {'name': 'awesome', 'tag_key': 'tag'})
@@ -5621,7 +5865,122 @@ class TestExpensesApi(TestApiBase):
         self.assertEqual(code, 200)
         self.assertEqual(r['expenses']['total'], 5)
         self.assertEqual(
-            r['expenses']['breakdown'][str(int(self.start_date.timestamp()))], 5)
+            r['expenses']['breakdown'][str(int(self.start_date.timestamp()))],
+            5)
+
+    def test_available_filters_by_first_seen(self):
+        day_in_month = datetime(2025, 1, 1)
+        time = int(day_in_month.timestamp())
+        _, resource1 = self.create_cloud_resource(
+            self.cloud_acc1['id'], name='res1', first_seen=time,
+            last_seen=time + 1, tags={'tag1': 'val1'})
+        _, resource2 = self.create_cloud_resource(
+            self.cloud_acc1['id'], name='res2', first_seen=time - 1,
+            last_seen=time, tags={'tag2': 'val2'})
+        expenses = [
+            {
+                'cost': 300,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource1['id'],
+            },
+            {
+                'cost': 70,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource2['id'],
+            }
+        ]
+
+        for e in expenses:
+            self.expenses.append({
+                'cost': e['cost'],
+                'date': e['date'],
+                'resource_id': e['resource_id'],
+                'cloud_account_id': e['cloud_acc'],
+                'sign': 1
+            })
+
+        filters = {'first_seen_lte': time - 1}
+        code, response = self.client.available_filters_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['filter_values']['tag'], ['tag2'])
+
+        filters = {'first_seen_lte': time + 1}
+        code, response = self.client.available_filters_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['filter_values']['tag']), 2)
+
+        filters = {'first_seen_gte': time - 1}
+        code, response = self.client.available_filters_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['filter_values']['tag']), 2)
+
+        filters = {'first_seen_gte': time}
+        code, response = self.client.available_filters_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['filter_values']['tag'], ['tag1'])
+
+    def test_available_filters_by_last_seen(self):
+        day_in_month = datetime(2025, 1, 1)
+        time = int(day_in_month.timestamp())
+        _, resource1 = self.create_cloud_resource(
+            self.cloud_acc1['id'], name='res1', first_seen=time,
+            last_seen=time + 1, tags={'tag1': 'val1'})
+        _, resource2 = self.create_cloud_resource(
+            self.cloud_acc1['id'], name='res2', first_seen=time - 1,
+            last_seen=time, tags={'tag2': 'val2'})
+        expenses = [
+            {
+                'cost': 300,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource1['id'],
+            },
+            {
+                'cost': 70,
+                'date': day_in_month,
+                'cloud_acc': self.cloud_acc1['id'],
+                'resource_id': resource2['id'],
+            }
+        ]
+
+        for e in expenses:
+            self.expenses.append({
+                'cost': e['cost'],
+                'date': e['date'],
+                'resource_id': e['resource_id'],
+                'cloud_account_id': e['cloud_acc'],
+                'sign': 1
+            })
+
+        filters = {'last_seen_lte': time}
+        code, response = self.client.available_filters_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['filter_values']['tag'], ['tag2'])
+
+        filters = {'last_seen_lte': time + 1}
+        code, response = self.client.available_filters_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['filter_values']['tag']), 2)
+
+        filters = {'last_seen_gte': time}
+        code, response = self.client.available_filters_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(response['filter_values']['tag']), 2)
+
+        filters = {'last_seen_gte': time + 1}
+        code, response = self.client.available_filters_get(
+            self.org_id, time - 1, time + 1, filters)
+        self.assertEqual(code, 200)
+        self.assertEqual(response['filter_values']['tag'], ['tag1'])
 
     def test_clean_expenses_pagination(self):
         day_in_month = datetime(2020, 1, 14)
@@ -5679,6 +6038,7 @@ class TestExpensesApi(TestApiBase):
                 'cloud_account_id': e['cloud_acc'],
                 'sign': 1
             })
+
         for limits, expected_resources in [
             ({'limit': 1, 'offset': 0}, [res_2['cloud_resource_id']]),
             ({'limit': 3, 'offset': 1}, [
