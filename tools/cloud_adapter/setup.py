@@ -27,7 +27,7 @@ requirements = [
     "azure-mgmt-commerce==1.0.1",
     "msrest==0.6.6",
     "urllib3==1.26.18",
-    "azure-identity==1.6.1",
+    "azure-identity==1.16.1",
 
     # Gcp
     'google-cloud-iam==2.16.1',
