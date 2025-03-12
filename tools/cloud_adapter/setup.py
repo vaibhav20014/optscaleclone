@@ -19,7 +19,7 @@ requirements = [
     'azure-mgmt-resource==2.1.0',
     'azure-mgmt-network==28.1.0',
     'azure-mgmt-compute==7.0.0',
-    "azure-storage-blob==1.5.0",
+    "azure-storage-blob==12.25.0",
     'azure-mgmt-storage==3.3.0',
     "azure_mgmt_subscription==0.2.0",
     "azure-mgmt-consumption==8.0.0",
