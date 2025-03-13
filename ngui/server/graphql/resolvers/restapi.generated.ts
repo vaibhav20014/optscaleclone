@@ -429,7 +429,7 @@ export type K8CostModelConfig = {
 export type K8sConfig = {
   __typename?: 'K8sConfig';
   cost_model?: Maybe<K8CostModelConfig>;
-  user: Scalars['String']['output'];
+  user?: Maybe<Scalars['String']['output']>;
 };
 
 export type K8sConfigInput = {
@@ -1272,7 +1272,7 @@ export type K8CostModelConfigResolvers<ContextType = any, ParentType extends Res
 
 export type K8sConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['K8sConfig'] = ResolversParentTypes['K8sConfig']> = {
   cost_model?: Resolver<Maybe<ResolversTypes['K8CostModelConfig']>, ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

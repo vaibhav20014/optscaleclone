@@ -258,7 +258,7 @@ type K8CostModelConfig {
 
 type K8sConfig {
   cost_model: K8CostModelConfig
-  user: String!
+  user: String
 }
 
 type K8sDataSource implements DataSourceInterface {
