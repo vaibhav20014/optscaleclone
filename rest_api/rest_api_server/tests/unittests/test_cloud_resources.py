@@ -649,7 +649,7 @@ class TestCloudResourceApi(TestProfilingBase):
                 resource['id'], details=True)
             self.assertEqual(code, 200)
             self.assertEqual(
-                resource['created_at'], response['details']['last_seen'])
+                resource['created_at'], response['last_seen'])
             for k, v in resource_dict.items():
                 self.assertEqual(response[k], v)
         with freeze_time(datetime(2020, 2, 28)):
@@ -694,15 +694,15 @@ class TestCloudResourceApi(TestProfilingBase):
             self.assertIsNotNone(details)
             self.assertEqual(details['cost'], 350)
             self.assertEqual(details['cloud_type'], self.cloud_acc['type'])
-            self.assertEqual(datetime.fromtimestamp(details['last_seen']),
+            self.assertEqual(datetime.fromtimestamp(response['last_seen']),
                              datetime(2020, 2, 16))
             self.assertEqual(details['forecast'], 350)
-            self.assertEqual(datetime.fromtimestamp(details['first_seen']),
+            self.assertEqual(datetime.fromtimestamp(response['first_seen']),
                              datetime(2020, 1, 14))
-            self.assertEqual(details['region'], 'us-east')
+            self.assertEqual(response['region'], 'us-east')
             self.assertEqual(details['owner_name'], employee['name'])
             self.assertEqual(details['cloud_name'], self.cloud_acc['name'])
-            self.assertEqual(details['service_name'], 'service')
+            self.assertEqual(response['service_name'], 'service')
             self.assertEqual(details['total_cost'], 1000)
             self.assertEqual(details['pool_name'], self.org['name'])
             self.assertEqual(details['pool_purpose'], 'business_unit')
@@ -715,7 +715,7 @@ class TestCloudResourceApi(TestProfilingBase):
                 resource['id'], details=True)
         details = response.get('details')
         # we updated last seen in 100 (1000 - 900(default cache)) seconds
-        self.assertEqual(datetime.fromtimestamp(details['last_seen']),
+        self.assertEqual(datetime.fromtimestamp(response['last_seen']),
                          datetime(2020, 2, 28, 0, 1, 40))
         code, response = self.client.cloud_resource_get(
             resource['id'], details=True)
@@ -727,10 +727,10 @@ class TestCloudResourceApi(TestProfilingBase):
         self.assertEqual(details['cost'], 0)
         self.assertEqual(details['cloud_type'], self.cloud_acc['type'])
         self.assertEqual(details['forecast'], 0)
-        self.assertEqual(details['region'], 'us-east')
+        self.assertEqual(response['region'], 'us-east')
         self.assertEqual(details['owner_name'], employee['name'])
         self.assertEqual(details['cloud_name'], self.cloud_acc['name'])
-        self.assertEqual(details['service_name'], 'service')
+        self.assertEqual(response['service_name'], 'service')
         self.assertEqual(details['total_cost'], 1000)
         self.assertEqual(details['pool_name'], self.org['name'])
         self.assertEqual(details['pool_purpose'], 'business_unit')
@@ -753,7 +753,7 @@ class TestCloudResourceApi(TestProfilingBase):
                 resource['id'], details=True)
             self.assertEqual(code, 200)
             self.assertEqual(
-                resource['created_at'], response['details']['last_seen'])
+                resource['created_at'], response['last_seen'])
             for k, v in resource_dict.items():
                 self.assertEqual(response[k], v)
         with freeze_time(datetime(2020, 2, 28)):
@@ -800,15 +800,15 @@ class TestCloudResourceApi(TestProfilingBase):
             self.assertIsNotNone(details)
             self.assertEqual(details['cost'], 350)
             self.assertEqual(details['cloud_type'], 'environment')
-            self.assertEqual(datetime.fromtimestamp(details['last_seen']),
+            self.assertEqual(datetime.fromtimestamp(response['last_seen']),
                              datetime(2020, 2, 28, 0, 1, 40))
             self.assertEqual(details['forecast'], 394.44)
-            self.assertEqual(datetime.fromtimestamp(details['first_seen']),
+            self.assertEqual(datetime.fromtimestamp(response['first_seen']),
                              datetime(2020, 1, 14))
-            self.assertEqual(details['region'], None)
+            self.assertEqual(response['region'], None)
             self.assertEqual(details['owner_name'], employee['name'])
             self.assertEqual(details['cloud_name'], 'Environment')
-            self.assertEqual(details['service_name'], None)
+            self.assertEqual(response.get('service_name'), None)
             self.assertEqual(details['total_cost'], 1000)
             self.assertEqual(details['pool_name'], self.org['name'])
             self.assertEqual(details['pool_purpose'], 'business_unit')
@@ -823,10 +823,10 @@ class TestCloudResourceApi(TestProfilingBase):
         self.assertEqual(details['cost'], 0)
         self.assertEqual(details['cloud_type'], 'environment')
         self.assertEqual(details['forecast'], 0)
-        self.assertEqual(details['region'], None)
+        self.assertEqual(response['region'], None)
         self.assertEqual(details['owner_name'], employee['name'])
         self.assertEqual(details['cloud_name'], 'Environment')
-        self.assertEqual(details['service_name'], None)
+        self.assertEqual(response.get('service_name'), None)
         self.assertEqual(details['total_cost'], 1000)
         self.assertEqual(details['pool_name'], self.org['name'])
         self.assertEqual(details['pool_purpose'], 'business_unit')
@@ -907,7 +907,7 @@ class TestCloudResourceApi(TestProfilingBase):
         self.assertEqual(len(details['constraints']), 0)
         self.assertEqual(len(details['policies']), 0)
         for dt in ['last_seen', 'first_seen']:
-            self.assertTrue(details[dt] in [
+            self.assertTrue(response[dt] in [
                 int(now.timestamp()),
                 int(now.replace(hour=0, minute=0, second=0, microsecond=0
                                 ).timestamp())
@@ -1145,7 +1145,7 @@ class TestCloudResourceApi(TestProfilingBase):
         code, response = self.client.cloud_resource_get(
             resource['id'], details=True)
         self.assertEqual(code, 200)
-        self.assertTrue(response['details']['active'])
+        self.assertTrue(response['active'])
 
     def test_tags_with_dot(self):
         self.valid_resource['tags'] = {
