@@ -2,8 +2,18 @@
 <?xml version="1.0"?>
 <yandex>
     <logger>
+        <level>error</level>
         <console>1</console>
+        <log>/var/log/clickhouse-server/clickhouse-server.log</log>
+        <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
     </logger>
+    <user_directories>
+        <users_xml>
+            <path>/etc/clickhouse-server/users.xml</path>
+        </users_xml>
+    </user_directories>
+        <user_files_path>/var/lib/clickhouse/user_files/</user_files_path>
+    <format_schema_path>/var/lib/clickhouse/format_schemas/</format_schema_path>
     <http_port>{{ .Values.clickhouse.service.httpPort }}</http_port>
     <tcp_port>{{ .Values.clickhouse.service.externalPort }}</tcp_port>
     <listen_host>0.0.0.0</listen_host>
@@ -14,7 +24,6 @@
     <mark_cache_size>5368709120</mark_cache_size>
     <path>/var/lib/clickhouse/</path>
     <tmp_path>/var/lib/clickhouse/tmp/</tmp_path>
-    <users_config>users.xml</users_config>
     <default_profile>{{ .Values.clickhouse.db.user }}</default_profile>
     <default_database>{{ .Values.clickhouse.db.name }}</default_database>
     <zookeeper incl="zookeeper-servers" optional="true" />
