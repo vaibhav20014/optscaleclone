@@ -2,7 +2,7 @@
 <?xml version="1.0"?>
 <yandex>
     <logger>
-        <level>error</level>
+        <level>warning</level>
         <console>1</console>
         <log>/var/log/clickhouse-server/clickhouse-server.log</log>
         <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
@@ -31,9 +31,10 @@
     <builtin_dictionaries_reload_interval>3600</builtin_dictionaries_reload_interval>
     <max_session_timeout>3600</max_session_timeout>
     <default_session_timeout>60</default_session_timeout>
-    <query_log>
+    <query_log replace="1">
         <database>system</database>
         <table>query_log</table>
+        <engine>Engine = MergeTree PARTITION BY event_date ORDER BY event_time TTL event_date + interval 5 day</engine>
         <flush_interval_milliseconds>7500</flush_interval_milliseconds>
     </query_log>
     <dictionaries_config>*_dictionary.xml</dictionaries_config>
