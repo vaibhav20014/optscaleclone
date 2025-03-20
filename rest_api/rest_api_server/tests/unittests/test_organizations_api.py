@@ -383,6 +383,9 @@ class TestOrganizationApi(TestApiBase):
             self.assertEqual(len(org_list['organizations']), len(expected_orgs))
             for x in org_list['organizations']:
                 self.assertTrue(x['id'] in expected_orgs)
+            for k, v in params.items():
+                self.assertEqual(org_list[k], v)
+            self.assertEqual(org_list['total_count'], 5)
 
     @patch('rest_api.rest_api_server.handlers.v2.organizations.'
            'OrganizationAsyncCollectionHandler.check_cluster_secret',

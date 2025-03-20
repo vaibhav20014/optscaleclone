@@ -190,8 +190,15 @@ class OrganizationAsyncCollectionHandler(OrganizationAsyncCollectionHandler_v1, 
         else:
             res = await run_task(self.controller.get_org_list, **args)
 
-        organizations_dict = {'organizations': [
-            organization.to_dict() for organization in res]}
+        organizations, total_count = res
+        organizations_dict = {
+            'organizations': [
+                organization.to_dict() for organization in organizations
+            ],
+            'total_count': total_count,
+            'limit': args['limit'],
+            'offset': args['offset'],
+        }
         self.write(json.dumps(organizations_dict, cls=ModelEncoder))
 
     def get_org_arguments(self, is_by_user):
