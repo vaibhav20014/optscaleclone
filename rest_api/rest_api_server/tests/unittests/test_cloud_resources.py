@@ -623,8 +623,13 @@ class TestCloudResourceApi(TestProfilingBase):
         ps_name = 'power_schedule'
         ps = {
             'name': ps_name,
-            'power_on': '11:00',
-            'power_off': '10:00',
+            'triggers': [{
+                'time': '11:00',
+                'action': 'power_on'
+            }, {
+                'time': '10:00',
+                'action': 'power_off'
+            }],
             'timezone': 'UTC',
             'enabled': True
         }

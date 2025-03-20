@@ -990,3 +990,8 @@ export const AUTH_PROVIDERS = Object.freeze({
   GOOGLE: "google",
   MICROSOFT: "microsoft"
 });
+
+export const POWER_SCHEDULE_ACTIONS = Object.freeze({
+  POWER_ON: "power_on",
+  POWER_OFF: "power_off"
+});
