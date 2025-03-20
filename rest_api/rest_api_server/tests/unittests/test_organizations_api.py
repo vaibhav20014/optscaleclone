@@ -3,6 +3,7 @@ import uuid
 from freezegun import freeze_time
 from cryptography.fernet import Fernet
 from unittest.mock import patch, ANY, call, PropertyMock
+from rest_api.rest_api_server.utils import MAX_32_INT
 from rest_api.rest_api_server.models.db_base import BaseDB
 from rest_api.rest_api_server.models.db_factory import DBType, DBFactory
 from rest_api.rest_api_server.models.models import (
@@ -386,6 +387,15 @@ class TestOrganizationApi(TestApiBase):
             for k, v in params.items():
                 self.assertEqual(org_list[k], v)
             self.assertEqual(org_list['total_count'], 5)
+        for invalid_params in [
+            {'limit': 1, 'offset': MAX_32_INT + 1},
+            {'limit': MAX_32_INT + 1, 'offset': 1},
+            {'limit': -1, 'offset': 1},
+            {'limit': 1, 'offset': -1}
+        ]:
+            code, resp = self.client.organization_list(invalid_params)
+            self.assertEqual(code, 400)
+            self.verify_error_code(resp, 'OE0224')
 
     @patch('rest_api.rest_api_server.handlers.v2.organizations.'
            'OrganizationAsyncCollectionHandler.check_cluster_secret',
