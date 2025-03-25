@@ -36,7 +36,7 @@ from tools.cloud_adapter.model import (
     SnapshotResource,
     VolumeResource,
     BucketResource,
-    IpAddressResource,
+    IpAddressResource, LoadBalancerResource,
 )
 from tools.cloud_adapter.exceptions import (
     ResourceNotFound,
@@ -174,7 +174,8 @@ class Azure(CloudBase):
             InstanceResource: self.instance_discovery_calls,
             SnapshotResource: self.snapshot_discovery_calls,
             IpAddressResource: self.ip_address_discovery_calls,
-            BucketResource: self.bucket_discovery_calls
+            BucketResource: self.bucket_discovery_calls,
+            LoadBalancerResource: self.load_balancers_discovery_calls,
         }
 
     @property
@@ -795,6 +796,24 @@ class Azure(CloudBase):
 
     def ip_address_discovery_calls(self):
         return [(self.discover_ip_address_resources, ())]
+
+    def discover_load_balancers_resources(self):
+        all_lbs = list(self.network.load_balancers.list_all())
+        for lb in all_lbs:
+            cloud_console_link = self._generate_cloud_link(lb)
+            resource = LoadBalancerResource(
+                cloud_account_id=self.cloud_account_id,
+                organization_id=self.organization_id,
+                cloud_console_link=cloud_console_link,
+                cloud_resource_id=lb.id.lower(),
+                region=self.location_map.get(lb.location),
+                name=lb.name,
+                tags=lb.tags or {}
+            )
+            yield resource
+
+    def load_balancers_discovery_calls(self):
+        return [(self.discover_load_balancers_resources, ())]
 
     def get_usage(self, start_date, range_end=None, limit=None):
         """
