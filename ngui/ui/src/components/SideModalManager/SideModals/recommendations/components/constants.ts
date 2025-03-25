@@ -2,6 +2,8 @@ export const THRESHOLD_INPUT_NAMES = Object.freeze({
   DAYS_THRESHOLD: "daysThreshold",
   CPU_PERCENT_THRESHOLD: "cpuPercentThreshold",
   NETWORK_BPS_THRESHOLD: "networkBpsThreshold",
+  BYTES_SENT_THRESHOLD: "bytesSentThreshold",
+  PACKETS_SENT_THRESHOLD: "packetsSentThreshold",
   DATA_SIZE_THRESHOLD: "dataSizeThreshold",
   TIER_1_REQUESTS_QUANTITY_THRESHOLD: "tier1RequestsQuantityThreshold",
   TIER_2_REQUESTS_QUANTITY_THRESHOLD: "tier2RequestsQuantityThreshold",

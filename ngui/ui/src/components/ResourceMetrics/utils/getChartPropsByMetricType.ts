@@ -1,6 +1,7 @@
 import { useTheme } from "@mui/material/styles";
 import { useIntl } from "react-intl";
-import { SI_UNITS, formatDigitalUnit } from "components/FormattedDigitalUnit";
+import { formatCompactNumber } from "components/CompactFormattedNumber";
+import { IEC_UNITS, formatDigitalUnit } from "components/FormattedDigitalUnit";
 import { isEmpty as isEmptyArray } from "utils/arrays";
 import { getAverageLineValue, getTotalLineValue } from "utils/charts";
 import { METRIC_TYPES } from "utils/constants";
@@ -167,11 +168,71 @@ const networkChartProps = ({ metricType, metrics, colors, intl }) => {
         {
           value: formatDigitalUnit({
             value,
-            baseUnit: SI_UNITS.BYTE,
+            baseUnit: IEC_UNITS.BYTE,
             maximumFractionDigits: 1
           })
         }
       )
+  });
+};
+
+const bytesSentChartProps = ({ metricType, metrics, colors }) => {
+  const getBytesSentMetricLineDefinition = (data) => ({
+    line: {
+      id: "bytesSent",
+      data
+    },
+    markerData: {
+      name: "bytesSentAverage",
+      value: getAverageLineValue(data),
+      dataTestIdName: "bytes_sent"
+    }
+  });
+
+  const definitionGetters = {
+    bytesSentMetricData: getBytesSentMetricLineDefinition
+  };
+
+  return getChartProps({
+    metricType,
+    valueType: CHART_VALUE_TYPES.IEC_BYTE_BASE,
+    linesWithMarkerData: getLinesWithMarkerData(metrics, definitionGetters),
+    colors,
+    formatYValue: (value) =>
+      formatDigitalUnit({
+        value,
+        baseUnit: IEC_UNITS.BYTE,
+        maximumFractionDigits: 1
+      })
+  });
+};
+
+const packetsSentChartProps = ({ metricType, metrics, colors, intl }) => {
+  const getPacketsSentMetricLineDefinition = (data) => ({
+    line: {
+      id: "packetsSent",
+      data
+    },
+    markerData: {
+      name: "packetsSentAverage",
+      value: getAverageLineValue(data),
+      dataTestIdName: "packets_sent"
+    }
+  });
+
+  const definitionGetters = {
+    packetsSentMetricData: getPacketsSentMetricLineDefinition
+  };
+
+  return getChartProps({
+    metricType,
+    valueType: CHART_VALUE_TYPES.COMPACT_NUMBER,
+    linesWithMarkerData: getLinesWithMarkerData(metrics, definitionGetters),
+    colors,
+    formatYValue: (value) =>
+      formatCompactNumber(intl.formatNumber)({
+        value: value
+      })
   });
 };
 
@@ -214,6 +275,12 @@ const useChartPropsByMetricType = (metricType, metrics) => {
   }
   if (metricType === METRIC_TYPES.NETWORK) {
     return networkChartProps({ metricType, metrics: metricsLineData, colors, intl });
+  }
+  if (metricType === METRIC_TYPES.BYTES_SENT) {
+    return bytesSentChartProps({ metricType, metrics: metricsLineData, colors });
+  }
+  if (metricType === METRIC_TYPES.PACKETS_SENT) {
+    return packetsSentChartProps({ metricType, metrics: metricsLineData, colors, intl });
   }
 
   throw new Error("Unknown metric type");

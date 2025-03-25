@@ -485,7 +485,9 @@ export const METRIC_TYPES = Object.freeze({
   CPU: "cpu",
   MEMORY: "memory",
   DISK_IO: "disk_io",
-  NETWORK: "network"
+  NETWORK: "network",
+  BYTES_SENT: "bytes_sent",
+  PACKETS_SENT: "packets_sent"
 });
 
 export const COST_MODEL_TYPES = Object.freeze({
