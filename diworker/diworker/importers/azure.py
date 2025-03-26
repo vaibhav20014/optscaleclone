@@ -47,6 +47,7 @@ class AzureReportImporter(BaseReportImporter):
             'publicIPAddresses': 'IP Address',
             'virtualMachines': 'Instance',
             'snapshots': 'Snapshot',
+            'loadBalancers': 'Load Balancer',
         }
         self.resource_type_map_lowered = {
             k.lower(): v for k, v in resource_type_map.items()

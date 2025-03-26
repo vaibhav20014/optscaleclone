@@ -11,7 +11,8 @@ from tools.optscale_time import utcfromtimestamp, utcnow
 
 LOG = get_logger(__name__)
 K8S_RESOURCE_TYPE = 'K8s Pod'
-SUPPORTED_RESOURCE_TYPES = ['Instance', 'RDS Instance', K8S_RESOURCE_TYPE]
+SUPPORTED_RESOURCE_TYPES = ['Instance', 'RDS Instance', K8S_RESOURCE_TYPE,
+                            'Load Balancer']
 METRIC_INTERVAL = 900
 METRIC_RES_BULK_SIZE = 25
 CH_BULK_SIZE = 20000
@@ -350,18 +351,26 @@ class MetricsProcessor(object):
             return datetime.strptime(
                 date_str, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
 
-        result = []
-        metric_names_map = {
-            'Percentage CPU': 'cpu',
-            'Disk Read Operations/Sec': 'disk_read_io',
-            'Disk Write Operations/Sec': 'disk_write_io',
-            'Network In Total': 'network_in_io',
-            'Network Out Total': 'network_out_io',
-            'Available Memory Bytes': 'ram'
+        common_metrics_map = {
+            'Instance': ('microsoft.compute/virtualmachines', {
+                'Percentage CPU': 'cpu',
+                'Disk Read Operations/Sec': 'disk_read_io',
+                'Disk Write Operations/Sec': 'disk_write_io',
+                'Network In Total': 'network_in_io',
+                'Network Out Total': 'network_out_io',
+                'Available Memory Bytes': 'ram',
+            }),
+            'Load Balancer': ('microsoft.network/loadbalancers', {
+                'ByteCount': 'bytes_sent',
+                'PacketCount': 'packets_sent',
+            })
         }
+        namespace, metric_names_map = common_metrics_map[r_type]
+        result = []
+        cloud_metrics_names = list(metric_names_map.keys())
         response = adapter.get_metric(
-            'microsoft.compute/virtualmachines', list(metric_names_map.keys()),
-            cloud_resource_ids, METRIC_INTERVAL, start_date, end_date)
+            namespace, cloud_metrics_names, cloud_resource_ids,
+            METRIC_INTERVAL, start_date, end_date)
         for cloud_resource_id, metrics in response.items():
             resource_id = resource_ids_map[cloud_resource_id]
             total_ram = resource_map[resource_id].get('ram')

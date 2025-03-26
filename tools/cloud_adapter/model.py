@@ -17,6 +17,7 @@ class ResourceTypes(Enum):
     savings_plan = 'Savings Plan'
     reserved_instances = 'Reserved Instances'
     image = 'Image'
+    load_balancer = 'Load Balancer'
 
     @classmethod
     def has_value(cls, value):
@@ -509,6 +510,18 @@ class ReservedInstancesResource(CloudResource):
         return meta
 
 
+class LoadBalancerResource(CloudResource):
+    __slots__ = ('name')
+
+    def __init__(self, name=None, **kwargs):
+        super().__init__(**kwargs)
+        self.name = name
+
+    def __repr__(self):
+        return 'Load Balancer {0} name={1}'.format(
+            self.cloud_resource_id, self.name)
+
+
 # resource type in mariadb -> resource model
 RES_MODEL_MAP = {
     ResourceTypes.instance.name: InstanceResource,
@@ -522,4 +535,5 @@ RES_MODEL_MAP = {
     ResourceTypes.savings_plan.name: SavingsPlanResource,
     ResourceTypes.reserved_instances.name: ReservedInstancesResource,
     ResourceTypes.image.name: ImageResource,
+    ResourceTypes.load_balancer.name: LoadBalancerResource,
 }
