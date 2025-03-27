@@ -110,6 +110,7 @@ const GET_ORGANIZATIONS = gql`
       pool_id
       currency
       is_demo
+      disabled
     }
   }
 `;

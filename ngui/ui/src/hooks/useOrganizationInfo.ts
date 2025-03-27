@@ -13,7 +13,8 @@ const useCurrentOrganization = (organizations = []) => {
     pool_id: organizationPoolId,
     name: organizationName,
     is_demo: isDemo = false,
-    currency = "USD"
+    currency = "USD",
+    disabled = false
   } = organizations.find((org) => org.id === currentOrganizationId) ?? organizations?.[0] ?? {};
 
   return {
@@ -21,6 +22,7 @@ const useCurrentOrganization = (organizations = []) => {
     name: organizationName,
     organizationPoolId,
     isDemo,
+    isInactive: disabled,
     currency,
     currencySymbol: currency ? localeManager.getCurrencySymbol(currency) : undefined
   };

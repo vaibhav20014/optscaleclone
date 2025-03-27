@@ -518,6 +518,7 @@ type Organization {
   is_demo: Boolean!
   currency: String!
   pool_id: String!
+  disabled: Boolean!
 }
 
 type Employee {

@@ -26,7 +26,7 @@ import {
 import FormButtonsWrapper from "components/FormButtonsWrapper";
 import { FIELD_NAMES as NEBIUS_FIELD_NAMES } from "components/NebiusConfigFormElements";
 import { useIsDataSourceTypeConnectionEnabled } from "hooks/useIsDataSourceTypeConnectionEnabled";
-import { useOrganizationInfo } from "hooks/useOrganizationInfo";
+import { useOrganizationActionRestrictions } from "hooks/useOrganizationActionRestrictions";
 import { useResizeObserver } from "hooks/useResizeObserver";
 import AlibabaLogoIcon from "icons/AlibabaLogoIcon";
 import AwsLogoIcon from "icons/AwsLogoIcon";
@@ -435,7 +435,7 @@ const ConnectCloudAccountForm = ({ onSubmit, onCancel, isLoading = false, showCa
 
   const { type } = getQueryParams();
 
-  const { isDemo } = useOrganizationInfo();
+  const { isRestricted, restrictionReasonMessage } = useOrganizationActionRestrictions();
 
   const { handleSubmit } = methods;
 
@@ -564,7 +564,7 @@ const ConnectCloudAccountForm = ({ onSubmit, onCancel, isLoading = false, showCa
           <Box sx={{ marginBottom: SPACING_2 }}>{renderConnectionTypeInfoMessage(connectionType)}</Box>
           <form
             onSubmit={
-              isDemo
+              isRestricted
                 ? (e) => e.preventDefault()
                 : handleSubmit(async (formData) => {
                     const cloudType = getCloudType(connectionType);
@@ -595,9 +595,12 @@ const ConnectCloudAccountForm = ({ onSubmit, onCancel, isLoading = false, showCa
                 messageId="connect"
                 color="primary"
                 variant="contained"
-                disabled={isDemo}
+                disabled={isRestricted}
                 isLoading={isLoading}
-                tooltip={{ show: isDemo, messageId: "notAvailableInLiveDemo" }}
+                tooltip={{
+                  show: isRestricted,
+                  value: restrictionReasonMessage
+                }}
                 type="submit"
               />
               {showCancel && <Button dataTestId="btn_cancel_cloud_account" messageId="cancel" onClick={onCancel} />}

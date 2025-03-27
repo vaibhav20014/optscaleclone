@@ -14,7 +14,7 @@ import { useIsDownMediaQuery } from "hooks/useMediaQueries";
 import { useOpenSideModal } from "hooks/useOpenSideModal";
 import { useOrganizationInfo } from "hooks/useOrganizationInfo";
 import { ORGANIZATIONS_OVERVIEW } from "urls";
-import { sliceByLimitWithEllipsis } from "utils/strings";
+import { getOrganizationDisplayName } from "utils/organization";
 
 const HIDDEN_SELECTOR_SX = { visibility: "hidden", maxWidth: 0, minWidth: 0 };
 
@@ -49,6 +49,7 @@ type OrganizationSelectorProps = {
   organizations: {
     id: string;
     name: string;
+    disabled?: boolean;
   }[];
   organizationId?: string;
   onChange: (value: string) => void;
@@ -91,14 +92,15 @@ const OrganizationSelector = ({
         {[...organizations]
           .sort(({ name: nameA }, { name: nameB }) => nameA.localeCompare(nameB))
           .map((organization) => {
-            const isNameLong = organization.name.length > MAX_ORGANIZATION_NAME_LENGTH;
-            const renderedOrganizationName = isNameLong
-              ? sliceByLimitWithEllipsis(organization.name, MAX_ORGANIZATION_NAME_LENGTH)
-              : organization.name;
+            const { displayName, isNameLong, originalName } = getOrganizationDisplayName({
+              name: organization.name,
+              isInactive: organization.disabled,
+              maxLength: MAX_ORGANIZATION_NAME_LENGTH
+            });
 
             const tooltip = isNameLong
               ? {
-                  title: organization.name
+                  title: originalName
                 }
               : undefined;
 
@@ -106,12 +108,11 @@ const OrganizationSelector = ({
               <Item key={organization.name} value={organization.id}>
                 <ItemContent
                   icon={{
-                    IconComponent: ApartmentIcon,
-                    tooltipTitle: organization.name
+                    IconComponent: ApartmentIcon
                   }}
                   tooltip={tooltip}
                 >
-                  {renderedOrganizationName}
+                  {displayName}
                 </ItemContent>
               </Item>
             );
