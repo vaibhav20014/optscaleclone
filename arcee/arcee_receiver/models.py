@@ -30,6 +30,20 @@ date_start = Field(
         alias='_created_at_dt')
 
 
+class TokenPatchIn(BaseClass):
+    disabled: bool = False
+
+
+class TokenPostIn(BaseClass):
+    token: str
+
+
+class Token(TokenPostIn, TokenPatchIn):
+    id: str = id_
+    created_at: int = now
+    deleted_at: int = 0
+
+
 class ConsolePostIn(BaseClass):
     output: str
     error: str
