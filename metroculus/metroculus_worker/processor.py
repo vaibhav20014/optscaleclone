@@ -414,11 +414,16 @@ class MetricsProcessor(object):
             ]),
             'RDS Instance': ('acs_rds_dashboard', [
                 ('cpu', ['CpuUsage']),
+                ('cpu', ['cpu_usage']),
                 ('ram', ['MemoryUsage']),
+                ('ram', ['mem_usage']),
                 ('network_in_io', ['SQLServer_NetworkInNew',
                                    'MySQL_NetworkInNew']),
                 ('network_out_io', ['SQLServer_NetworkOutNew',
-                                    'MySQL_NetworkOutNew'])
+                                    'MySQL_NetworkOutNew']),
+                ('disk_io', ['SQLServer_IOPS', 'MySQL_IOPS']),
+                ('disk_io_usage', ['IOPSUsage']),
+                ('disk_io_usage', ['iops_usage']),
             ])
         }
         namespace, metrics_list = common_metrics_map[r_type]
