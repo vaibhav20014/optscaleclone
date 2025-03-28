@@ -126,7 +126,7 @@ const diskOperationsChartProps = ({ metricType, metrics, colors, intl }) => {
 };
 
 const networkChartProps = ({ metricType, metrics, colors, intl }) => {
-  const getMemoryInLineDefinition = (data) => ({
+  const getNetworkInLineDefinition = (data) => ({
     line: {
       id: "in",
       data
@@ -138,7 +138,7 @@ const networkChartProps = ({ metricType, metrics, colors, intl }) => {
     }
   });
 
-  const getMemoryOutLineDefinition = (data) => ({
+  const getNetworkOutLineDefinition = (data) => ({
     line: {
       id: "out",
       data
@@ -151,8 +151,8 @@ const networkChartProps = ({ metricType, metrics, colors, intl }) => {
   });
 
   const definitionGetters = {
-    memoryInMetricData: getMemoryInLineDefinition,
-    memoryOutMetricData: getMemoryOutLineDefinition
+    memoryInMetricData: getNetworkInLineDefinition,
+    memoryOutMetricData: getNetworkOutLineDefinition
   };
 
   return getChartProps({
@@ -236,6 +236,72 @@ const packetsSentChartProps = ({ metricType, metrics, colors, intl }) => {
   });
 };
 
+const diskIOUsageChartProps = ({ metricType, metrics, colors, intl }) => {
+  const getDiskIOUsageMetricLineDefinition = (data) => ({
+    line: {
+      id: "diskIOUsage",
+      data
+    },
+    markerData: {
+      name: "diskIOUsageAverage",
+      value: getAverageLineValue(data),
+      dataTestIdName: "disk_io_usage"
+    }
+  });
+
+  const definitionGetters = {
+    diskIOUsageMetricData: getDiskIOUsageMetricLineDefinition
+  };
+
+  return getChartProps({
+    metricType,
+    valueType: CHART_VALUE_TYPES.PERCENT,
+    linesWithMarkerData: getLinesWithMarkerData(metrics, definitionGetters),
+    colors,
+    formatYValue: (value) =>
+      intl.formatNumber(value, {
+        format: "percentage",
+        maximumFractionDigits: 1
+      })
+  });
+};
+
+const consolidatedDiskIOChartProps = ({ metricType, metrics, colors, intl }) => {
+  const getConsolidatedDiskIOMetricLineDefinition = (data) => ({
+    line: {
+      id: "diskIO",
+      data
+    },
+    markerData: {
+      name: "diskIOAverage",
+      value: getAverageLineValue(data),
+      dataTestIdName: "consolidated_disk_io"
+    }
+  });
+
+  const definitionGetters = {
+    consolidatedDiskIOMetricData: getConsolidatedDiskIOMetricLineDefinition
+  };
+
+  return getChartProps({
+    metricType,
+    valueType: CHART_VALUE_TYPES.INPUT_OUTPUT_OPERATIONS_PER_SECOND,
+    linesWithMarkerData: getLinesWithMarkerData(metrics, definitionGetters),
+    colors,
+    formatYValue: (value) =>
+      intl.formatMessage(
+        {
+          id: "inputOutputOperationsPerSecond"
+        },
+        {
+          value: formatCompactNumber(intl.formatNumber)({
+            value: value
+          })
+        }
+      )
+  });
+};
+
 const convertMetricDataToLineData = (metricData) =>
   metricData.map(({ date, value }) => ({
     x: date,
@@ -281,6 +347,12 @@ const useChartPropsByMetricType = (metricType, metrics) => {
   }
   if (metricType === METRIC_TYPES.PACKETS_SENT) {
     return packetsSentChartProps({ metricType, metrics: metricsLineData, colors, intl });
+  }
+  if (metricType === METRIC_TYPES.DISK_IO_USAGE) {
+    return diskIOUsageChartProps({ metricType, metrics: metricsLineData, colors, intl });
+  }
+  if (metricType === METRIC_TYPES.CONSOLIDATED_DISK_IO) {
+    return consolidatedDiskIOChartProps({ metricType, metrics: metricsLineData, colors, intl });
   }
 
   throw new Error("Unknown metric type");
