@@ -25,6 +25,11 @@ class TestPSWorker(unittest.TestCase):
                 'type': 'aws_cnr',
                 'config': {}
             }))
+        self.worker.rest_cl.organization_get = MagicMock(
+            return_value=(200, {
+                'id': str(uuid.uuid4()),
+                'disabled': False
+            }))
         self.ps_id = str(uuid.uuid4())
         self.valid_ps = {
             'id': self.ps_id,
@@ -127,6 +132,29 @@ class TestPSWorker(unittest.TestCase):
             message=self.message)
         result = self.default_result.copy()
         result['reason'] = PowerScheduleReasons.DISABLED
+        self.assertEqual(result, self.worker.result)
+        self.worker.rest_cl.power_schedule_update.assert_called_once()
+        self.assertIn(
+            'last_eval',
+            self.worker.rest_cl.power_schedule_update.call_args[0][1])
+        self.assertNotIn(
+            'last_run',
+            self.worker.rest_cl.power_schedule_update.call_args[0][1])
+        self.assertNotIn(
+            'last_run_error',
+            self.worker.rest_cl.power_schedule_update.call_args[0][1])
+        self.worker.publish_activities_task.assert_not_called()
+
+    def test_disabled_organization(self):
+        ps = self.valid_ps.copy()
+        self.worker.rest_cl.organization_get = MagicMock(
+            return_value=(200, {'id': str(uuid.uuid4()), 'disabled': True}))
+
+        self.worker.process_task(
+            body={'power_schedule_id': self.ps_id},
+            message=self.message)
+        result = self.default_result.copy()
+        result['reason'] = PowerScheduleReasons.DISABLED_ORG
         self.assertEqual(result, self.worker.result)
         self.worker.rest_cl.power_schedule_update.assert_called_once()
         self.assertIn(

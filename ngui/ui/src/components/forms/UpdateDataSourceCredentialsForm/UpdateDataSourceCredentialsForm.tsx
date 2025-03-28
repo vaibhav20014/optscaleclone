@@ -20,6 +20,7 @@ import {
 import FormButtonsWrapper from "components/FormButtonsWrapper";
 import FormContentDescription from "components/FormContentDescription";
 import { FIELD_NAMES as NEBIUS_FIELD_NAMES } from "components/NebiusConfigFormElements";
+import { useOrganizationActionRestrictions } from "hooks/useOrganizationActionRestrictions";
 import {
   DOCS_HYSTAX_CONNECT_AWS_ROOT,
   DOCS_HYSTAX_CONNECT_ALIBABA_CLOUD,
@@ -443,6 +444,8 @@ const getConfig = (type, config) => {
 };
 
 const UpdateDataSourceCredentialsForm = ({ id, type, config, onSubmit, onCancel, isLoading = false }) => {
+  const { isRestricted, restrictionReasonMessage } = useOrganizationActionRestrictions();
+
   const { getDefaultFormValues, parseFormDataToApiParams } = getConfig(type, config);
 
   const methods = useForm({
@@ -471,6 +474,11 @@ const UpdateDataSourceCredentialsForm = ({ id, type, config, onSubmit, onCancel,
             variant="contained"
             type="submit"
             isLoading={isLoading}
+            disabled={isRestricted}
+            tooltip={{
+              show: isRestricted,
+              value: restrictionReasonMessage
+            }}
           />
           <Button dataTestId="btn_cancel_update_data_source_credentials" messageId="cancel" onClick={onCancel} />
         </FormButtonsWrapper>

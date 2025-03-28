@@ -45,6 +45,7 @@ class PowerScheduleReasons:
     """
     NO_RESOURCES = 'No resources assigned'
     DISABLED = 'Power schedule is disabled'
+    DISABLED_ORG = 'Organization is disabled'
     OUTDATED = 'Power schedule is outdated'
     NO_CHANGES = 'Changing state is not required'
     CONFLICT = 'Conflicting triggers'
@@ -115,6 +116,11 @@ class PowerScheduleWorker(ConsumerMixin):
             return False
         if is_schedule_outdated(power_schedule):
             self.result['reason'] = PowerScheduleReasons.OUTDATED
+            return False
+        _, org = self.rest_cl.organization_get(
+            power_schedule['organization_id'])
+        if org.get('disabled'):
+            self.result['reason'] = PowerScheduleReasons.DISABLED_ORG
             return False
         return True
 
@@ -318,7 +324,8 @@ class PowerScheduleWorker(ConsumerMixin):
         }
         if self.result['reason'] not in [PowerScheduleReasons.NO_CHANGES,
                                          PowerScheduleReasons.DISABLED,
-                                         PowerScheduleReasons.OUTDATED]:
+                                         PowerScheduleReasons.OUTDATED,
+                                         PowerScheduleReasons.DISABLED_ORG]:
             updates['last_run'] = now_ts
             # we should reset error only if instances have been powered on/off
             # during this run
