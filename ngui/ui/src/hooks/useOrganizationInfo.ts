@@ -3,7 +3,7 @@ import { SCOPE_ID } from "containers/OrganizationSelectorContainer/reducer";
 import localeManager from "translations/localeManager";
 import { useOrganizations } from "./coreData/useOrganizations";
 
-const useCurrentOrganization = (organizations = []) => {
+export const useCurrentOrganization = (organizations = []) => {
   // Take current/active organization ID from storage
   const currentOrganizationId = useSelector((state) => state[SCOPE_ID]);
 
