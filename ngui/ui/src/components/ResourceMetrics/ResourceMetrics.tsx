@@ -29,6 +29,12 @@ const ResourceMetrics = ({ metrics, isLoading = false }) => {
   const packetsSentMetric = useMetric(METRIC_TYPES.PACKETS_SENT, {
     packetsSentMetricData: metrics.packets_sent
   });
+  const diskIOUsageMetric = useMetric(METRIC_TYPES.DISK_IO_USAGE, {
+    diskIOUsageMetricData: metrics.disk_io_usage
+  });
+  const consolidatedDiskIOMetric = useMetric(METRIC_TYPES.CONSOLIDATED_DISK_IO, {
+    consolidatedDiskIOMetricData: metrics.disk_io
+  });
 
   return (
     <Grid container spacing={SPACING_2}>
@@ -41,7 +47,16 @@ const ResourceMetrics = ({ metrics, isLoading = false }) => {
           ))}
         </>
       ) : (
-        [cpuMetric, memoryMetric, diskOperationsMetric, networkMetric, bytesSentMetric, packetsSentMetric]
+        [
+          cpuMetric,
+          memoryMetric,
+          diskOperationsMetric,
+          networkMetric,
+          bytesSentMetric,
+          packetsSentMetric,
+          diskIOUsageMetric,
+          consolidatedDiskIOMetric
+        ]
           .filter((metric) => !isEmptyArray(metric.chartProps.lines))
           .map((metric) => (
             <GridItem key={metric.type}>
