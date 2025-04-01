@@ -1142,6 +1142,7 @@
   "maximumParallelRuns": "Maximum parallel runs",
   "maximumPossibleLimitWithoutExtendingParent": "Remaining budget: {unallocatedLimit}. Extend parent budget if necessary.",
   "maximumRunsetBudget": "Maximum runset budget",
+  "maximumRunsetRunners": "Maximum runset runners",
   "member": "Member",
   "memory": "Memory",
   "memoryAverage": "Memory (average)",
