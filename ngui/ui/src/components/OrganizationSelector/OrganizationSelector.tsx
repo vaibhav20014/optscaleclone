@@ -22,6 +22,11 @@ const MAX_ORGANIZATION_NAME_LENGTH = 24;
 
 const SELECTOR_SX = {
   "&.MuiFormControl-root": {
+    /**
+     * Empirically selected minWidth to prevent selector width change when
+     * switching between organizations with different name lengths
+     */
+    minWidth: 270,
     "& label": {
       color: (theme) => theme.palette.primary.main
     },
@@ -105,7 +110,7 @@ const OrganizationSelector = ({
               : undefined;
 
             return (
-              <Item key={organization.name} value={organization.id}>
+              <Item key={organization.id} value={organization.id}>
                 <ItemContent
                   icon={{
                     IconComponent: ApartmentIcon

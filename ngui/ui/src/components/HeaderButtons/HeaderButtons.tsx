@@ -18,7 +18,7 @@ import { useMainMenuState } from "hooks/useMainMenuState";
 import { DOCS_HYSTAX_OPTSCALE } from "urls";
 import useStyles from "./HeaderButtons.styles";
 
-const HeaderButtons = () => {
+const HeaderButtons = ({ isProductTourAvailable = false }) => {
   const startTour = useStartTour();
   const { classes } = useStyles();
 
@@ -60,7 +60,7 @@ const HeaderButtons = () => {
           color="primary"
           icon={<LiveHelpOutlinedIcon />}
           onClick={startProductTour}
-          disabled={!isTourAvailableForCurrentBreakpoint}
+          disabled={!isProductTourAvailable || !isTourAvailableForCurrentBreakpoint}
           tooltip={{
             show: true,
             value: <FormattedMessage id="productTour" />
