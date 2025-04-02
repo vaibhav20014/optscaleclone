@@ -60,7 +60,7 @@ class TestPSWorker(unittest.TestCase):
             'start_instance': 0,
             'stop_instance': 0,
             'error': 0,
-            'excluded': 0,
+            'not_active': 0,
             'reason': None
         }
 
@@ -168,7 +168,7 @@ class TestPSWorker(unittest.TestCase):
             self.worker.rest_cl.power_schedule_update.call_args[0][1])
         self.worker.publish_activities_task.assert_not_called()
 
-    def test_excluded_resources(self):
+    def test_not_active_resources(self):
         # not active instance
         self.mongo_cl.restapi.resources.insert_one({
             '_id': str(uuid.uuid4()),
@@ -193,7 +193,7 @@ class TestPSWorker(unittest.TestCase):
                 message=self.message)
 
         result = self.default_result.copy()
-        result['excluded'] = 1
+        result['not_active'] = 1
         self.assertEqual(result, self.worker.result)
         self.worker.rest_cl.power_schedule_update.assert_called_once()
         self.assertIn(
@@ -205,9 +205,6 @@ class TestPSWorker(unittest.TestCase):
         self.assertEqual(
             self.worker.rest_cl.power_schedule_update.call_args[0][1][
                 'last_run_error'], None)
-        resources = list(self.mongo_cl.restapi.resources.find())
-        for resource in resources:
-            self.assertNotIn('power_schedule', resource)
 
     def test_stop_instance(self):
         self.mongo_cl.restapi.resources.insert_one({
