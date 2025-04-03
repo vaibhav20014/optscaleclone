@@ -52,10 +52,6 @@ class RunsetState(int, Enum):
     STOPPED = 6
 
 
-# runner number is limited
-MAX_RUNNER_NUM = 15
-
-
 def get_db_params() -> Tuple[str, str]:
     db_params = config_client.bulldozer_params()
     return asyncio.run(db_params)
@@ -304,6 +300,13 @@ async def create_template(request):
         "created_at": utcnow_timestamp(),
         "deleted_at": 0
     }
+    if "max_runner_num" in doc:
+        max_runner_num = doc["max_runner_num"]
+        if not isinstance(max_runner_num, int) or max_runner_num <= 0:
+            raise SanicException(
+                "max_runner_num should be integer greater than 0",
+                status_code=400)
+        d["max_runner_num"] = doc["max_runner_num"]
     await db.template.insert_one(d)
     await publish_activities_task(
         token, runset_template_id, template_name, "runset_template",
@@ -430,6 +433,15 @@ async def update_template(request, id_: str):
     hp = doc.get("hyperparameters")
     if hp is not None:
         d.update({"hyperparameters": hp})
+
+    max_runner_num = doc.get("max_runner_num")
+    if max_runner_num is not None:
+        if not isinstance(max_runner_num, int) or max_runner_num < 0:
+            raise SanicException(
+                "max_runner_num should be integer greater than 0",
+                status_code=400)
+        d.update({"max_runner_num": max_runner_num})
+
     if d:
         await db.template.update_one(
             {"_id": id_}, {'$set': d})
@@ -597,8 +609,10 @@ async def create_runset(request, template_id: str):
     # TODO: create runners
     runners_hp = permutation(hyperparameters)
     runners = list()
+    max_runner_num = o["max_runner_num"]
     for num, i in enumerate(runners_hp):
-        if num == MAX_RUNNER_NUM:
+        if num == max_runner_num:
+            logger.info("Max runner limit is reached")
             break
         id_ = await _create_runner(
             runset_id,
