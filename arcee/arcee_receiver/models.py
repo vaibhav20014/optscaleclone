@@ -401,7 +401,7 @@ class ArtifactSearchParams(BaseModel):
     created_at_lt: Optional[NonNegativeInt] = timestamp
     created_at_gt: Optional[NonNegativeInt] = timestamp
     limit: Optional[NonNegativeInt] = max_mongo_int
-    start_from: Optional[NonNegativeInt] = max_mongo_int
+    offset: Optional[NonNegativeInt] = max_mongo_int
     run_id: Optional[Union[list, str]] = []
     task_id: Optional[Union[list, str]] = []
     text_like: Optional[str] = None
@@ -417,7 +417,7 @@ class ArtifactSearchParams(BaseModel):
           return: {"limit": "1", "text_like": "test"}
         """
         numeric_fields = ['created_at_lt', 'created_at_gt',
-                          'limit', 'start_from']
+                          'limit', 'offset']
         for k, v in self.items():
             if isinstance(v, list) and len(v) == 1:
                 v = v[0]
