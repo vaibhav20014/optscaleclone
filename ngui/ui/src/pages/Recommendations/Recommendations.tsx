@@ -60,7 +60,7 @@ const RecommendationsPage = ({ isMock }) => {
       {
         key: "forceCheck",
         type: "button",
-        disabled: isRestricted || isForceCheckAvailable,
+        disabled: isRestricted || !isForceCheckAvailable,
         icon: <CachedOutlinedIcon />,
         action: forceCheck,
         dataTestId: "btn_force_check",
