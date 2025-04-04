@@ -43,6 +43,7 @@ const PowerScheduleInstances = ({ instances }: PowerScheduleInstancesProps) => {
     () =>
       instances.map((instance) => ({
         id: instance.id,
+        active: instance.active,
         cloud_resource_id: instance.cloud_resource_id,
         name: instance.name,
         owner_name: instance.details?.owner_name,
@@ -64,6 +65,7 @@ const PowerScheduleInstances = ({ instances }: PowerScheduleInstancesProps) => {
       powerScheduleInstance({
         idAccessor: "id",
         nameAccessor: "name",
+        activeAccessor: "active",
         headerDataTestId: "lbl_instance",
         titleMessageId: "instance"
       }),
