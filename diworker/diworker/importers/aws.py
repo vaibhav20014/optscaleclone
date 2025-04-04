@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 import csv
-import gzip
 import logging
 import math
 import os
 import re
 import pyarrow
-import shutil
-import uuid
 import zipfile
 import json
 from collections import defaultdict, OrderedDict
@@ -20,7 +17,6 @@ import pyarrow.parquet as pq
 
 LOG = logging.getLogger(__name__)
 CHUNK_SIZE = 200
-GZIP_ENDING = '.gz'
 IGNORE_EXPENSE_TYPES = ['Credit']
 RI_PLATFORMS = [
     'Linux/UNIX',
@@ -101,28 +97,6 @@ class AWSReportImporter(CSVBaseReportImporter):
                     dest_dir, f_zip.filelist[0].filename)
 
             return new_report_path
-
-    @staticmethod
-    def gunzip_report(report_path, dest_dir):
-        LOG.info('Extracting %s as gzip archive to %s',
-                 report_path, dest_dir)
-        new_report_path = os.path.basename(report_path)
-        if new_report_path.endswith(GZIP_ENDING):
-            new_report_path = new_report_path[
-                              :len(new_report_path) - len(GZIP_ENDING)]
-        else:
-            new_report_path = str(uuid.uuid4())
-        new_report_path = os.path.join(dest_dir, new_report_path)
-        try:
-            with gzip.open(report_path, 'rb') as f_gzip:
-                with open(new_report_path, 'wb') as f_out:
-                    shutil.copyfileobj(f_gzip, f_out)
-        except Exception:
-            if os.path.exists(new_report_path):
-                os.remove(new_report_path)
-            return
-
-        return new_report_path
 
     @staticmethod
     def to_camel_case(snake_str):
