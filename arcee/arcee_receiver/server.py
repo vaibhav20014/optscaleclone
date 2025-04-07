@@ -2674,7 +2674,7 @@ async def list_artifacts(request):
     result = {
         'artifacts': [],
         'limit': query.limit,
-        'start_from': query.start_from,
+        'offset': query.offset,
         'count': 0,
         'total_count': 0
     }
@@ -2694,7 +2694,7 @@ async def list_artifacts(request):
     pipeline = _build_artifact_filter_pipeline(runs_ids, query)
     pipeline.append({'$sort': {'created_at': -1, '_id': 1}})
 
-    paginate_pipeline = [{'$skip': query.start_from}]
+    paginate_pipeline = [{'$skip': query.offset}]
     if query.limit:
         paginate_pipeline.append({'$limit': query.limit})
     pipeline.extend(paginate_pipeline)
@@ -2705,7 +2705,7 @@ async def list_artifacts(request):
         res = _format_artifact(artifact, runs_map[artifact['run_id']], tasks)
         result['artifacts'].append(res)
     if len(result['artifacts']) != 0 and not query.limit:
-        result['count'] = len(result['artifacts']) + query.start_from
+        result['count'] = len(result['artifacts']) + query.offset
     else:
         pipeline = _build_artifact_filter_pipeline(runs_ids, query)
         pipeline.append({'$count': 'count'})
