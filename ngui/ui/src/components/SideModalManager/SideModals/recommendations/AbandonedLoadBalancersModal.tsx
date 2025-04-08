@@ -11,7 +11,8 @@ import { useCommonSettingsData, useFormWithValuesFromOptions } from "./hooks";
 const VALUE_KEYS = Object.freeze({
   [THRESHOLD_INPUT_NAMES.DAYS_THRESHOLD]: "days_threshold",
   [THRESHOLD_INPUT_NAMES.BYTES_SENT_THRESHOLD]: "bytes_sent_threshold",
-  [THRESHOLD_INPUT_NAMES.PACKETS_SENT_THRESHOLD]: "packets_sent_threshold"
+  [THRESHOLD_INPUT_NAMES.PACKETS_SENT_THRESHOLD]: "packets_sent_threshold",
+  [THRESHOLD_INPUT_NAMES.REQUESTS_THRESHOLD]: "requests_threshold"
 });
 
 const AbandonedLoadBalancersThresholds = ({ recommendationType, onSuccess }) => {
@@ -43,6 +44,13 @@ const AbandonedLoadBalancersThresholds = ({ recommendationType, onSuccess }) => 
             <TextWithInlineInput
               messageId="thresholds.abandonedLoadBalancers.2.packetsSentThreshold"
               name={THRESHOLD_INPUT_NAMES.PACKETS_SENT_THRESHOLD}
+              isLoading={isGetDataLoading}
+            />
+          </li>
+          <li>
+            <TextWithInlineInput
+              messageId="thresholds.abandonedLoadBalancers.3.requestsThreshold"
+              name={THRESHOLD_INPUT_NAMES.REQUESTS_THRESHOLD}
               isLoading={isGetDataLoading}
             />
           </li>

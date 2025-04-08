@@ -302,6 +302,35 @@ const consolidatedDiskIOChartProps = ({ metricType, metrics, colors, intl }) => 
   });
 };
 
+const requestsChartProps = ({ metricType, metrics, colors, intl }) => {
+  const getRequestsMetricLineDefinition = (data) => ({
+    line: {
+      id: "requests",
+      data
+    },
+    markerData: {
+      name: "requestsTotal",
+      value: getTotalLineValue(data),
+      dataTestIdName: "requests"
+    }
+  });
+
+  const definitionGetters = {
+    requestsMetricData: getRequestsMetricLineDefinition
+  };
+
+  return getChartProps({
+    metricType,
+    valueType: CHART_VALUE_TYPES.COMPACT_NUMBER,
+    linesWithMarkerData: getLinesWithMarkerData(metrics, definitionGetters),
+    colors,
+    formatYValue: (value) =>
+      formatCompactNumber(intl.formatNumber)({
+        value: value
+      })
+  });
+};
+
 const convertMetricDataToLineData = (metricData) =>
   metricData.map(({ date, value }) => ({
     x: date,
@@ -353,6 +382,9 @@ const useChartPropsByMetricType = (metricType, metrics) => {
   }
   if (metricType === METRIC_TYPES.CONSOLIDATED_DISK_IO) {
     return consolidatedDiskIOChartProps({ metricType, metrics: metricsLineData, colors, intl });
+  }
+  if (metricType === METRIC_TYPES.REQUESTS) {
+    return requestsChartProps({ metricType, metrics: metricsLineData, colors, intl });
   }
 
   throw new Error("Unknown metric type");
