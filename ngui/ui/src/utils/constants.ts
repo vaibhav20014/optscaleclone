@@ -60,18 +60,30 @@ export const NEBIUS = "nebius";
 export const KUBERNETES_CNR = "kubernetes_cnr";
 export const ENVIRONMENT = "environment";
 
-export const AWS_ROOT_ACCOUNT = "awsRoot";
-export const AWS_LINKED_ACCOUNT = "awsLinked";
-export const AZURE_SUBSCRIPTION = "azureSubscription";
-export const AZURE_TENANT_ACCOUNT = "azureTenant";
-export const DATABRICKS_ACCOUNT = "databricks";
-export const KUBERNETES = "kubernetes";
-export const ALIBABA_ACCOUNT = "alibabaCloud";
-export const GCP_ACCOUNT = "gcpProject";
-export const GCP_TENANT_ACCOUNT = "gcpTenant";
-export const NEBIUS_ACCOUNT = "nebius";
+export const CLOUD_PROVIDERS = Object.freeze({
+  AWS: "aws",
+  AZURE: "azure",
+  GCP: "gcp",
+  ALIBABA: "alibaba",
+  NEBIUS: "nebius",
+  DATABRICKS: "databricks",
+  KUBERNETES: "kubernetes"
+});
 
-export const DATASOURCE_TYPE = "type";
+export const CONNECTION_TYPES = Object.freeze({
+  AWS_ROOT: "awsRoot",
+  AWS_LINKED: "awsLinked",
+  AZURE_SUBSCRIPTION: "azureSubscription",
+  AZURE_TENANT: "azureTenant",
+  ALIBABA: "alibaba",
+  GCP_PROJECT: "gcpProject",
+  GCP_TENANT: "gcpTenant",
+  NEBIUS: "nebius",
+  DATABRICKS: "databricks",
+  KUBERNETES: "kubernetes"
+});
+
+export const CONNECTION_TYPE_SEARCH_PARAMETER = "type";
 
 export const NOT_SET_CLOUD_TYPE = "not_set";
 

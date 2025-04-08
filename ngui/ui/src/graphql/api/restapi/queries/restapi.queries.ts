@@ -32,6 +32,9 @@ const AzureSubscriptionDataSourceConfigFragment = gql`
       expense_import_scheme
       subscription_id
       tenant
+      export_name
+      container
+      directory
     }
   }
 `;

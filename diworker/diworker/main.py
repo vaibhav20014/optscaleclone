@@ -159,7 +159,9 @@ class DIWorker(ConsumerMixin):
             start_last_import_ts = ca.get('last_import_at', 0)
             previous_attempt_ts = ca.get('last_import_attempt_at', 0)
             cc_type = ca.get('type')
-            importer = get_importer_class(cc_type)(**importer_params)
+            export_scheme = ca['config'].get('expense_import_scheme')
+            importer = get_importer_class(cc_type, export_scheme)(
+                **importer_params)
             importer.import_report()
             self.rest_cl.report_import_update(
                 self.report_import_id, {'state': 'completed'})
