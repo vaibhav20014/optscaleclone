@@ -6,7 +6,7 @@ from bumiworker.bumiworker.modules.abandoned_base import AbandonedBase
 
 DEFAULT_DAYS_THRESHOLD = 7
 SUPPORTED_CLOUD_TYPES = [
-    "azure_cnr",
+    "azure_cnr", "aws_cnr"
 ]
 
 
@@ -18,6 +18,7 @@ class AbandonedLBs(AbandonedBase):
                 "default": DEFAULT_DAYS_THRESHOLD},
             "bytes_sent_threshold": {"default": 0},
             "packets_sent_threshold": {"default": 0},
+            "requests_threshold": {"default": 0},
             "excluded_pools": {
                 "default": {},
                 "clean_func": self.clean_excluded_pools,
@@ -36,10 +37,12 @@ class AbandonedLBs(AbandonedBase):
         return self._metroculus_cl
 
     @staticmethod
-    def _get_thresholds(bytes_sent_threshold, packets_sent_threshold):
+    def _get_thresholds(bytes_sent_threshold, packets_sent_threshold,
+                        requests_threshold):
         return {
             "bytes_sent": bytes_sent_threshold,
             "packets_sent": packets_sent_threshold,
+            "requests": requests_threshold
         }
 
     def _are_below_metrics(self, cloud_account_id, lb_id, start_date,
@@ -56,7 +59,8 @@ class AbandonedLBs(AbandonedBase):
 
     def _get(self):
         (days_threshold, bytes_sent_threshold, packets_sent_threshold,
-         excluded_pools, skip_cloud_accounts) = self.get_options_values()
+         requests_threshold, excluded_pools, skip_cloud_accounts
+         ) = self.get_options_values()
         cloud_account_map = self.get_cloud_accounts(
             SUPPORTED_CLOUD_TYPES, skip_cloud_accounts)
         cloud_accounts = list(cloud_account_map.values())
@@ -68,13 +72,14 @@ class AbandonedLBs(AbandonedBase):
             cloud_accounts_ids, starting_point, "Load Balancer")
 
         result = []
-        resources_map = {}
         for account in cloud_accounts:
+            resources_map = {}
             cloud_account_id = account["id"]
             account_lbs = lbs_by_account[cloud_account_id]
             if account_lbs:
                 thresholds_map = self._get_thresholds(
-                    bytes_sent_threshold, packets_sent_threshold)
+                    bytes_sent_threshold, packets_sent_threshold,
+                    requests_threshold)
                 for lb in account_lbs:
                     lb_id = lb["_id"]
                     if not self._are_below_metrics(

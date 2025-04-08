@@ -307,40 +307,87 @@ class MetricsProcessor(object):
                         resource_map, r_type, adapter, region, start_date,
                         end_date):
         result = []
-        for name, (cloud_metric_namespace, cloud_metric_name) in {
-            'cpu': ('AWS/EC2', 'CPUUtilization'),
-            'ram': ('CWAgent', 'mem_used_percent'),
-            'disk_read_io': ('AWS/EC2', 'DiskReadOps'),
-            'disk_write_io': ('AWS/EC2', 'DiskWriteOps'),
-            'network_in_io': ('AWS/EC2', 'NetworkIn'),
-            'network_out_io': ('AWS/EC2', 'NetworkOut')
-        }.items():
-            last_start_date = start_date
-            while last_start_date < end_date:
-                end_dt = last_start_date + timedelta(days=10)
-                if end_dt > end_date:
-                    end_dt = end_date
-                response = adapter.get_metric(
-                    cloud_metric_namespace, cloud_metric_name,
-                    cloud_resource_ids, region, METRIC_INTERVAL,
-                    last_start_date, end_dt)
-                for cloud_resource_id, metrics in response.items():
-                    for metric in metrics:
-                        value = metric.get('Average')
-                        # if not value does not fit, 0 is valid value
-                        if value is None:
-                            continue
-                        if name in ['network_in_io', 'network_out_io']:
-                            # change bytes per min to bytes per second
-                            value = value / 60
-                        result.append({
-                            'cloud_account_id': cloud_account_id,
-                            'resource_id': resource_ids_map[cloud_resource_id],
-                            'date': metric['Timestamp'],
-                            'metric': name,
-                            'value': value
-                        })
-                last_start_date = end_dt + timedelta(seconds=METRIC_INTERVAL)
+        metric_map = {
+            'Instance': {
+                'cpu': [('AWS/EC2', 'CPUUtilization',
+                         {'statistics': 'Average',
+                          'dimension': 'InstanceId'})],
+                'ram': [('CWAgent', 'mem_used_percent',
+                         {'statistics': 'Average',
+                          'dimension': 'InstanceId'})],
+                'disk_read_io': [('AWS/EC2', 'DiskReadOps',
+                                  {'statistics': 'Average',
+                                   'dimension': 'InstanceId'})],
+                'disk_write_io': [('AWS/EC2', 'DiskWriteOps',
+                                   {'statistics': 'Average',
+                                    'dimension': 'InstanceId'})],
+                'network_in_io': [('AWS/EC2', 'NetworkIn',
+                                   {'statistics': 'Average',
+                                    'dimension': 'InstanceId'})],
+                'network_out_io': [('AWS/EC2', 'NetworkOut',
+                                    {'statistics': 'Average',
+                                     'dimension': 'InstanceId'})]
+            },
+            'Load Balancer': {
+                'bytes_sent': [('AWS/NetworkELB', 'ProcessedBytes',
+                                {'statistics': 'Sum',
+                                 'dimension': 'LoadBalancer'}),
+                               ('AWS/ApplicationELB', 'ProcessedBytes',
+                                {'statistics': 'Sum',
+                                 'dimension': 'LoadBalancer'}),
+                               ('AWS/GatewayELB', 'ProcessedBytes',
+                                {'statistics': 'Sum',
+                                 'dimension': 'LoadBalancer'})],
+                'packets_sent': [('AWS/NetworkELB', 'ProcessedPackets',
+                                  {'statistics': 'Sum',
+                                   'dimension': 'LoadBalancer'})],
+                'requests': [('AWS/ApplicationELB', 'RequestCount',
+                              {'statistics': 'Sum',
+                               'dimension': 'LoadBalancer'}),
+                             ('AWS/ELB', 'RequestCount',
+                              {'statistics': 'Sum',
+                               'dimension': 'LoadBalancerName'})],
+            }
+        }
+        metrics = metric_map.get(r_type, {})
+        if r_type == 'Load Balancer':
+            for cloud_res_id, res_id in resource_ids_map.copy().items():
+                short_cloud_resource_id = cloud_res_id[
+                    cloud_res_id.find('/') + 1:]
+                if cloud_res_id in cloud_resource_ids:
+                    cloud_resource_ids.remove(cloud_res_id)
+                    cloud_resource_ids.append(short_cloud_resource_id)
+                    resource_ids_map[short_cloud_resource_id] = res_id
+        for name, data in metrics.items():
+            for metric_params in data:
+                (cloud_metric_namespace,
+                 cloud_metric_name, metric_args) = metric_params
+                last_start_date = start_date
+                while last_start_date < end_date:
+                    end_dt = last_start_date + timedelta(days=10)
+                    if end_dt > end_date:
+                        end_dt = end_date
+                    response = adapter.get_metric(
+                        cloud_metric_namespace, cloud_metric_name,
+                        cloud_resource_ids, region, METRIC_INTERVAL,
+                        last_start_date, end_dt, **metric_args)
+                    for cloud_resource_id, metrics in response.items():
+                        for metric in metrics:
+                            value = metric.get(metric_args['statistics'])
+                            # if not value does not fit, 0 is valid value
+                            if value is None:
+                                continue
+                            if name in ['network_in_io', 'network_out_io']:
+                                # change bytes per min to bytes per second
+                                value = value / 60
+                            result.append({
+                                'cloud_account_id': cloud_account_id,
+                                'resource_id': resource_ids_map[cloud_resource_id],
+                                'date': metric['Timestamp'],
+                                'metric': name,
+                                'value': value
+                            })
+                    last_start_date = end_dt + timedelta(seconds=METRIC_INTERVAL)
         return result
 
     @staticmethod
