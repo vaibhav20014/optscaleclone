@@ -39,6 +39,8 @@ IAM_CLIENT_CONFIG = CoreConfig(
 SECONDS_IN_DAY = 60 * 60 * 24
 CLOUD_LINK_PATTERN = '%s/%s/v2/home?region=%s#%s=%s'
 BUCKET_CLOUD_LINK_PATTERN = '%s/%s/buckets/%s?region=%s&tab=objects'
+LB_CLOUD_LINK_PATTERN = '%s/ec2/home?region=%s#%s=%s'
+# https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LoadBalancer:loadBalancerArn=nklb-classic
 DEFAULT_BASE_URL = 'https://console.aws.amazon.com'
 BUCKET_ACCEPTED_PERMISSIONS = ['FULL_CONTROL', 'READ', 'WRITE', 'READ_ACP',
                                'WRITE_ACP']
@@ -117,7 +119,8 @@ class Aws(S3CloudMixin):
             InstanceResource: self.instance_discovery_calls,
             SnapshotResource: self.snapshot_discovery_calls,
             IpAddressResource: self.ip_address_discovery_calls,
-            BucketResource: self.bucket_discovery_calls
+            BucketResource: self.bucket_discovery_calls,
+            LoadBalancerResource: self.load_balancer_discovery_calls
         }
 
     @property
@@ -243,6 +246,9 @@ class Aws(S3CloudMixin):
             IpAddressResource: CLOUD_LINK_PATTERN % (
                 DEFAULT_BASE_URL, 'ec2', region,
                 'ElasticIpDetails:AllocationId', resource_value),
+            LoadBalancerResource: CLOUD_LINK_PATTERN % (
+                DEFAULT_BASE_URL, 'ec2', region,
+                'LoadBalancer:loadBalancerArn', resource_value),
         }
         return cloud_link_map.get(resource_type)
 
@@ -485,6 +491,76 @@ class Aws(S3CloudMixin):
         bucket_list = self.s3.list_buckets()
         for bucket in bucket_list['Buckets']:
             result.append((self.discover_bucket_info, (bucket['Name'],)))
+        return result
+
+    @staticmethod
+    def _parse_lb_tags(response):
+        tags = {}
+        if response:
+            tags = {x['Key']: x['Value'] for x in response[0].get('Tags', [])}
+        return tags
+
+    def discover_region_lbs_v2(self, region):
+        session = self.get_session()
+        elb = session.client('elbv2', region)
+        lbs = elb.describe_load_balancers().get('LoadBalancers', [])
+        for lb in lbs:
+            lb_arn = lb['LoadBalancerArn']
+            tags = elb.describe_tags(ResourceArns=[lb_arn]).get(
+                'TagDescriptions', [])
+            tags = self._parse_lb_tags(tags)
+            lb_resource = LoadBalancerResource(
+                name=lb['LoadBalancerName'],
+                cloud_resource_id=lb_arn,
+                cloud_account_id=self.cloud_account_id,
+                organization_id=self.organization_id,
+                region=region,
+                vpc_id=lb['VpcId'],
+                security_groups=lb.get('SecurityGroups'),
+                tags=tags,
+                cloud_console_link=self._generate_cloud_link(
+                    LoadBalancerResource, region, lb_arn),
+            )
+            yield lb_resource
+
+    def discover_region_lbs(self, region):
+        """Discover "classic" load balancer resources"""
+        session = self.get_session()
+        elb = session.client('elb', region)
+        lbs = elb.describe_load_balancers().get(
+            'LoadBalancerDescriptions', [])
+        for lb in lbs:
+            name = lb['LoadBalancerName']
+            tags = elb.describe_tags(LoadBalancerNames=[name]).get(
+                'TagDescriptions', [])
+            tags = self._parse_lb_tags(tags)
+            # ARN is not returned for classic LBs, generate it
+            cloud_resource_id = (f'arn:aws:elasticloadbalancing:{region}:'
+                                 f'{self.config['account_id']}:'
+                                 f'loadbalancer/{name}')
+            lb_resource = LoadBalancerResource(
+                name=name,
+                cloud_resource_id=cloud_resource_id,
+                cloud_account_id=self.cloud_account_id,
+                organization_id=self.organization_id,
+                region=region,
+                vpc_id=lb['VPCId'],
+                security_groups=lb.get('SecurityGroups'),
+                tags=tags,
+                cloud_console_link=self._generate_cloud_link(
+                    LoadBalancerResource, region, name),
+            )
+            yield lb_resource
+
+    def load_balancer_discovery_calls(self):
+        """
+        Returns list of discovery calls to discover load balancers presented
+        as tuples (adapter_method, arguments_tuple)
+        """
+        result = []
+        for r in self.list_regions():
+            result.append((self.discover_region_lbs_v2, (r,)))
+            result.append((self.discover_region_lbs, (r,)))
         return result
 
     def pod_discovery_calls(self):
@@ -1359,15 +1435,17 @@ class Aws(S3CloudMixin):
         return random.sample(skus, 10)
 
     def get_metric(self, namespace, metric_name, instance_ids, region,
-                   interval, start_date, end_date):
+                   interval, start_date, end_date, dimension='InstanceId',
+                   statistics='Average'):
         """
-        Get metric for instances
+        Get metric for resources
         :param metric_name: metric name
         :param instance_ids: instance ids
         :param region: instance's region name
         :param interval: time interval in seconds
         :param start_date: metric start datetime date
         :param end_date: metric end datetime date
+        :param dimension: metric dimension
         :return: dict
         """
         result = {}
@@ -1379,7 +1457,7 @@ class Aws(S3CloudMixin):
                 cloudwatch = session.client('cloudwatch', region_name=region)
                 params = {
                     'Dimensions': [{
-                        'Name': 'InstanceId',
+                        'Name': dimension,
                         'Value': instance_id
                     }],
                     'MetricName': metric_name,
@@ -1387,7 +1465,7 @@ class Aws(S3CloudMixin):
                     'StartTime': start_date,
                     'EndTime': end_date,
                     'Period': interval,
-                    'Statistics': ['Average'],
+                    'Statistics': [statistics],
                 }
                 futures_map[instance_id] = executor.submit(
                     self._retry, cloudwatch.get_metric_statistics, **params)

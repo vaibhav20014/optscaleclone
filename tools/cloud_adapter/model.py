@@ -511,15 +511,26 @@ class ReservedInstancesResource(CloudResource):
 
 
 class LoadBalancerResource(CloudResource):
-    __slots__ = ('name')
+    __slots__ = ('name', 'vpc_id', 'security_groups')
 
-    def __init__(self, name=None, **kwargs):
+    def __init__(self, name=None, vpc_id=None, security_groups=None, **kwargs):
         super().__init__(**kwargs)
         self.name = name
+        self.vpc_id = vpc_id
+        self.security_groups = security_groups
 
     def __repr__(self):
         return 'Load Balancer {0} name={1}'.format(
             self.cloud_resource_id, self.name)
+
+    @property
+    def meta(self):
+        meta = super().meta
+        meta.update({
+            'vpc_id': self.vpc_id,
+            'security_groups': self.security_groups,
+        })
+        return meta
 
 
 # resource type in mariadb -> resource model

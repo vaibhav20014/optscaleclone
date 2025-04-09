@@ -35,6 +35,9 @@ const ResourceMetrics = ({ metrics, isLoading = false }) => {
   const consolidatedDiskIOMetric = useMetric(METRIC_TYPES.CONSOLIDATED_DISK_IO, {
     consolidatedDiskIOMetricData: metrics.disk_io
   });
+  const requestsMetric = useMetric(METRIC_TYPES.REQUESTS, {
+    requestsMetricData: metrics.requests
+  });
 
   return (
     <Grid container spacing={SPACING_2}>
@@ -55,7 +58,8 @@ const ResourceMetrics = ({ metrics, isLoading = false }) => {
           bytesSentMetric,
           packetsSentMetric,
           diskIOUsageMetric,
-          consolidatedDiskIOMetric
+          consolidatedDiskIOMetric,
+          requestsMetric
         ]
           .filter((metric) => !isEmptyArray(metric.chartProps.lines))
           .map((metric) => (

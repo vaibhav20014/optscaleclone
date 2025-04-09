@@ -1,9 +1,9 @@
 import FormattedMoney from "components/FormattedMoney";
 import RecommendationListItemResourceLabel from "components/RecommendationListItemResourceLabel";
 import AbandonedLoadBalancersModal from "components/SideModalManager/SideModals/recommendations/AbandonedLoadBalancersModal";
-import { AZURE_NETWORK } from "hooks/useRecommendationServices";
+import { AWS_EC2, AZURE_NETWORK } from "hooks/useRecommendationServices";
 import { detectedAt, poolOwner, possibleMonthlySavings, resource, resourceLocation } from "utils/columns";
-import { FORMATTED_MONEY_TYPES, AZURE_CNR } from "utils/constants";
+import { FORMATTED_MONEY_TYPES, AZURE_CNR, AWS_CNR } from "utils/constants";
 import BaseRecommendation, { CATEGORY_COST } from "./BaseRecommendation";
 
 const columns = [
@@ -38,17 +38,18 @@ class AbandonedLoadBalancers extends BaseRecommendation {
     const {
       days_threshold: daysThreshold,
       bytes_sent_threshold: bytesSentThreshold,
-      packets_sent_threshold: packetsSendThreshold
+      packets_sent_threshold: packetsSendThreshold,
+      requests_threshold: requestsThreshold
     } = this.options;
 
-    return { bytesSentThreshold, packetsSendThreshold, daysThreshold };
+    return { bytesSentThreshold, packetsSendThreshold, daysThreshold, requestsThreshold };
   }
 
   emptyMessageId = "noAbandonedLoadBalancers";
 
-  services = [AZURE_NETWORK];
+  services = [AZURE_NETWORK, AWS_EC2];
 
-  appliedDataSources = [AZURE_CNR];
+  appliedDataSources = [AZURE_CNR, AWS_CNR];
 
   categories = [CATEGORY_COST];
 

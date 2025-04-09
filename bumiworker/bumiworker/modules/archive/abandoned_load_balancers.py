@@ -25,7 +25,9 @@ class AbandonedLBs(ArchiveBase, AbandonedLBsRecommendation):
         start_date = utcnow() - timedelta(days=days_threshold)
         thresholds_map = self._get_thresholds(
             previous_options['bytes_sent_threshold'],
-            previous_options['packets_sent_threshold'])
+            previous_options['packets_sent_threshold'],
+            previous_options['requests_threshold']
+        )
         account_optimizations_map = defaultdict(list)
         for optimization in optimizations:
             account_optimizations_map[optimization['cloud_account_id']].append(
