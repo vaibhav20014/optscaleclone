@@ -1,5 +1,5 @@
 import logging
-from clickhouse_driver import Client as ClickHouseClient
+import clickhouse_connect
 from collections import defaultdict
 from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
@@ -58,9 +58,11 @@ class Migration(BaseMigration):
     @property
     def clickhouse_cl(self):
         if self._clickhouse_cl is None:
-            user, password, host, db_name = self.config_cl.clickhouse_params()
-            self._clickhouse_cl = ClickHouseClient(
-                host=host, password=password, database=db_name, user=user)
+            user, password, host, db_name, port, secure = (
+                self.config_cl.clickhouse_params())
+            self._clickhouse_cl = clickhouse_connect.get_client(
+                host=host, password=password, database=db_name, user=user,
+                port=port, secure=secure)
         return self._clickhouse_cl
 
     def get_cloud_accounts_ids(self):
@@ -96,11 +98,11 @@ class Migration(BaseMigration):
     def delete_clickhouse_expenses(self, cloud_account_id, resource_ids):
         LOG.info('Deleting clickhouse expenses for %s resources: %s' % (
             len(resource_ids), resource_ids))
-        self.clickhouse_cl.execute(
+        self.clickhouse_cl.query(
             """ALTER TABLE expenses DELETE
                WHERE cloud_account_id=%(ca_id)s
                  AND resource_id IN %(res_ids)s""",
-            params={'ca_id': cloud_account_id, 'res_ids': resource_ids})
+            parameters={'ca_id': cloud_account_id, 'res_ids': resource_ids})
 
     @staticmethod
     def get_months(start_date):
@@ -142,7 +144,7 @@ class Migration(BaseMigration):
 
     def clickhouse_optimize(self):
         LOG.info('Optimizing clickhouse expenses')
-        self.clickhouse_cl.execute('OPTIMIZE TABLE expenses FINAL')
+        self.clickhouse_cl.query('OPTIMIZE TABLE expenses FINAL')
 
     def handle_raw_expenses(self, resource_type, raw_expenses_ids,
                             update_count, old_cloud_res_ids, new_cloud_res_ids,

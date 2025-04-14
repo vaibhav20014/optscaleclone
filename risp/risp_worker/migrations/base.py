@@ -1,6 +1,6 @@
 import os
 import logging
-from clickhouse_driver import Client as ClickHouseClient
+import clickhouse_connect
 from pymongo import MongoClient
 
 LOG = logging.getLogger(__name__)
@@ -32,9 +32,11 @@ class MigrationBase:
     @property
     def clickhouse_client(self):
         if self._clickhouse_client is None:
-            user, password, host, _ = self.config_client.clickhouse_params()
-            self._clickhouse_client = ClickHouseClient(
-                host=host, password=password, database=CH_DB_NAME, user=user)
+            user, password, host, _, port, secure = (
+                self.config_client.clickhouse_params())
+            self._clickhouse_client = clickhouse_connect.get_client(
+                host=host, password=password, database=CH_DB_NAME, user=user,
+                port=port, secure=secure)
         return self._clickhouse_client
 
     def upgrade(self):

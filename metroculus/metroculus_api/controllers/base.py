@@ -1,7 +1,7 @@
 import functools
 from concurrent.futures import ThreadPoolExecutor
 from tornado.ioloop import IOLoop
-from clickhouse_driver import Client as ClickHouseClient
+import clickhouse_connect
 
 tp_executor = ThreadPoolExecutor(30)
 
@@ -15,9 +15,11 @@ class BaseController(object):
     @property
     def clickhouse_client(self):
         if not self._clickhouse_client:
-            user, password, host, db_name = self.config_cl.clickhouse_params()
-            self._clickhouse_client = ClickHouseClient(
-                host=host, password=password, database=db_name, user=user)
+            user, password, host, db_name, port, secure = (
+                self.config_cl.clickhouse_params())
+            self._clickhouse_client = clickhouse_connect.get_client(
+                host=host, password=password, database=db_name, user=user,
+                port=port, secure=secure)
         return self._clickhouse_client
 
 
