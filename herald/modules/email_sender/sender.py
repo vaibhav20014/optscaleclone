@@ -21,6 +21,7 @@ def send_email(message, config_client=None):
                 if not login:
                     LOG.warning('SMTP login is not set. Using email instead')
                     login = email
+                message['From'] = email
                 _send_email_to_user_smtp(
                     server, port, email, login, password, message, protocol)
                 return
