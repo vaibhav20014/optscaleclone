@@ -1,10 +1,13 @@
 import logging
-from clickhouse_driver import Client as ClickHouseClient
+import clickhouse_connect
 from collections import defaultdict
 from datetime import datetime, timedelta
+
 from rest_api.rest_api_server.controllers.expense import CleanExpenseController
 from rest_api.rest_api_server.controllers.base_async import (
     BaseAsyncControllerWrapper)
+
+from tools.optscale_data.clickhouse import ExternalDataConverter
 
 CH_DB_NAME = 'risp'
 LOG = logging.getLogger(__name__)
@@ -33,9 +36,11 @@ class RiBreakdownController(CleanExpenseController):
     @property
     def clickhouse_client(self):
         if not self._clickhouse_client:
-            user, password, host, _ = self._config.clickhouse_params()
-            self._clickhouse_client = ClickHouseClient(
-                host=host, password=password, database=CH_DB_NAME, user=user)
+            user, password, host, _, port, secure = (
+                self._config.clickhouse_params())
+            self._clickhouse_client = clickhouse_connect.get_client(
+                host=host, password=password, database=CH_DB_NAME, user=user,
+                port=port, secure=secure)
         return self._clickhouse_client
 
     def get_usage_breakdown(self, cloud_account_ids):
@@ -50,14 +55,20 @@ class RiBreakdownController(CleanExpenseController):
                GROUP BY cloud_account_id, date
                HAVING sum(sign) > 0
                """,
-            params={
+            parameters={
                 'start_date': datetime.fromtimestamp(self.start_date),
                 'end_date': datetime.fromtimestamp(self.end_date)
             },
-            external_tables=[{'name': 'cloud_account_ids',
-                              'structure': [('id', 'String')],
-                              'data': [{'id': r_id} for r_id in
-                                       cloud_account_ids]}])
+            external_data=ExternalDataConverter()(
+                [
+                    {
+                        'name': 'cloud_account_ids',
+                        'structure': [('id', 'String')],
+                        'data': [{'id': r_id} for r_id in cloud_account_ids]
+                    }
+                ]
+            )
+        )
 
     def get_total_stats(self, cloud_account_ids):
         cloud_account_total = defaultdict(lambda: defaultdict(
@@ -71,14 +82,20 @@ class RiBreakdownController(CleanExpenseController):
                GROUP BY cloud_account_id, date
                HAVING sum(sign) > 0
                """,
-            params={
+            parameters={
                 'start_date': datetime.fromtimestamp(self.start_date),
                 'end_date': datetime.fromtimestamp(self.end_date)
             },
-            external_tables=[{'name': 'cloud_account_ids',
-                              'structure': [('id', 'String')],
-                              'data': [{'id': r_id} for r_id in
-                                       cloud_account_ids]}])
+            external_data=ExternalDataConverter()(
+                [
+                    {
+                        'name': 'cloud_account_ids',
+                        'structure': [('id', 'String')],
+                        'data': [{'id': r_id} for r_id in cloud_account_ids]
+                    }
+                ]
+            )
+        )
         for row in uncovered:
             (cloud_account_id, date, cost, usage) = row
             cloud_account_total[cloud_account_id][date]['usage'] = usage
@@ -95,14 +112,20 @@ class RiBreakdownController(CleanExpenseController):
                GROUP BY cloud_account_id, date
                HAVING sum(sign) > 0
                """,
-            params={
+            parameters={
                 'start_date': datetime.fromtimestamp(self.start_date),
                 'end_date': datetime.fromtimestamp(self.end_date)
             },
-            external_tables=[{'name': 'cloud_account_ids',
-                              'structure': [('id', 'String')],
-                              'data': [{'id': r_id} for r_id in
-                                       cloud_account_ids]}])
+            external_data=ExternalDataConverter()(
+                [
+                    {
+                        'name': 'cloud_account_ids',
+                        'structure': [('id', 'String')],
+                        'data': [{'id': r_id} for r_id in cloud_account_ids]
+                    }
+                ]
+            )
+        )
         for row in covered:
             (cloud_account_id, date, on_demand_cost, offer_cost, usage) = row
             cloud_account_total[cloud_account_id][date]['usage'] += usage
@@ -121,14 +144,20 @@ class RiBreakdownController(CleanExpenseController):
                  date >= %(start_date)s AND date <= %(end_date)s AND
                  offer_type='ri'
                """,
-            params={
+            parameters={
                 'start_date': datetime.fromtimestamp(self.start_date),
                 'end_date': datetime.fromtimestamp(self.end_date)
             },
-            external_tables=[{'name': 'cloud_account_ids',
-                              'structure': [('id', 'String')],
-                              'data': [{'id': r_id} for r_id in
-                                       cloud_account_ids]}])
+            external_data=ExternalDataConverter()(
+                [
+                    {
+                        'name': 'cloud_account_ids',
+                        'structure': [('id', 'String')],
+                        'data': [{'id': r_id} for r_id in cloud_account_ids]
+                    }
+                ]
+            )
+        )
         flavors = [x[0] for x in flavors]
         for flavor_name in flavors:
             if 'db.' in flavor_name:
@@ -270,13 +299,19 @@ class RiBreakdownController(CleanExpenseController):
                      HAVING sum(sign) > 0)
                    GROUP BY cloud_account_id, date"""
         return self.execute_clickhouse(
-            query, params={
+            query, parameters={
                 'start_date': start_date,
                 'end_date': end_date},
-            external_tables=[{'name': 'cloud_account_ids',
-                              'structure': [('id', 'String')],
-                              'data': [{'id': r_id} for r_id in
-                                       cloud_account_ids]}])
+            external_data=ExternalDataConverter()(
+                [
+                    {
+                        'name': 'cloud_account_ids',
+                        'structure': [('id', 'String')],
+                        'data': [{'id': r_id} for r_id in cloud_account_ids]
+                    }
+                ]
+            )
+        )
 
     def fill_overprovisioning(self, flavor_factor_map, cloud_account_usage,
                               start_date, end_date):

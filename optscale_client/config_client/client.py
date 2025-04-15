@@ -443,7 +443,8 @@ class Client(etcd.Client):
         """
         params = self.read_branch('/clickhouse')
         return (params['user'], params['password'], params['host'],
-                params['db'])
+                params['db'], params.get('port', 8123),
+                params.get('secure', False))
 
     def zoho_params(self):
         """
