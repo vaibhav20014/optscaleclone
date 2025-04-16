@@ -563,9 +563,7 @@ export const DOCS_HYSTAX_OPTSCALE = "https://hystax.com/documentation/optscale/"
 const docUrl = (path: string) => `${DOCS_HYSTAX_OPTSCALE}${path}` as const;
 
 // Recommendations
-export const DOCS_HYSTAX_CLEANUP_SCRIPTS = docUrl(
-  "optscales_recommendations.html#clean-up-scripts-based-on-optscale-s-recommendations" as const
-);
+export const DOCS_HYSTAX_CLEANUP_SCRIPTS = docUrl("cleanupscripts.html" as const);
 
 // Data Source Connection
 const dataSourceConnectionDocUrl = (docPath: string) => docUrl(`e2e_guides/${docPath}`);
