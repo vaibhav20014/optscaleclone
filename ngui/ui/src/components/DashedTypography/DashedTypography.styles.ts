@@ -3,8 +3,16 @@ import { makeStyles } from "tss-react/mui";
 const useStyles = makeStyles()(() => ({
   dashed: {
     display: "inline",
-    borderBottom: "1px dashed",
-    width: "fit-content"
+    position: "relative",
+    width: "fit-content",
+    "&:after": {
+      content: '""',
+      position: "absolute",
+      bottom: -1,
+      left: 0,
+      width: "100%",
+      borderBottom: "1px dashed"
+    }
   },
   cursorPointer: {
     "&:hover": {
