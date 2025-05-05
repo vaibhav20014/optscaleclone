@@ -4,6 +4,8 @@ services:
     build:
       args:
         - NODE_ENV=development
+    environment:
+      - BUILD_MODE=development
       context: ../
       dockerfile: ./ngui/Dockerfile
     # env_file:
