@@ -1,24 +1,18 @@
 version: "3.9"
-
 services:
-  redis:
-    image: "redis:7.0.9"
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
-
   web:
     build:
+      args:
+        - NODE_ENV=development
       context: ../
       dockerfile: ./ngui/Dockerfile
-      args:
-        NODE_ENV: development
-    environment:
-      - BUILD_MODE=development
-      - UI_BUILD_PATH=/usr/src/app/ui/dist
-      - PROXY_URL=http://localhost:4000  # or your backend URL
+    env_file:
+      - ui/.env
+      - server/.env
     ports:
       - "4000:4000"
     depends_on:
-      - redis
-    restart: unless-stopped
+      redis:
+        condition: service_started
+  redis:
+    image: "redis:7.0.9"
