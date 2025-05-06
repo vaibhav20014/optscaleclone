@@ -103,7 +103,7 @@ const UI_BUILD_PATH = process.env.UI_BUILD_PATH;
 app.use(express.static(path.join(UI_BUILD_PATH, "build")));
 
 app.get("/*", function (req, res) {
-  res.sendFile(path.join(UI_BUILD_PATH, "index.html"));
+  res.sendFile(path.join(UI_BUILD_PATH, "build", "index.html"));
 });
 
 // Modified server startup
